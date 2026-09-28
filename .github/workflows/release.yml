@@ -35,12 +35,11 @@ jobs:
           if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
             gh release create "v${VERSION}" \
               --title "v${VERSION}" \
-              --notes "${CHANGELOG_BODY}"
+              --notes-file "${{ steps.changelog.outputs.changes_file }}"
           fi
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
-          CHANGELOG_BODY: ${{ steps.changelog.outputs.body }}
 
   gem:
     needs: release
