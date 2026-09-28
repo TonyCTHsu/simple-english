@@ -30,4 +30,25 @@ class ClientParseMatchesTest < Minitest::Test
   def test_parse_matches_empty
     assert_empty SimpleEnglish::Client.parse_matches([], "anything")
   end
+
+  def test_parse_matches_prefixes_the_offending_text
+    matches = [{
+      "message" => "Write \"use\".",
+      "offset" => 4,
+      "rule" => {"id" => "SE_SLOP_LEVERAGE"},
+      "context" => {"text" => "You should leverage this",
+                    "offset" => 11, "length" => 8}
+    }]
+    findings = SimpleEnglish::Client.parse_matches(matches, "You should leverage this")
+    assert_equal "\"leverage\" - Write \"use\".", findings.first.message
+  end
+
+  def test_parse_matches_keeps_the_message_without_context
+    matches = [{
+      "message" => "Write \"use\".", "offset" => 4,
+      "rule" => {"id" => "SE_SLOP_LEVERAGE"}
+    }]
+    findings = SimpleEnglish::Client.parse_matches(matches, "You should leverage this")
+    assert_equal "Write \"use\".", findings.first.message
+  end
 end

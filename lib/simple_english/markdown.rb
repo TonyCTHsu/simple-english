@@ -30,7 +30,10 @@ module SimpleEnglish
     end
 
     def strip_line(line)
-      line.gsub(/`[^`]*`/, "X").sub(/\A\#{1,6} /, "")
+      # Width-preserving replacements, so a finding column points at
+      # the source line, not at the stripped copy.
+      line.gsub(/`[^`]*`/) { |code| "X" * code.length }
+        .sub(/\A\#{1,6} /) { |marker| " " * marker.length }
     end
 
     # A vertical list is not one paragraph: each list item is its own.

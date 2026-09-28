@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Text findings print the column and name the offending text
+
 ### Fixed
 
 - Sentence counts ignore internal periods, like those in URLs and

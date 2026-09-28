@@ -13,9 +13,9 @@ instead.
 ```console
 $ printf 'You should leverage this tool in order to make sure that your docs are readable.' > note.md
 $ se note.md
-note.md:1: [SE_MODAL_RESTRICTED] Use can, will, or must. State the requirement exactly.
-note.md:1: [SE_SLOP_IN_ORDER_TO] Write "to".
-note.md:1: [SE_SLOP_LEVERAGE] Write "use".
+note.md:1:5: [SE_MODAL_RESTRICTED] "should" - Use can, will, or must. State the requirement exactly.
+note.md:1:12: [SE_SLOP_LEVERAGE] "leverage" - Write "use".
+note.md:1:31: [SE_SLOP_IN_ORDER_TO] "in order to" - Write "to".
 ```
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,

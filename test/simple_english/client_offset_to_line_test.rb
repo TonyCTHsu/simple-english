@@ -27,4 +27,23 @@ class ClientOffsetToLineTest < Minitest::Test
     assert_equal 1, SimpleEnglish::Client.offset_to_line(text, 11)
     assert_equal 2, SimpleEnglish::Client.offset_to_line(text, 13)
   end
+
+  def test_offset_to_column_counts_from_one
+    assert_equal 1, SimpleEnglish::Client.offset_to_column("any text", 0)
+    assert_equal 4, SimpleEnglish::Client.offset_to_column("any text", 3)
+  end
+
+  def test_offset_to_column_resets_after_newline
+    assert_equal 2, SimpleEnglish::Client.offset_to_column("first\nsecond", 7)
+  end
+
+  def test_offset_on_newline_is_column_one_of_next_line
+    assert_equal 1, SimpleEnglish::Client.offset_to_column("first\nsecond", 5)
+  end
+
+  def test_offset_to_column_counts_emoji_as_one_char
+    text = "header \u{1F600} ok\nsecond line here"
+    # The emoji starts at unit 7 and is one character wide in the column
+    assert_equal 9, SimpleEnglish::Client.offset_to_column(text, 9)
+  end
 end

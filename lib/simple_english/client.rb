@@ -29,6 +29,26 @@ module SimpleEnglish
       line
     end
 
+    # The 1-based column of a UTF-16 offset within its line. Astral
+    # characters count as two units, like the match offset. A match
+    # starting at the newline itself is column one of the next line.
+    def offset_to_column(text, offset)
+      column = 0
+      units = 0
+      text.each_char do |char|
+        if char == "\n"
+          return 1 if units >= offset
+          column = 0
+          units += 1
+          next
+        end
+        return column + 1 if units >= offset
+        units += (char.ord > 0xFFFF) ? 2 : 1
+        column += 1
+      end
+      column + 1
+    end
+
     DEFAULT_PORT = 8181
     REQUEST_TIMEOUT = 30
 
@@ -64,15 +84,27 @@ module SimpleEnglish
       matches.map do |match|
         line, column = payload.locate(match.fetch("offset"))
         Finding.new(line: line, column: column,
-          rule: match.fetch("rule").fetch("id"), message: match.fetch("message"))
+          rule: match.fetch("rule").fetch("id"),
+          message: with_context(match.fetch("message"), match))
       end
+    end
+
+    # Prefix the offending text, so a finding says what to change,
+    # not only how. LanguageTool returns it in the match context.
+    # Context offsets are Java UTF-16 code units, like the match
+    # offset.
+    def with_context(message, match)
+      context = match["context"] or return message
+      matched = context.fetch("text", "")[
+        context.fetch("offset", 0).to_i, context.fetch("length", 0).to_i]
+      matched.empty? ? message : "\"#{matched}\" - #{message}"
     end
 
     def to_payload(payload)
       payload.is_a?(String) ? PlainText.new(payload) : payload
     end
 
-    private_class_method :to_payload
+    private_class_method :to_payload, :with_context
 
     # Full lint via the se daemon. Raw Markdown in, or code
     # source with a language for the comment pipeline. nil when

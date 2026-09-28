@@ -45,6 +45,20 @@ class CLIFormatTest < Minitest::Test
     out, = with_stub_daemon do
       capture_io { SimpleEnglish::CLI.run(["-"]) }.first
     end
-    assert_equal "-:3: [SE_NO_CONTRACTIONS] Write the words in full. No contractions.\n", out
+    assert_equal "-:3:17: [SE_NO_CONTRACTIONS] Write the words in full. No contractions.\n", out
+  end
+
+  def test_format_text_omits_the_column_when_absent
+    server = StubHTTPServer.new("/lint" => [
+      {"line" => 5, "column" => nil, "rule" => "SE_SENTENCE_TOO_LONG",
+       "message" => "Split it."}
+    ].to_json)
+    old_url = ENV["SE_SERVER_URL"]
+    ENV["SE_SERVER_URL"] = server.url
+    out, = capture_io { SimpleEnglish::CLI.run(["-"]) }
+    assert_equal "-:5: [SE_SENTENCE_TOO_LONG] Split it.\n", out
+  ensure
+    ENV["SE_SERVER_URL"] = old_url
+    server&.shutdown
   end
 end
