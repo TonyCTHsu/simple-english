@@ -109,13 +109,13 @@ module SimpleEnglish
     # caller owns the exit status. Diagnostics go to stderr here, where the cause
     # is known.
     def ensure_up(install: SimpleEnglish::Install.from_env)
-      unless File.exist?(install.server_jar)
-        warn install.setup_error
-        return false
-      end
       return true if up?
       if ENV["SE_SERVER_URL"]
         warn "error: SE_SERVER_URL is set but #{url} does not answer."
+        return false
+      end
+      unless File.exist?(install.server_jar)
+        warn install.setup_error
         return false
       end
       warn "se: daemon not running; starting it (first lint takes ~15s)..."

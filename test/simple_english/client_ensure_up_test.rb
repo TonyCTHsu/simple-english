@@ -25,10 +25,14 @@ class ClientEnsureUpTest < Minitest::Test
   def test_ensure_up_fails_fast_with_setup_message_when_jar_is_missing
     Dir.mktmpdir do |dir|
       install = SimpleEnglish::Install.new(cache_dir: dir)
-      _out, err = capture_io do
-        refute SimpleEnglish::Client.ensure_up(install: install)
+      # The jar matters only when the daemon is down and we need to
+      # spawn it.
+      SimpleEnglish::Client.stub :up?, false do
+        _out, err = capture_io do
+          refute SimpleEnglish::Client.ensure_up(install: install)
+        end
+        assert_match(/Run `se setup`\./, err)
       end
-      assert_match(/Run `se setup`\./, err)
     end
   end
 end
