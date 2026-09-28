@@ -11,6 +11,11 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   `bin/render-rules` after a rule change.
 - `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules, container)
 
+## Branches
+
+- Never commit on the default branch. Prefix branch names with your
+  own handle to show ownership. Release prep uses `release/vX.Y.Z`.
+
 ## Layout
 
 - `lib/simple_english.rb` is the composition root: `lint_text`, `corpus_test`
