@@ -15,14 +15,14 @@ task :lint do
 end
 
 namespace :release do
-  desc "Set the version and move the Unreleased entries into a dated
+  desc "Bump the version and move the Unreleased entries into a dated
  heading. Usage: rake 'release:prepare[0.1.1]'"
   task :prepare, [:version] do |_t, args|
     version = args[:version] || abort("usage: rake 'release:prepare[0.1.1]'")
     abort "error: #{version} is not a X.Y.Z version" unless version.match?(/\A\d+\.\d+\.\d+\z/)
 
-    gemfile = "lib/simple_english.rb"
-    source = File.read(gemfile)
+    version_file = "lib/simple_english/version.rb"
+    source = File.read(version_file)
     current = source[/VERSION = "([^"]+)"/, 1]
     abort "error: VERSION is already #{current}" if current == version
 
@@ -31,7 +31,7 @@ namespace :release do
     unreleased = changelog.split("## [Unreleased]", 2).fetch(1).split(/^## /, 2).first
     abort "error: Unreleased is empty. Add entries before you prepare a release." unless unreleased.match?(/^- /m)
 
-    File.write(gemfile, source.sub(/VERSION = "[^"]+"/, %(VERSION = "#{version}")))
+    File.write(version_file, source.sub(/VERSION = "[^"]+"/, %(VERSION = "#{version}")))
     File.write("CHANGELOG.md", changelog.sub(
       "## [Unreleased]",
       "## [Unreleased]\n\n## [#{version}] - #{Time.now.strftime("%Y-%m-%d")}"
