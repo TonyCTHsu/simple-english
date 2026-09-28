@@ -7,7 +7,8 @@
 ### Added
 
 - `se lint`, `se serve`, `se setup` commands
-- Pattern rules for prose and code comments, counting rules for Markdown
+- Pattern rules for prose and code comments
+- Counting rules for Markdown
 - `.simple-english.yml` config and `se: ignore` suppressions
 - Text, JSON, and SARIF output
 - Container image
