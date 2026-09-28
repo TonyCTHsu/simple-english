@@ -141,6 +141,11 @@ Every user-visible change needs one line under `Unreleased` in
 The release workflow fails if the changelog section for the tagged
 version is missing, so a release cannot ship without notes.
 
+Version numbers follow semantic versioning. A `Fixed` entry bumps
+the patch. An `Added` or `Changed` entry bumps the minor. A change
+that breaks the CLI, the config, or an output format bumps the
+major.
+
 Do not push tags by hand. The workflow tags the release commit, so
 a hand-pushed tag can drift from the gem version.
 
