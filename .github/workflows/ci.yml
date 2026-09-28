@@ -55,7 +55,7 @@ jobs:
         run: |
           curl -sSfL -o hadolint https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-Linux-x86_64
           chmod +x hadolint
-          ./hadolint --failure-threshold error Dockerfile
+          ./hadolint Dockerfile
 
       - name: Changelog
         uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
