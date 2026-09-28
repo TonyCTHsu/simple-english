@@ -6,9 +6,27 @@ on:
   pull_request:
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.3", "3.4", "4.0"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run the unit tests
+        run: bundle exec rake test
+
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -16,6 +34,41 @@ jobs:
         with:
           ruby-version: "3.3"
           bundler-cache: true
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.standard-gems
+          key: standardrb-1.56.0
+
+      - name: StandardRB
+        run: |
+          if [ ! -x "$HOME/.standard-gems/bin/standardrb" ]; then
+            gem install standard --no-document -v 1.56.0 --install-dir "$HOME/.standard-gems"
+          fi
+          PATH="$HOME/.standard-gems/bin:$PATH" GEM_PATH="$HOME/.standard-gems" standardrb
+
+      - name: Actionlint
+        run: |
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.7
+          ./actionlint
+
+      - name: Hadolint
+        run: |
+          curl -sSfL -o hadolint https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-Linux-x86_64
+          chmod +x hadolint
+          ./hadolint --failure-threshold error Dockerfile
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/se
+          key: languagetool-${{ hashFiles('lib/simple_english/languagetool.rb') }}
+
+      - name: Changelog
+        uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
+        with:
+          path: ./CHANGELOG.md
+          validation_level: error
+          validation_depth: 100
 
       - name: Set up LanguageTool
         run: bundle exec bin/se setup
