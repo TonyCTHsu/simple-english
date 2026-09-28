@@ -59,10 +59,12 @@ module SimpleEnglish
       rules_dir = Dir.mktmpdir("se-rules")
       stage_rules(rules_dir)
       # The inner JVM's stderr goes to a file so failure messages can quote
-      # its first line. The dev log has a path. $stderr does not, so fall
-      # back to a temp file that Ruby unlinks when the process exits.
+      # its first line. Only an explicitly opened dev log (a File) is reused
+      # for that. $stderr reports path "<STDERR>", so it creates a file
+      # by that name in the CWD. Anything else falls back to a temp file
+      # that Ruby unlinks when the process exits.
       inner_log_path =
-        if log.respond_to?(:path)
+        if log.is_a?(File)
           log.path
         else
           inner_log = Tempfile.new("se-inner")
