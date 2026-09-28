@@ -1,0 +1,57 @@
+PATH
+  remote: .
+  specs:
+    simple_english (0.1.0)
+      rubyzip (~> 3.0)
+      thor (~> 1.0)
+      tree_sitter_language_pack (~> 1.20)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    json (3.0.2)
+    minitest (5.27.0)
+    rake (13.4.2)
+    rexml (3.4.4)
+    rubyzip (3.7.0)
+    sorbet-runtime (0.6.13508)
+    thor (1.5.0)
+    tree_sitter_language_pack (1.20.0-aarch64-linux)
+      sorbet-runtime (~> 0.5)
+    tree_sitter_language_pack (1.20.0-arm64-darwin)
+      sorbet-runtime (~> 0.5)
+    tree_sitter_language_pack (1.20.0-x86_64-darwin)
+      sorbet-runtime (~> 0.5)
+    tree_sitter_language_pack (1.20.0-x86_64-linux)
+      sorbet-runtime (~> 0.5)
+
+PLATFORMS
+  aarch64-linux
+  arm64-darwin
+  x86_64-darwin
+  x86_64-linux
+
+DEPENDENCIES
+  json
+  minitest (~> 5.0)
+  rake (~> 13.0)
+  rexml
+  simple_english!
+
+CHECKSUMS
+  bundler (4.0.19) sha256=b48056e4c77fb3853cc47775b5447ede44aaa4f53c32f168014ab4fe86587d47
+  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df
+  minitest (5.27.0) sha256=2d3b17f8a36fe7801c1adcffdbc38233b938eb0b4966e97a6739055a45fa77d5
+  rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
+  rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
+  rubyzip (3.7.0) sha256=65c19294da75297a939006f3516deacc33185fbd721ff1954f7a231db6d3e121
+  simple_english (0.1.0)
+  sorbet-runtime (0.6.13508) sha256=011ee266adead459077ebc0058d36aeb75d6c90968db8524916050ce3c62e526
+  thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
+  tree_sitter_language_pack (1.20.0-aarch64-linux) sha256=8b43f4c3d18705d4211a5dc0d9281f5e68616c8dd6b323df411b9ee026894f6f
+  tree_sitter_language_pack (1.20.0-arm64-darwin) sha256=b5e6899bedaa750f030a12bfd5db96fe9ed6a0617eee37119c0ffafd49d5baae
+  tree_sitter_language_pack (1.20.0-x86_64-darwin) sha256=8c33f147b46b768a8c333fe8ee3924279feed0c39819232cd92a73f8d34826d6
+  tree_sitter_language_pack (1.20.0-x86_64-linux) sha256=ce5e910a1443afbc770eb6cd18d33b08327fed1ef721f6c9a15e0dfccf7327a4
+
+BUNDLED WITH
+  4.0.19

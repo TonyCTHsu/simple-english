@@ -1,0 +1,9 @@
+# Self-lint config: `bin/se .` runs over the whole repo.
+# The corpus before files and the rendered rule examples break the
+# rules on purpose, and tmp/ holds the downloaded LanguageTool dist.
+# vendor/ holds the bundled gems under CI's bundler-cache.
+ignore:
+  - test/corpus/**
+  - docs/RULES.md
+  - tmp/**
+  - vendor/**

@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules lang="en">
+  <category id="SIMPLE_ENGLISH" name="Simple English">
+
+    <rule id="SE_NO_CONTRACTIONS" name="No contractions">
+      <pattern>
+        <token regexp="yes">[a-z]+['’](s|t|re|ve|ll|d|m)</token>
+      </pattern>
+      <message>Write the words in full. No contractions.</message>
+      <example type="incorrect">You <marker>don't</marker> need this file.</example>
+      <example type="correct">You do not need this file.</example>
+    </rule>
+
+    <rule id="SE_NO_SEMICOLON" name="No semicolons">
+      <pattern><token>;</token></pattern>
+      <message>Write two sentences, or name the relation.</message>
+      <example type="incorrect">Start the tool<marker>;</marker> then read the log.</example>
+      <example type="correct">Start the tool. Then read the log.</example>
+    </rule>
+
+    <rule id="SE_NO_EMDASH" name="No em-dashes">
+      <pattern><token regexp="yes">—|--</token></pattern>
+      <message>Write two sentences, or use a comma.</message>
+      <example type="incorrect">The tool is fast<marker>—</marker>it also works.</example>
+      <example type="correct">The tool is fast. It also works.</example>
+    </rule>
+
+    <rule id="SE_MODAL_RESTRICTED" name="Only can, will, must">
+      <pattern><token regexp="yes">should|would|might|could</token></pattern>
+      <message>Use can, will, or must. State the requirement exactly.</message>
+      <example type="incorrect">You <marker>should</marker> restart the service.</example>
+      <example type="correct">You must restart the service.</example>
+    </rule>
+
+    <rule id="SE_ACTIVE_VOICE" name="Active voice">
+      <pattern>
+        <token regexp="yes">am|is|are|was|were|be|been|being</token>
+        <token min="0" max="1" regexp="yes">not|never</token>
+        <token postag="VBN"/>
+        <token min="0" max="6"><exception>by</exception></token>
+        <token>by</token>
+      </pattern>
+      <message>Use the active voice. Say who does the action.</message>
+      <example type="incorrect">The log <marker>was written by</marker> the worker.</example>
+      <example type="correct">The worker wrote the log.</example>
+    </rule>
+
+    <rule id="SE_PRESENT_PERFECT" name="Simple tenses only">
+      <pattern>
+        <token regexp="yes">have|has|had</token>
+        <token postag="VBN"/>
+      </pattern>
+      <message>Use the simple past. Say when it happened.</message>
+      <example type="incorrect">The job <marker>has completed</marker>.</example>
+      <example type="correct">The job completed.</example>
+    </rule>
+
+    <rule id="SE_ING_AFTER_COMMA" name="No -ing after a comma">
+      <pattern><token>,</token><token postag="VBG"/></pattern>
+      <message>Start a new sentence instead of the -ing phrase.</message>
+      <example type="incorrect">The tool runs<marker>, making</marker> it easy.</example>
+      <example type="correct">The tool runs. It is easy.</example>
+    </rule>
+
+    <rule id="SE_KEEP_THAT" name="make sure that">
+      <pattern>
+        <token regexp="yes">make|makes|made</token>
+        <token regexp="yes">sure|certain</token>
+        <token negate="yes">that</token>
+      </pattern>
+      <message>Write "make sure that".</message>
+      <example type="incorrect">Make <marker>sure the file</marker> exists.</example>
+      <example type="correct">Make sure that the file exists.</example>
+    </rule>
+
+    <rule id="SE_CONDITION_FIRST" name="Condition before command">
+      <pattern>
+        <token postag="VB"/>
+        <token min="0" max="8"><exception>if</exception></token>
+        <token>if</token>
+      </pattern>
+      <message>Put the condition first: "If the build fails, read the log."</message>
+      <example type="incorrect"><marker>Read the log if</marker> the build fails.</example>
+      <example type="correct">If the build fails, read the log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_LEVERAGE" name="use, not leverage">
+      <pattern>
+        <token regexp="yes" inflected="yes">leverage|utilize</token>
+      </pattern>
+      <message>Write <suggestion>use</suggestion>.</message>
+      <example type="incorrect"><marker>Utilize</marker> the registry file.</example>
+      <example type="correct">Use the registry file.</example>
+    </rule>
+
+    <rule id="SE_SLOP_IN_ORDER_TO" name="to, not in order to">
+      <pattern>
+        <token>in</token><token>order</token><token>to</token>
+      </pattern>
+      <message>Write <suggestion>to</suggestion>.</message>
+      <example type="incorrect">Run the tool <marker>in order to</marker> build the file.</example>
+      <example type="correct">Run the tool to build the file.</example>
+    </rule>
+
+    <rule id="SE_SLOP_PRIOR_TO" name="before, not prior to">
+      <pattern>
+        <token>prior</token><token>to</token>
+      </pattern>
+      <message>Write <suggestion>before</suggestion>.</message>
+      <example type="incorrect">Read the file <marker>prior to</marker> the upgrade.</example>
+      <example type="correct">Read the file before the upgrade.</example>
+    </rule>
+
+    <rule id="SE_SLOP_ENSURE" name="make sure that, not ensure">
+      <pattern>
+        <token regexp="yes" inflected="yes">ensure</token>
+      </pattern>
+      <message>Write <suggestion>make sure that</suggestion>.</message>
+      <example type="incorrect"><marker>Ensure</marker> the file exists.</example>
+      <example type="correct">Make sure that the file exists.</example>
+    </rule>
+
+    <rule id="SE_SLOP_FUNCTIONALITY" name="function, not functionality">
+      <pattern>
+        <token inflected="yes">functionality</token>
+      </pattern>
+      <message>Write <suggestion>function</suggestion> or <suggestion>feature</suggestion>.</message>
+      <example type="incorrect">Add the <marker>functionality</marker> first.</example>
+      <example type="correct">Add the function first.</example>
+    </rule>
+
+    <rule id="SE_SLOP_ENABLES_YOU" name="you can, not enables you to">
+      <pattern>
+        <token regexp="yes" inflected="yes">enable|allow</token>
+        <token regexp="yes">you</token>
+        <token>to</token>
+      </pattern>
+      <message>Write <suggestion>you can</suggestion>.</message>
+      <example type="incorrect">The tool <marker>enables you to</marker> build the file.</example>
+      <example type="correct">You can build the file with the tool.</example>
+    </rule>
+
+    <rule id="SE_SLOP_FACILITATE" name="help, not facilitate">
+      <pattern>
+        <token regexp="yes" inflected="yes">facilitate</token>
+      </pattern>
+      <message>Write <suggestion>help</suggestion> or <suggestion>make possible</suggestion>.</message>
+      <example type="incorrect">The tool <marker>facilitates</marker> the build.</example>
+      <example type="correct">The tool helps the build.</example>
+    </rule>
+
+    <rule id="SE_SLOP_DELVE" name="read, not delve into">
+      <pattern>
+        <token regexp="yes" inflected="yes">delve|dive</token>
+        <token>into</token>
+      </pattern>
+      <message>Write <suggestion>read</suggestion> or <suggestion>examine</suggestion>.</message>
+      <example type="incorrect"><marker>Delve into</marker> the config file.</example>
+      <example type="correct">Read the config file.</example>
+    </rule>
+
+    <rule id="SE_SLOP_WHEN_IT_COMES" name="for, not when it comes to">
+      <pattern>
+        <token>when</token><token>it</token><token>comes</token><token>to</token>
+      </pattern>
+      <message>Write <suggestion>for</suggestion>.</message>
+      <example type="incorrect"><marker>When it comes to</marker> builds, use the tool.</example>
+      <example type="correct">For builds, use the tool.</example>
+    </rule>
+
+    <rule id="SE_SLOP_IN_THE_EVENT" name="if, not in the event that">
+      <pattern>
+        <token>in</token><token>the</token><token>event</token><token>that</token>
+      </pattern>
+      <message>Write <suggestion>if</suggestion>.</message>
+      <example type="incorrect"><marker>In the event that</marker> the build fails, read the log.</example>
+      <example type="correct">If the build fails, read the log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_DUE_TO_FACT" name="because, not due to the fact that">
+      <pattern>
+        <token>due</token><token>to</token><token>the</token><token>fact</token><token>that</token>
+      </pattern>
+      <message>Write <suggestion>because</suggestion>.</message>
+      <example type="incorrect"><marker>Due to the fact that</marker> the port is closed, the tool fails.</example>
+      <example type="correct">Because the port is not open, the tool fails.</example>
+    </rule>
+
+    <rule id="SE_SLOP_AND_OR" name="no and/or">
+      <pattern>
+        <token>and</token><token>/</token><token>or</token>
+      </pattern>
+      <message>Pick one. Or write "X, or Y, or both".</message>
+      <example type="incorrect">Set the flag <marker>and/or</marker> the port.</example>
+      <example type="correct">Set the flag, or the port, or both.</example>
+    </rule>
+
+    <rulegroup id="SE_SLOP_LATIN" name="no Latin abbreviations">
+      <rule name="e.g.">
+        <pattern>
+          <token>e</token><token>.</token><token>g</token>
+        </pattern>
+        <message>Write "for example", or name the items.</message>
+        <example type="incorrect">Set the flag<marker>, e.g.</marker> the port.</example>
+        <example type="correct">Set the flag, for example the port.</example>
+      </rule>
+      <rule name="i.e.">
+        <pattern>
+          <token>i</token><token>.</token><token>e</token>
+        </pattern>
+        <message>Write "that is", or name the items.</message>
+        <example type="incorrect">Set the flag<marker>, i.e.</marker> the port.</example>
+        <example type="correct">Set the flag, that is the port.</example>
+      </rule>
+      <rule name="etc.">
+        <pattern>
+          <token>etc</token>
+        </pattern>
+        <message>Name the items.</message>
+        <example type="incorrect">Set the flag<marker>, etc</marker>.</example>
+        <example type="correct">Set the flag or the port.</example>
+      </rule>
+    </rulegroup>
+
+    <rule id="SE_SLOP_OUT_OF_BOX" name="by default, not out of the box">
+      <pattern>
+        <token>out</token><token>of</token><token>the</token><token>box</token>
+      </pattern>
+      <message>Write <suggestion>by default</suggestion>.</message>
+      <example type="incorrect">The tool works <marker>out of the box</marker>.</example>
+      <example type="correct">The tool works by default.</example>
+    </rule>
+
+    <rule id="SE_SLOP_UNDER_HOOD" name="internally, not under the hood">
+      <pattern>
+        <token>under</token><token>the</token><token>hood</token>
+      </pattern>
+      <message>Write <suggestion>internally</suggestion>.</message>
+      <example type="incorrect"><marker>Under the hood</marker>, the tool builds a file.</example>
+      <example type="correct">Internally, the tool builds a file.</example>
+    </rule>
+
+    <rule id="SE_SLOP_STREAMLINE" name="make simpler, not streamline">
+      <pattern>
+        <token regexp="yes" inflected="yes">streamline</token>
+      </pattern>
+      <message>Write <suggestion>make simpler</suggestion> or <suggestion>make faster</suggestion>.</message>
+      <example type="incorrect">The tool <marker>streamlines</marker> the build.</example>
+      <example type="correct">The tool makes the build simpler.</example>
+    </rule>
+
+    <rule id="SE_SLOP_PLETHORA" name="many, not plethora">
+      <pattern>
+        <token regexp="yes" inflected="yes">plethora|myriad</token>
+      </pattern>
+      <message>Write <suggestion>many</suggestion>.</message>
+      <example type="incorrect">The file has a <marker>plethora</marker> of rows.</example>
+      <example type="correct">The file has many rows.</example>
+    </rule>
+
+    <rule id="SE_SLOP_ADDRESSES" name="corrects, not addresses the issue">
+      <pattern>
+        <token regexp="yes" inflected="yes">address|tackle</token>
+        <token>the</token><token>issue</token>
+      </pattern>
+      <message>Write <suggestion>corrects the fault</suggestion> or <suggestion>removes the error</suggestion>.</message>
+      <example type="incorrect">The tool <marker>addresses the issue</marker>.</example>
+      <example type="correct">The tool corrects the fault.</example>
+    </rule>
+
+    <rule id="SE_SLOP_PIVOTAL" name="important, not pivotal">
+      <pattern>
+        <token regexp="yes">pivotal|crucial|crucially|paramount</token>
+      </pattern>
+      <message>Write <suggestion>important</suggestion>.</message>
+      <example type="incorrect">The flag is <marker>crucial</marker>.</example>
+      <example type="correct">The flag is important.</example>
+    </rule>
+
+    <rule id="SE_SLOP_TAPESTRY" name="no tapestry, testament, synergy">
+      <pattern>
+        <token regexp="yes" inflected="yes">tapestry|testament|synergy</token>
+      </pattern>
+      <message>Delete it. State the fact.</message>
+      <example type="incorrect">The design is a <marker>testament</marker> to the team.</example>
+      <example type="correct">The design shows the work of the team.</example>
+    </rule>
+
+    <rule id="SE_SLOP_INTERPLAY" name="interaction, not interplay">
+      <pattern>
+        <token inflected="yes">interplay</token>
+      </pattern>
+      <message>Write <suggestion>interaction</suggestion>, or delete it.</message>
+      <example type="incorrect">The <marker>interplay</marker> of the two tools is complex.</example>
+      <example type="correct">The interaction of the two tools is complex.</example>
+    </rule>
+
+    <rule id="SE_SLOP_INTRICATE" name="complex, not intricate">
+      <pattern>
+        <token regexp="yes" inflected="yes">intricate</token>
+      </pattern>
+      <message>Write <suggestion>complex</suggestion>.</message>
+      <example type="incorrect">The config is <marker>intricate</marker>.</example>
+      <example type="correct">The config is complex.</example>
+    </rule>
+
+    <rule id="SE_SLOP_VIBRANT" name="delete vibrant, nuanced, multifaceted">
+      <pattern>
+        <token regexp="yes">vibrant|nuanced|multifaceted</token>
+      </pattern>
+      <message>Delete it, or name the parts.</message>
+      <example type="incorrect">The tool is <marker>nuanced</marker>.</example>
+      <example type="correct">The tool reads three file types.</example>
+    </rule>
+
+    <rule id="SE_SLOP_REALM" name="area, not realm or landscape">
+      <pattern>
+        <token regexp="yes">realm</token>
+      </pattern>
+      <message>Write <suggestion>area</suggestion>.</message>
+      <example type="incorrect">In the <marker>realm</marker> of builds, use the tool.</example>
+      <example type="correct">In the area of builds, use the tool.</example>
+    </rule>
+
+    <rule id="SE_SLOP_GROUNDBREAKING" name="new, not groundbreaking">
+      <pattern>
+        <token regexp="yes">groundbreaking|cutting-edge|state-of-the-art|state of the art|innovative|unprecedented</token>
+      </pattern>
+      <message>Write <suggestion>new</suggestion>, or delete it.</message>
+      <example type="incorrect">The tool is <marker>groundbreaking</marker>.</example>
+      <example type="correct">The tool is new.</example>
+    </rule>
+
+    <rule id="SE_SLOP_TRANSFORMATIVE" name="say what changes, not transformative">
+      <pattern>
+        <token regexp="yes">transformative|game-changer|game changer</token>
+      </pattern>
+      <message>Delete it. Say what changes.</message>
+      <example type="incorrect">The tool is <marker>transformative</marker>.</example>
+      <example type="correct">The tool cuts the build time in half.</example>
+    </rule>
+
+    <rule id="SE_SLOP_REVOLUTIONIZE" name="change, not revolutionize">
+      <pattern>
+        <token regexp="yes" inflected="yes">revolutionize</token>
+      </pattern>
+      <message>Write <suggestion>change</suggestion>.</message>
+      <example type="incorrect">The tool <marker>revolutionizes</marker> the build.</example>
+      <example type="correct">The tool changes the build.</example>
+    </rule>
+
+    <rule id="SE_SLOP_SHOWCASE" name="show, not showcase">
+      <pattern>
+        <token regexp="yes" inflected="yes">showcase|underscore|emphasize</token>
+      </pattern>
+      <message>Write <suggestion>show</suggestion>.</message>
+      <example type="incorrect">The log <marker>showcases</marker> the error.</example>
+      <example type="correct">The log shows the error.</example>
+    </rule>
+
+    <rule id="SE_SLOP_FOSTER" name="help, not foster">
+      <pattern>
+        <token regexp="yes" inflected="yes">foster|empower|bolster</token>
+      </pattern>
+      <message>Write <suggestion>help</suggestion>, <suggestion>support</suggestion>, or <suggestion>let</suggestion>.</message>
+      <example type="incorrect">The tool <marker>fosters</marker> growth.</example>
+      <example type="correct">The tool supports growth.</example>
+    </rule>
+
+    <rule id="SE_SLOP_HARNESS" name="use, not harness">
+      <pattern>
+        <token regexp="yes" inflected="yes">harness</token>
+      </pattern>
+      <message>Write <suggestion>use</suggestion>.</message>
+      <example type="incorrect"><marker>Harness</marker> the API.</example>
+      <example type="correct">Use the API.</example>
+    </rule>
+
+    <rule id="SE_SLOP_ENHANCE" name="improve, not enhance">
+      <pattern>
+        <token regexp="yes" inflected="yes">enhance</token>
+      </pattern>
+      <message>Write <suggestion>improve</suggestion>.</message>
+      <example type="incorrect">The tool <marker>enhances</marker> the build.</example>
+      <example type="correct">The tool improves the build.</example>
+    </rule>
+
+    <rule id="SE_SLOP_ELEVATE" name="increase, not elevate">
+      <pattern>
+        <token regexp="yes" inflected="yes">elevate</token>
+      </pattern>
+      <message>Write <suggestion>increase</suggestion>.</message>
+      <example type="incorrect">The tool <marker>elevates</marker> the speed.</example>
+      <example type="correct">The tool increases the speed.</example>
+    </rule>
+
+    <rule id="SE_SLOP_FURTHERMORE" name="also, not furthermore">
+      <pattern>
+        <token regexp="yes">furthermore|moreover</token>
+      </pattern>
+      <message>Write <suggestion>also</suggestion>.</message>
+      <example type="incorrect"><marker>Furthermore</marker>, the tool reads the log.</example>
+      <example type="correct">The tool also reads the log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_EMBARK" name="start, not embark">
+      <pattern>
+        <token regexp="yes" inflected="yes">embark|endeavor</token>
+      </pattern>
+      <message>Write <suggestion>start</suggestion> or <suggestion>try</suggestion>.</message>
+      <example type="incorrect"><marker>Embark</marker> on the build.</example>
+      <example type="correct">Start the build.</example>
+    </rule>
+
+    <rule id="SE_SLOP_METICULOUS" name="careful, not meticulous">
+      <pattern>
+        <token regexp="yes">meticulous|meticulously</token>
+      </pattern>
+      <message>Write <suggestion>careful</suggestion> or <suggestion>carefully</suggestion>.</message>
+      <example type="incorrect">The tool checks the file <marker>meticulously</marker>.</example>
+      <example type="correct">The tool checks the file carefully.</example>
+    </rule>
+
+    <rule id="SE_SLOP_HOLISTIC" name="full, not holistic">
+      <pattern>
+        <token inflected="yes">holistic</token>
+      </pattern>
+      <message>Write <suggestion>full</suggestion>.</message>
+      <example type="incorrect">The tool gives a <marker>holistic</marker> view.</example>
+      <example type="correct">The tool gives a full view.</example>
+    </rule>
+
+    <rule id="SE_SLOP_PARADIGM" name="model, not paradigm">
+      <pattern>
+        <token regexp="yes" inflected="yes">paradigm</token>
+      </pattern>
+      <message>Write <suggestion>model</suggestion>.</message>
+      <example type="incorrect">The tool changes the <marker>paradigm</marker>.</example>
+      <example type="correct">The tool changes the model.</example>
+    </rule>
+
+    <rule id="SE_SLOP_BOASTS" name="has, not boasts">
+      <pattern>
+        <token regexp="yes" inflected="yes">boast</token>
+      </pattern>
+      <message>Write <suggestion>has</suggestion>.</message>
+      <example type="incorrect">The tool <marker>boasts</marker> a log.</example>
+      <example type="correct">The tool has a log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_NOTWITHSTANDING" name="but, not that being said">
+      <pattern>
+        <token>that</token><token>being</token><token>said</token>
+      </pattern>
+      <message>Write <suggestion>but</suggestion>.</message>
+      <example type="incorrect">The tool works. <marker>That being said</marker>, it is slow.</example>
+      <example type="correct">The tool works, but it is slow.</example>
+    </rule>
+
+    <rule id="SE_SLOP_NOTWITHSTANDING2" name="but, not notwithstanding">
+      <pattern>
+        <token>notwithstanding</token>
+      </pattern>
+      <message>Write <suggestion>but</suggestion>.</message>
+      <example type="incorrect"><marker>Notwithstanding</marker> the log, the tool fails.</example>
+      <example type="correct">The log exists, but the tool fails.</example>
+    </rule>
+
+    <rule id="SE_SLOP_DELETE_ADVERBS" name="delete empty adverbs">
+      <pattern>
+        <token regexp="yes">simply|seamlessly|effortlessly|easily</token>
+      </pattern>
+      <message>Delete it. It carries no fact.</message>
+      <example type="incorrect">The tool works <marker>seamlessly</marker>.</example>
+      <example type="correct">The tool works.</example>
+    </rule>
+
+    <rule id="SE_SLOP_JUST" name="delete just">
+      <pattern>
+        <token>just</token>
+      </pattern>
+      <message>Delete it. It carries no fact.</message>
+      <example type="incorrect">The tool <marker>just</marker> works.</example>
+      <example type="correct">The tool works.</example>
+    </rule>
+
+    <rule id="SE_SLOP_DELETE_ADJ" name="delete empty adjectives">
+      <pattern>
+        <token regexp="yes">robust|powerful|comprehensive|performant|seamless|blazingly</token>
+      </pattern>
+      <message>Delete it, or give the measurable property.</message>
+      <example type="incorrect">The tool is <marker>robust</marker>.</example>
+      <example type="correct">The tool retries three times, then stops.</example>
+    </rule>
+
+    <rule id="SE_SLOP_WORTH_NOTING" name="delete it is worth noting">
+      <pattern>
+        <token>it</token><token>is</token><token>worth</token><token>noting</token><token>that</token>
+      </pattern>
+      <message>Delete it. State the fact.</message>
+      <example type="incorrect"><marker>It is worth noting that</marker> the tool is slow.</example>
+      <example type="correct">The tool is slow.</example>
+    </rule>
+
+    <rule id="SE_SLOP_IMPORTANT_TO" name="delete it is important to">
+      <pattern>
+        <token>it</token><token>is</token><token>important</token><token>to</token>
+      </pattern>
+      <message>Delete it. State the fact.</message>
+      <example type="incorrect"><marker>It is important to</marker> read the log.</example>
+      <example type="correct">Read the log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_DESIGNED_TO" name="delete is designed to">
+      <pattern>
+        <token regexp="yes">is|was</token>
+        <token regexp="yes" inflected="yes">design</token>
+        <token>to</token>
+      </pattern>
+      <message>Say what the tool does.</message>
+      <example type="incorrect">The tool <marker>is designed to</marker> read logs.</example>
+      <example type="correct">The tool reads logs.</example>
+    </rule>
+
+    <rule id="SE_SLOP_AIMS_TO" name="delete aims to">
+      <pattern>
+        <token regexp="yes" inflected="yes">aim</token>
+        <token>to</token>
+      </pattern>
+      <message>Say what the tool does.</message>
+      <example type="incorrect">The tool <marker>aims to</marker> read logs.</example>
+      <example type="correct">The tool reads logs.</example>
+    </rule>
+
+    <rule id="SE_SLOP_AS_NEEDED" name="state the condition, not as needed">
+      <pattern>
+        <token>as</token><token regexp="yes">needed|necessary</token>
+      </pattern>
+      <message>State the condition.</message>
+      <example type="incorrect">Restart the tool <marker>as needed</marker>.</example>
+      <example type="correct">Restart the tool every day.</example>
+    </rule>
+
+    <rule id="SE_SLOP_GRACEFULLY" name="say what it does, not gracefully handles">
+      <pattern>
+        <token regexp="yes">gracefully</token>
+      </pattern>
+      <message>Say what the tool does: "retries three times, then stops".</message>
+      <example type="incorrect">The tool <marker>gracefully</marker> handles the error.</example>
+      <example type="correct">The tool retries three times, then stops.</example>
+    </rule>
+
+    <rule id="SE_SLOP_IN_CONCLUSION" name="delete in conclusion">
+      <pattern>
+        <token>in</token><token>conclusion</token>
+      </pattern>
+      <message>Delete it. State the fact.</message>
+      <example type="incorrect"><marker>In conclusion</marker>, the tool works.</example>
+      <example type="correct">The tool works.</example>
+    </rule>
+
+    <rule id="SE_SLOP_IN_SUMMARY" name="delete in summary">
+      <pattern>
+        <token>in</token><token>summary</token>
+      </pattern>
+      <message>Delete it. State the fact.</message>
+      <example type="incorrect"><marker>In summary</marker>, the tool works.</example>
+      <example type="correct">The tool works.</example>
+    </rule>
+
+    <rule id="SE_SLOP_AT_END_OF_DAY" name="delete at the end of the day">
+      <pattern>
+        <token>at</token><token>the</token><token>end</token><token>of</token><token>the</token><token>day</token>
+      </pattern>
+      <message>Delete it. State the fact.</message>
+      <example type="incorrect"><marker>At the end of the day</marker>, the tool works.</example>
+      <example type="correct">The tool works.</example>
+    </rule>
+
+    <rule id="SE_SLOP_NESTLED" name="give the location, not nestled">
+      <pattern>
+        <token regexp="yes" inflected="yes">nestle</token>
+      </pattern>
+      <message>Give the location.</message>
+      <example type="incorrect">The file is <marker>nestled</marker> in the folder.</example>
+      <example type="correct">The file sits in the folder.</example>
+    </rule>
+
+    <rule id="SE_SLOP_BUSTLING" name="busy, not bustling">
+      <pattern>
+        <token regexp="yes" inflected="yes">bustle</token>
+      </pattern>
+      <message>Write <suggestion>busy</suggestion>.</message>
+      <example type="incorrect">The <marker>bustling</marker> market has many files.</example>
+      <example type="correct">The busy market has many files.</example>
+    </rule>
+
+    <rule id="SE_SLOP_HOPE_HELPS" name="delete I hope this helps">
+      <pattern>
+        <token>I</token><token>hope</token><token>this</token><token>helps</token>
+      </pattern>
+      <message>Delete it.</message>
+      <example type="incorrect"><marker>I hope this helps</marker>. Read the log.</example>
+      <example type="correct">Read the log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_DIVE_IN" name="delete let's dive in">
+      <pattern>
+        <token>let</token><token regexp="yes">'s|’s</token><token>dive</token><token>in</token>
+      </pattern>
+      <message>Delete it.</message>
+      <example type="incorrect"><marker>let's dive in</marker>. Read the log.</example>
+      <example type="correct">Read the log.</example>
+    </rule>
+
+  </category>
+</rules>

@@ -1,0 +1,1 @@
+Please note that we've made some changes to the users endpoint that may require updates to your integration. The `name` field has been deprecated in favor of separate `first_name` and `last_name` fields, so you'll want to update your code accordingly.

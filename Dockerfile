@@ -1,0 +1,15 @@
+FROM ruby:3.3-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre-headless && rm -rf /var/lib/apt/lists/*
+COPY lib /src/lib
+COPY rules /src/rules
+COPY bin/se /src/bin/
+COPY simple_english.gemspec /src/
+COPY LICENSE README.md /src/
+COPY docs/RULES.md /src/docs/
+RUN cd /src && gem build simple_english.gemspec && gem install --no-document simple_english-*.gem
+ENV SE_CACHE_DIR=/opt
+RUN se setup --dir /opt
+EXPOSE 8181
+WORKDIR /work
+ENTRYPOINT ["se"]

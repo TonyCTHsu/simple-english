@@ -1,0 +1,1 @@
+Between 14:02 and 14:31 UTC, 12% of requests to the API failed with HTTP 502. A deploy at 14:00 removed the cache warmup step, and the cache nodes overloaded. We reverted the deploy at 14:27. All requests succeeded from 14:31. We will add a warmup check to the deploy pipeline this week.

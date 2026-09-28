@@ -1,0 +1,119 @@
+# frozen_string_literal: true
+
+require_relative "test_helper"
+
+require "tmpdir"
+require "zip"
+
+class LanguageToolHelpersTest < Minitest::Test
+  def test_rule_ids_reads_the_custom_rules_file
+    ids = SimpleEnglish::LanguageTool.rule_ids
+    assert_includes ids, "SE_NO_CONTRACTIONS"
+    assert_includes ids, "SE_NO_SEMICOLON"
+  end
+
+  def test_lt_version_is_pinned_to_6_6
+    assert_equal "6.6", SimpleEnglish::LanguageTool::LT_VERSION
+  end
+
+  def test_download_writes_the_response_body_to_the_file
+    server = StubHTTPServer.new("/download" => lambda { |_body| [200, "zip bytes"] })
+    Dir.mktmpdir do |dir|
+      target = File.join(dir, "lt.zip")
+      assert SimpleEnglish::LanguageTool.download(
+        "#{server.url}/download", target
+      )
+      assert_equal "zip bytes", File.read(target)
+    end
+  ensure
+    server&.shutdown
+  end
+
+  def test_download_warns_and_fails_on_an_http_error
+    server = StubHTTPServer.new("/download" => lambda { |_body| [500, "boom"] })
+    Dir.mktmpdir do |dir|
+      _out, err = capture_io do
+        refute SimpleEnglish::LanguageTool.download(
+          "#{server.url}/download", File.join(dir, "lt.zip")
+        )
+      end
+      assert_match(/HTTP 500/, err)
+    end
+  ensure
+    server&.shutdown
+  end
+
+  def test_extract_unpacks_entries_under_the_dir
+    Dir.mktmpdir do |dir|
+      zip = File.join(dir, "lt.zip")
+      src = File.join(dir, "src.jar")
+      File.write(src, "jar body")
+      Zip::File.open(zip, create: true) do |archive|
+        archive.add("LanguageTool-6.6/languagetool-commandline.jar", src)
+      end
+      assert SimpleEnglish::LanguageTool.extract(zip, dir)
+      extracted = File.join(dir, "LanguageTool-6.6/languagetool-commandline.jar")
+      assert_equal "jar body", File.read(extracted)
+    end
+  end
+
+  def test_extract_refuses_entries_that_escape_the_dir
+    Dir.mktmpdir do |dir|
+      zip = File.join(dir, "evil.zip")
+      src = File.join(dir, "src.txt")
+      File.write(src, "payload")
+      Zip::File.open(zip, create: true) do |archive|
+        archive.add("../evil.txt", src)
+      end
+      _out, err = capture_io do
+        refute SimpleEnglish::LanguageTool.extract(zip, dir)
+      end
+      assert_match(/escapes the install dir/, err)
+      refute File.exist?(File.expand_path(File.join(dir, "..", "evil.txt")))
+    end
+  end
+
+  def test_safe_entry_target_rejects_paths_outside_the_dir
+    dir = "/cache"
+    assert_equal "/cache/LanguageTool-6.6/x.jar",
+      SimpleEnglish::LanguageTool.safe_entry_target(
+        dir, "LanguageTool-6.6/x.jar"
+      )
+    assert_nil SimpleEnglish::LanguageTool.safe_entry_target(dir, "../evil.txt")
+    assert_nil SimpleEnglish::LanguageTool.safe_entry_target(dir, "a/../../evil.txt")
+    # An absolute entry name joins under the dir, so it stays contained.
+    assert_equal "/cache/etc/passwd",
+      SimpleEnglish::LanguageTool.safe_entry_target(dir, "/etc/passwd")
+  end
+
+  def test_smoke_returns_false_when_java_cannot_run
+    install = SimpleEnglish::Install.new(
+      cache_dir: "/cache", java: "/nonexistent/java"
+    )
+    _out, err = capture_io do
+      refute SimpleEnglish::LanguageTool.smoke(install)
+    end
+    assert_empty err # smoke is a verdict, not a warning: setup prints the message
+  end
+
+  def test_smoke_passes_with_a_working_install
+    install = SimpleEnglish::Install.from_env
+    skip "needs java and the LanguageTool cache" unless File.exist?(install.commandline_jar) &&
+      install.java?
+    assert SimpleEnglish::LanguageTool.smoke(install)
+  end
+
+  def test_remove_stale_versions_keeps_the_current_dir_and_zips
+    Dir.mktmpdir do |dir|
+      keep = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
+      stale_dir = File.join(dir, "LanguageTool-6.5")
+      zip = File.join(dir, "LanguageTool-6.5.zip")
+      FileUtils.mkdir_p([keep, stale_dir])
+      File.write(zip, "bytes")
+      SimpleEnglish::LanguageTool.remove_stale_versions(dir, keep)
+      assert File.directory?(keep)
+      assert File.exist?(zip)
+      refute File.directory?(stale_dir)
+    end
+  end
+end

@@ -1,0 +1,1 @@
+Oops! Something went wrong while attempting to establish a connection to the database. Please ensure your credentials have been properly configured and try again, or reach out to your administrator if the issue persists.
