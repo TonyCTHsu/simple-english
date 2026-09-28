@@ -2,10 +2,60 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [master]
+    paths:
+      - lib/simple_english.rb
 
 jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Read the gem version
+        id: version
+        run: echo "version=$(ruby -Ilib -rsimple_english -e 'print SimpleEnglish::VERSION')" >> "$GITHUB_OUTPUT"
+
+      - uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
+        id: changelog
+        with:
+          path: ./CHANGELOG.md
+          version: ${{ steps.version.outputs.version }}
+          validation_level: error
+          validation_depth: 100
+
+      - name: Tag the release
+        run: |
+          if ! git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            git tag "v${VERSION}"
+            git push origin "v${VERSION}"
+          fi
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Create the GitHub release
+        run: |
+          if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release create "v${VERSION}" \
+              --title "v${VERSION}" \
+              --notes "${CHANGELOG_BODY}"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          CHANGELOG_BODY: ${{ steps.changelog.outputs.body }}
+
   gem:
+    needs: release
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -22,8 +72,9 @@ jobs:
       - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
   image:
+    needs: [release, gem]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
@@ -34,9 +85,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.0
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/tonycthsu/simple-english:latest,ghcr.io/tonycthsu/simple-english:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ghcr.io/tonycthsu/simple-english:latest,ghcr.io/tonycthsu/simple-english:v${{ needs.release.outputs.version }}
