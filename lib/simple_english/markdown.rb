@@ -9,7 +9,10 @@ require_relative "paragraph"
 
 module SimpleEnglish
   module Markdown
-    SENTENCE_END = /[.!?]/
+    # A terminator ends a sentence only before whitespace or at the
+    # end of the text, so periods inside URLs and file names do not
+    # split sentences.
+    SENTENCE_END = /(?<=[.!?])(?:\s+|$)/
     # Non-prose blocks: their lines never reach the counting rules or
     # LanguageTool.
     BLANKED_BLOCKS = %w[fenced_code_block indented_code_block thematic_break].freeze

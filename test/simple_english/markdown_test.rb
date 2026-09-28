@@ -52,3 +52,15 @@ class StripMarkdownTest < Minitest::Test
     assert_includes stripped, "Intro."
   end
 end
+
+class SentencesOfMarkdownTest < Minitest::Test
+  def test_periods_inside_urls_do_not_split_sentences
+    badges = "[![CI](https://example.com/a.svg)](https://example.com) " \
+             "[![Gem](https://example.com/b.svg)](https://example.com)\n"
+    assert_equal 1, SimpleEnglish::Markdown.sentences_of(badges).size
+  end
+
+  def test_periods_after_whitespace_still_split_sentences
+    assert_equal 3, SimpleEnglish::Markdown.sentences_of("One. Two words. Three.\n").size
+  end
+end

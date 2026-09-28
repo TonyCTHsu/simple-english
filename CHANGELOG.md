@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Sentence counts ignore internal periods, like those in URLs and
+  file paths
+
 ## [0.1.0] - 2026-09-28
 
 ### Added

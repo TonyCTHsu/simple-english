@@ -1,0 +1,1 @@
+Install the gem from [RubyGems](https://rubygems.org/gems/simple_english). The docs live in [docs/DAEMON.md](https://example.com/docs/DAEMON.md). The rules are listed in [docs/RULES.md](https://example.com/docs/RULES.md). Read the daemon guide next. Then read the config file guide. After that, read the suppression guide. The jar downloads on first run.
