@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 6.0"
+  spec.add_development_dependency "minitest-mock", "~> 5.27"
 
   # Bundled gems the suite requires under `bundle exec`: the require
   # shim refuses bundled gems that the lockfile omits.
