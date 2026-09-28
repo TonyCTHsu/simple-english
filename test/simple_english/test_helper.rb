@@ -2,6 +2,7 @@
 
 require "json"
 require "minitest/autorun"
+require "minitest/mock"
 require "socket"
 require_relative "../../lib/simple_english"
 require_relative "../../lib/simple_english/cli"

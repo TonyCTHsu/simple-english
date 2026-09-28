@@ -43,7 +43,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   one-line reason. Keep such tools out of the gemspec runtime list.
   Current tools, each with its reason: `minitest` for tests. The
   bundled gem alone is not enough, because `bundle exec` cannot
-  require a bundled gem that the lockfile omits. `rake` runs them.
+  require a bundled gem that the lockfile omits. `minitest-mock`
+  restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
   Both are dev-only, in the gemspec.
 - `Markdown.strip` must keep the line count identical to the source. Findings cite
   original line numbers, so stripping changes must preserve them.
