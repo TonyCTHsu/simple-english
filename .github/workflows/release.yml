@@ -1,10 +1,7 @@
 name: Release
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - lib/simple_english.rb
+  workflow_dispatch:
 
 jobs:
   release:
@@ -33,16 +30,7 @@ jobs:
           validation_level: error
           validation_depth: 100
 
-      - name: Tag the release
-        run: |
-          if ! git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
-            git tag "v${VERSION}"
-            git push origin "v${VERSION}"
-          fi
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-
-      - name: Create the GitHub release
+      - name: Create the GitHub release and the tag
         run: |
           if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
             gh release create "v${VERSION}" \

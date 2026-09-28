@@ -4,6 +4,7 @@
 # Pattern rules run on LanguageTool. Counting rules run here.
 # This file is the composition root. The pieces live in lib/simple_english/.
 
+require_relative "simple_english/version"
 require_relative "simple_english/finding"
 require_relative "simple_english/markdown"
 require_relative "simple_english/counts"
@@ -19,8 +20,6 @@ require_relative "simple_english/client"
 require_relative "simple_english/server"
 
 module SimpleEnglish
-  VERSION = "0.1.0"
-
   module_function
 
   # Returns findings, or nil when the daemon is unreachable. The
