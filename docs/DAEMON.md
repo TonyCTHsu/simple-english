@@ -20,13 +20,17 @@ POST to `/lint` with form fields:
 - `text`: raw Markdown or source, required.
 - `language`: optional, selects the code-comment pipeline.
 
-The response is a JSON array of `{line, column, rule, message}`:
+The response is a JSON array of
+`{line, column, end_line, end_column, rule, message}`. Positions are
+1-based, columns count UTF-16 code units, and end positions are exclusive.
+Counting findings have `null` columns and end positions because they apply to
+a whole sentence or paragraph.
 
 ```bash
 curl -d "text=Don't do this." http://localhost:8181/lint
-# [{"line":1,"column":null,"rule":"SE_NO_CONTRACTIONS","message":"..."}]
+# [{"line":1,"column":3,"end_line":1,"end_column":6,"rule":"SE_NO_CONTRACTIONS","message":"..."}]
 curl -d "text=x = 1 # Don't do this." -d "language=python" http://localhost:8181/lint
-# code-comment linting with a column
+# code-comment linting uses positions in the source file
 ```
 
 ## No Java? Run the daemon in a container

@@ -9,11 +9,13 @@ class ClientParseMatchesTest < Minitest::Test
     {
       "message" => "Write the words in full. No contractions.",
       "offset" => 12,
+      "length" => 6,
       "rule" => {"id" => "SE_NO_CONTRACTIONS"}
     },
     {
       "message" => "Split it.",
       "offset" => 20,
+      "length" => 2,
       "rule" => {"id" => "SE_SENTENCE_TOO_LONG"}
     }
   ].freeze
@@ -22,9 +24,9 @@ class ClientParseMatchesTest < Minitest::Test
     text = "first line\nsecond line"
     findings = SimpleEnglish::Client.parse_matches(MATCHES, text)
     assert_equal [
-      [2, "SE_NO_CONTRACTIONS", "Write the words in full. No contractions."],
-      [2, "SE_SENTENCE_TOO_LONG", "Split it."]
-    ], findings.map { |f| [f.line, f.rule, f.message] }
+      [2, 2, 2, 8, "SE_NO_CONTRACTIONS"],
+      [2, 10, 2, 12, "SE_SENTENCE_TOO_LONG"]
+    ], findings.map { |f| [f.line, f.column, f.end_line, f.end_column, f.rule] }
   end
 
   def test_parse_matches_empty
@@ -34,7 +36,8 @@ class ClientParseMatchesTest < Minitest::Test
   def test_parse_matches_prefixes_the_offending_text
     matches = [{
       "message" => "Write \"use\".",
-      "offset" => 4,
+      "offset" => 11,
+      "length" => 8,
       "rule" => {"id" => "SE_SLOP_LEVERAGE"},
       "context" => {"text" => "You should leverage this",
                     "offset" => 11, "length" => 8}
@@ -43,9 +46,22 @@ class ClientParseMatchesTest < Minitest::Test
     assert_equal "\"leverage\" - Write \"use\".", findings.first.message
   end
 
+  def test_parse_matches_extracts_context_after_an_astral_character
+    matches = [{
+      "message" => "Write \"use\".",
+      "offset" => 3,
+      "length" => 8,
+      "rule" => {"id" => "SE_SLOP_LEVERAGE"},
+      "context" => {"text" => "\u{1F4A1} leverage this",
+                    "offset" => 3, "length" => 8}
+    }]
+    findings = SimpleEnglish::Client.parse_matches(matches, "\u{1F4A1} leverage this")
+    assert_equal "\"leverage\" - Write \"use\".", findings.first.message
+  end
+
   def test_parse_matches_keeps_the_message_without_context
     matches = [{
-      "message" => "Write \"use\".", "offset" => 4,
+      "message" => "Write \"use\".", "offset" => 4, "length" => 8,
       "rule" => {"id" => "SE_SLOP_LEVERAGE"}
     }]
     findings = SimpleEnglish::Client.parse_matches(matches, "You should leverage this")

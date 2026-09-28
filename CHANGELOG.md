@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Pattern findings print exact ranges in text, JSON, and SARIF output
+
 ## [0.2.0] - 2026-09-29
 
 ### Changed

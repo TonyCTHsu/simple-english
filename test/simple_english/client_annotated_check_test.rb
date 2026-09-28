@@ -21,8 +21,8 @@ class ClientAnnotatedCheckTest < Minitest::Test
                 "message" => "Write the words in full. No contractions.",
                 "context" => {"text" => "...", "offset" => 0, "length" => 3}}]
     finding = SimpleEnglish::Client.parse_matches(matches, result).first
-    assert_equal 3, finding.line
-    assert_equal 14, finding.column
+    assert_equal [3, 14], [finding.line, finding.column]
+    assert_equal [3, 20], [finding.end_line, finding.end_column]
     assert_equal "SE_NO_CONTRACTIONS", finding.rule
   end
 

@@ -10,7 +10,7 @@ require "timeout"
 class EngineLintTest < Minitest::Test
   LT_BODY = {
     matches: [
-      {message: "No contractions.", offset: 7,
+      {message: "No contractions.", offset: 7, length: 6,
        rule: {id: "SE_NO_CONTRACTIONS"}}
     ]
   }.to_json
@@ -49,7 +49,8 @@ class EngineLintTest < Minitest::Test
       body = JSON.parse(SimpleEnglish::Engine.lint_json("- #{"word " * 30}.\n", base_url: url))
       assert_equal "SE_NO_CONTRACTIONS", body.first["rule"]
       assert_equal "SE_SENTENCE_TOO_LONG", body.map { |hash| hash["rule"] }.last
-      assert_equal %w[line column rule message].sort, body.first.keys.sort
+      assert_equal %w[line column end_line end_column rule message].sort,
+        body.first.keys.sort
     end
   end
 
@@ -76,5 +77,6 @@ class EngineLintTest < Minitest::Test
     assert_equal 1, findings.size
     assert_equal "SE_NO_CONTRACTIONS", findings.first.rule
     assert_equal [1, 12], [findings.first.line, findings.first.column]
+    assert_equal [1, 18], [findings.first.end_line, findings.first.end_column]
   end
 end

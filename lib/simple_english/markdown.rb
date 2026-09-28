@@ -21,19 +21,37 @@ module SimpleEnglish
     module_function
 
     # Blank out code and other non-prose blocks and neutralize inline
-    # code and heading markers. The line count stays identical to the
-    # source.
+    # code and heading markers. Line count and UTF-16 widths stay identical
+    # to the source so LanguageTool offsets remain source positions.
     def strip(text)
-      lines = text.lines.map(&:chomp)
-      blank_rows(text).each { |row| lines[row] = "" }
-      lines.map { |line| strip_line(line) }.join("\n")
+      blank = blank_rows(text).to_h { |row| [row, true] }
+      text.lines.each_with_index.map do |line, row|
+        ending = if line.end_with?("\r\n")
+          "\r\n"
+        elsif line.end_with?("\n")
+          "\n"
+        else
+          ""
+        end
+        body = line.delete_suffix(ending)
+        (blank[row] ? spaces_for(body) : strip_line(body)) + ending
+      end.join
     end
 
     def strip_line(line)
-      # Width-preserving replacements, so a finding column points at
-      # the source line, not at the stripped copy.
-      line.gsub(/`[^`]*`/) { |code| "X" * code.length }
+      # Width-preserving replacements keep LanguageTool positions aligned
+      # with the source.
+      line
+        .gsub(/`[^`]*`/) { |code| "X" * utf16_length(code) }
         .sub(/\A\#{1,6} /) { |marker| " " * marker.length }
+    end
+
+    def spaces_for(text)
+      " " * utf16_length(text)
+    end
+
+    def utf16_length(text)
+      text.each_char.sum { |char| (char.ord > 0xFFFF) ? 2 : 1 }
     end
 
     # A vertical list is not one paragraph: each list item is its own.
@@ -97,7 +115,7 @@ module SimpleEnglish
       TreeSitterLanguagePack.get_parser("markdown").parse(text).root_node
     end
 
-    private_class_method :strip_line, :node_rows, :blank_rows, :each_node,
-      :inside_list_item?, :parse
+    private_class_method :strip_line, :spaces_for, :utf16_length, :node_rows,
+      :blank_rows, :each_node, :inside_list_item?, :parse
   end
 end
