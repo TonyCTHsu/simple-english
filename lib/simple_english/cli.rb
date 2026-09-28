@@ -144,7 +144,9 @@ module SimpleEnglish
         )
       else
         results.each do |path, finding|
-          puts "#{path}:#{finding.line}: [#{finding.rule}] #{finding.message}"
+          location = "#{path}:#{finding.line}"
+          location << ":#{finding.column}" if finding.column
+          puts "#{location}: [#{finding.rule}] #{finding.message}"
         end
       end
     end

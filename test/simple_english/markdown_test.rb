@@ -36,6 +36,13 @@ class StripMarkdownTest < Minitest::Test
     refute_includes @stripped.lines.first, "#"
   end
 
+  def test_stripping_preserves_columns
+    source = "Use `don't` here.\n"
+    stripped = SimpleEnglish::Markdown.strip(source)
+    assert_equal 12, stripped.index("here")
+    assert_equal source.index("here"), stripped.index("here")
+  end
+
   def test_blanks_tilde_fences
     source = "~~~\nUse utilize here.\n~~~\nDone.\n"
     stripped = SimpleEnglish::Markdown.strip(source)
