@@ -90,6 +90,8 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ needs.release.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ghcr.io/tonycthsu/simple-english:latest,ghcr.io/tonycthsu/simple-english:v${{ needs.release.outputs.version }}
