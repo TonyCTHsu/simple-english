@@ -115,11 +115,30 @@ match your checkout.
 
 ## Releasing
 
-Push a tag like `v0.1.0` to publish the gem and the image. The gem
-version comes from `SimpleEnglish::VERSION`, so bump that first.
-The gem publishes through the `rubygems/release-gem` action. It
-runs `rake release`, sets up the trusted publisher for
-`TonyCTHsu/simple-english`, and awaits the RubyGems index. No API
-key is stored. The image publishes to
-`ghcr.io/tonycthsu/simple-english` with the
-tag name and `latest`.
+Releasing is one command, one commit, one merge.
+
+1. Run `rake 'release:prepare[0.1.1]'`. The task sets the gem version
+   and moves the `Unreleased` changelog entries under a dated
+   `## [0.1.1]` heading. It leaves a fresh, empty `Unreleased` above.
+2. Review the diff, then commit and open a pull request.
+3. Merge to `master`. CI runs first. Nothing publishes unless it is green.
+
+The merge pushes the release workflow over the bump itself: a commit
+on `master` that changes `lib/simple_english.rb` triggers it. The
+workflow reads the gem version, checks the changelog holds a section
+for it, then runs three jobs in order:
+
+- `release`: tag the commit, create the GitHub release from the
+  changelog body
+- `gem`: publish the gem to RubyGems through the trusted publisher
+  (no API key is stored)
+- `image`: build `ghcr.io/tonycthsu/simple-english` from the
+  published gem, tagged `v0.1.1` and `latest`
+
+Every user-visible change needs one line under `Unreleased` in
+`CHANGELOG.md` before it merges. Docs-only changes need no entry.
+The release workflow fails if the changelog section for the tagged
+version is missing, so a release cannot ship without notes.
+
+Do not push tags by hand. The workflow tags the release commit, so
+a hand-pushed tag can drift from the gem version.
