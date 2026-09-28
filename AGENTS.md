@@ -71,8 +71,11 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Tests
 
-- `rake check`: everything CI runs. standardrb, unit tests, rule
-  examples, corpus, self-lint
+- `rake check`: unit tests, rule examples, corpus, self-lint. CI adds
+  `standardrb`, `actionlint`, and `hadolint` steps on top of it.
+  standardrb stays out of the bundle: rubocop pins `json ~> 2.3`,
+  Ruby 4.0's default json gem is 3.x, and bundling it breaks
+  `bundle exec` on 4.0
 - `rake test`: unit tests only, no LanguageTool needed
 - `ruby test/examples_check.rb` and `ruby test/corpus_check.rb`: need
   LanguageTool (run `bin/se setup` first)
