@@ -20,7 +20,12 @@ module SimpleEnglish
       ".java" => "java",
       ".sh" => "bash",
       ".kt" => "kotlin",
-      ".cs" => "csharp"
+      ".cs" => "csharp",
+      ".cpp" => "cpp",
+      ".cc" => "cpp",
+      ".cxx" => "cpp",
+      ".hpp" => "cpp",
+      ".h" => "cpp"
     }.freeze
 
     module_function

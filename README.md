@@ -21,8 +21,8 @@ note.md:1:48-49: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relati
 ```
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
-TypeScript, Go, Rust, Java, C#, Kotlin, bash, and YAML. Output as plain
-text, JSON, or SARIF.
+TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
+plain text, JSON, or SARIF.
 
 ## The rules
 
