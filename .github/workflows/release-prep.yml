@@ -30,7 +30,6 @@ jobs:
           curl -sSfL -o changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_amd64.tar.gz"
           tar -xzf changie.tar.gz changie
           sudo install -m 0755 changie /usr/local/bin/changie
-          rm -f changie changie.tar.gz
           changie --version
 
       - name: Prepare the release
@@ -56,6 +55,11 @@ jobs:
           title: Release v${{ steps.version.outputs.version }}
           labels: release
           commit-message: Release v${{ steps.version.outputs.version }}
+          add-paths: |
+            .changes
+            CHANGELOG.md
+            Gemfile.lock
+            lib/simple_english/version.rb
           body-path: .changes/${{ steps.version.outputs.version }}.md
 
       - name: Enable auto-merge
