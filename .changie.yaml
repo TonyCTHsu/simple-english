@@ -1,5 +1,7 @@
 changesDir: .changes
 unreleasedDir: unreleased
+body:
+  block: true
 headerPath: header.tpl.md
 changelogPath: CHANGELOG.md
 versionExt: md

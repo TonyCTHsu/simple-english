@@ -8,9 +8,6 @@ on:
         required: false
         type: string
 
-env:
-  CHANGIE_VERSION: "1.26.0"
-
 jobs:
   prep:
     runs-on: ubuntu-24.04
@@ -25,12 +22,8 @@ jobs:
         with:
           ruby-version: "3.3"
 
-      - name: Install changie ${{ env.CHANGIE_VERSION }}
-        run: |
-          curl -sSfL -o changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_amd64.tar.gz"
-          tar -xzf changie.tar.gz changie
-          sudo install -m 0755 changie /usr/local/bin/changie
-          changie --version
+      - name: Install changie
+        uses: ./.github/actions/install-changie
 
       - name: Prepare the release
         env:

@@ -57,6 +57,18 @@ jobs:
           chmod +x hadolint
           ./hadolint Dockerfile
 
+      - name: Install changie
+        uses: ./.github/actions/install-changie
+
+      - name: Validate changie fragments
+        shell: bash
+        # changie next auto reads every fragment and fails on invalid YAML,
+        # but errors when no fragments exist, so skip the empty state
+        run: |
+          shopt -s nullglob
+          fragments=(.changes/unreleased/*.yaml)
+          [ ${#fragments[@]} -eq 0 ] || changie next auto
+
       - name: Changelog
         uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
         with:
