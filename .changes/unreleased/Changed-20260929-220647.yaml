@@ -1,3 +1,0 @@
-kind: Changed
-body: Pattern findings print exact ranges in text, JSON, and SARIF output
-time: 2026-09-29T22:06:47.121465+02:00

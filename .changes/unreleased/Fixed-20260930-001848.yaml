@@ -1,3 +1,0 @@
-kind: Fixed
-body: '`SE_ING_AFTER_COMMA` no longer flags `-ing` nouns in enumerations, like "(accounts, VPC, secrets, troubleshooting)"'
-time: 2026-09-30T00:18:48.072004+02:00
