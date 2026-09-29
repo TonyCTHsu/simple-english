@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0] - 2026-09-29
+
+### Added
+
+- Comment linting supports C++ files (`.cpp`, `.cc`, `.cxx`, `.hpp`, `.h`)
+
+### Changed
+
+- Pattern findings print exact ranges in text, JSON, and SARIF output
+
+### Fixed
+
+- `SE_ING_AFTER_COMMA` no longer flags `-ing` nouns in enumerations, like "(accounts, VPC, secrets, troubleshooting)"
+
 ## [0.2.0] - 2026-09-29
 
 ### Changed
