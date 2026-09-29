@@ -11,11 +11,13 @@ the slop it leaves behind. Every finding says what to write
 instead.
 
 ```console
-$ printf 'You should leverage this tool in order to make sure that your docs are readable.' > note.md
+$ printf "The config was written by setup — don't edit it; the daemon caches rules, making the first lint slow." > note.md
 $ se note.md
-note.md:1:5-11: [SE_MODAL_RESTRICTED] "should" - Use can, will, or must. State the requirement exactly.
-note.md:1:31-42: [SE_SLOP_IN_ORDER_TO] "in order to" - Write "to".
-note.md:1:12-20: [SE_SLOP_LEVERAGE] "leverage" - Write "use".
+note.md:1:12-26: [SE_ACTIVE_VOICE] "was written by" - Use the active voice. Say who does the action.
+note.md:1:73-81: [SE_ING_AFTER_COMMA] ", making" - Start a new sentence instead of the -ing phrase.
+note.md:1:37-40: [SE_NO_CONTRACTIONS] "n't" - Write the words in full. No contractions.
+note.md:1:33-34: [SE_NO_EMDASH] "—" - Write two sentences, or use a comma.
+note.md:1:48-49: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relation.
 ```
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
