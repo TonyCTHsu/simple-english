@@ -30,6 +30,7 @@ jobs:
           curl -sSfL -o changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_amd64.tar.gz"
           tar -xzf changie.tar.gz changie
           sudo install -m 0755 changie /usr/local/bin/changie
+          rm -f changie changie.tar.gz
           changie --version
 
       - name: Prepare the release
