@@ -16,8 +16,8 @@ repository.
    gh pr review release/vX.Y.Z --approve
    ```
 
-   The pull request merges itself once approved. It runs no CI;
-   the prep workflow validates the changelog. If auto-merge is off,
+   The pull request merges itself once approved. It runs no CI.
+   The prep workflow validates the changelog. If auto-merge is off,
    merge by hand with `gh pr merge release/vX.Y.Z --merge`.
 
 3. Publish:
