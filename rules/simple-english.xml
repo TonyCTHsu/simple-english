@@ -61,6 +61,9 @@
       <example type="incorrect">The tool runs<marker>, making</marker> it easy.</example>
       <example type="correct">The tool runs. It is easy.</example>
       <example type="correct">The walkthrough (accounts, VPC, secrets, troubleshooting) is in the guide.</example>
+      <example type="correct">The guide covers billing, troubleshooting, and support for each environment.</example>
+      <example type="correct">The guide covers billing, troubleshooting and support for each environment.</example>
+      <example type="correct">The guide covers billing, troubleshooting or support for each environment.</example>
     </rule>
 
     <rule id="SE_KEEP_THAT" name="make sure that">
