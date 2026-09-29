@@ -10,11 +10,15 @@ repository.
    gh run watch
    ```
 
-2. Merge, after CI passes:
+2. Approve. The pull request merges itself once CI passes:
 
    ```bash
-   gh pr merge release/vX.Y.Z --merge
+   gh pr review release/vX.Y.Z --approve
+   gh pr checks release/vX.Y.Z --watch
    ```
+
+   If auto-merge is off, merge by hand with
+   `gh pr merge release/vX.Y.Z --merge`.
 
 3. Publish:
 

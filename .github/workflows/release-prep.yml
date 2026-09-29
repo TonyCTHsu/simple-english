@@ -49,9 +49,19 @@ jobs:
           validation_depth: 100
 
       - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        id: cpr
         with:
           branch: release/v${{ steps.version.outputs.version }}
           title: Release v${{ steps.version.outputs.version }}
           labels: release
           commit-message: Release v${{ steps.version.outputs.version }}
           body-path: .changes/${{ steps.version.outputs.version }}.md
+
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          if ! gh pr merge "$PR" --auto --merge; then
+            echo "::warning::Auto-merge is unavailable. Merge the pull request by hand."
+          fi
