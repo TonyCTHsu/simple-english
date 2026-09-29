@@ -5,7 +5,6 @@
 ### Changed
 
 - Pattern findings print exact ranges in text, JSON, and SARIF output
-- The README example shows varied rule violations, not only word substitutions
 
 ## [0.2.0] - 2026-09-29
 
