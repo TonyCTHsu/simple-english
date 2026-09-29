@@ -16,6 +16,17 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - Never commit on the default branch. Prefix branch names with your
   own handle to show ownership. Release prep uses `release/vX.Y.Z`.
 
+## GitHub
+
+- Follow the repo's templates. Issues go through the forms in
+  `.github/ISSUE_TEMPLATE/`. Pull requests use
+  `.github/pull_request_template.md`. Fill their sections as written.
+  Do not bypass a template by passing `--body` to `gh`.
+- `CONTRIBUTING.md` holds the process: false findings get an issue
+  first, not a direct fix. Pull requests are drafts.
+- Changelog: add an `Unreleased` line to `CHANGELOG.md` only when the
+  tool's behavior changes. Documentation-only changes get no entry.
+
 ## Layout
 
 - `lib/simple_english.rb` is the composition root: `lint_text`, `corpus_test`
