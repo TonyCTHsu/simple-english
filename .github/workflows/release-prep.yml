@@ -54,6 +54,7 @@ jobs:
             Gemfile.lock
             lib/simple_english/version.rb
           body-path: .changes/${{ steps.version.outputs.version }}.md
+          sign-commits: true
 
       - name: Enable auto-merge
         env:
