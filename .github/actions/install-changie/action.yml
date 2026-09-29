@@ -1,0 +1,16 @@
+name: Install changie
+description: Download and install a pinned changie binary
+inputs:
+  version:
+    description: Changie version to install
+    default: 1.26.0
+runs:
+  using: composite
+  steps:
+    - name: Download changie ${{ inputs.version }}
+      shell: bash
+      run: |
+        curl -sSfL -o changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${{ inputs.version }}/changie_${{ inputs.version }}_linux_amd64.tar.gz"
+        tar -xzf changie.tar.gz changie
+        sudo install -m 0755 changie /usr/local/bin/changie
+        changie --version
