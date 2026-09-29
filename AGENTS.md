@@ -93,7 +93,7 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Config
 
-`.simple-english.yml` in the CWD. Keys: `ignore:` (path globs. `**` crosses directories and `*` does not) and `disabled-rules:` (rule IDs dropped from every file).
+`.simple-english.yml` in the CWD. Keys: `ignore:` (path globs. `**` crosses directories and `*` does not) and `disabled-rules:` (rule IDs dropped from every file). `rules:` names LanguageTool XML rule files, merged into the built-in set. The daemon reads them at start, from its start CWD.
 
 ## Tests
 

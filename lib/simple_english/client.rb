@@ -54,10 +54,10 @@ module SimpleEnglish
     # Pattern rules. `payload` is Markdown-stripped text (String) or an
     # AnnotatedText::Result (code comments): one payload interface,
     # #lt_params and #locate, either side of the daemon's LT request.
-    def check(payload, base_url: url)
+    def check(payload, base_url: url, enabled_rules: SimpleEnglish::LanguageTool.rule_ids)
       payload = to_payload(payload)
       params = {"language" => "en",
-                "enabledRules" => SimpleEnglish::LanguageTool.rule_ids.join(","),
+                "enabledRules" => Array(enabled_rules).join(","),
                 "enabledOnly" => "true"}.merge(payload.lt_params)
       response = post(URI("#{base_url}/v2/check"), params)
       parse_matches(JSON.parse(response.body).fetch("matches"), payload)

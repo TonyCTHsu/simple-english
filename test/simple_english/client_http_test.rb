@@ -31,6 +31,18 @@ class ClientHTTPTest < Minitest::Test
     end
   end
 
+  def test_check_sends_the_enabled_rules_param
+    seen = nil
+    with_stub_server("/v2/check" => lambda do |body|
+      seen = URI.decode_www_form(body).to_h
+      LT_BODY
+    end) do |url|
+      SimpleEnglish::Client.check("text", base_url: url, enabled_rules: %w[A B])
+      assert_equal "A,B", seen["enabledRules"]
+      assert_equal "true", seen["enabledOnly"]
+    end
+  end
+
   def test_lint_returns_nil_when_daemon_is_down
     assert_nil SimpleEnglish::Client.lint("text",
       base_url: "http://localhost:1")

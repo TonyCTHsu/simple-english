@@ -54,6 +54,29 @@ class EngineLintTest < Minitest::Test
     end
   end
 
+  def test_lint_sends_user_rule_ids_from_the_cwd_config
+    Dir.mktmpdir do |dir|
+      File.write(File.join(dir, "team.xml"), <<~XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rules lang="en">
+          <rule id="MY_TEAM_RULE" name="No foobar"/>
+        </rules>
+      XML
+      File.write(File.join(dir, ".simple-english.yml"), "rules: [team.xml]\n")
+      seen = nil
+      Dir.chdir(dir) do
+        server = StubHTTPServer.new("/v2/check" => lambda do |body|
+          seen = URI.decode_www_form(body).to_h["enabledRules"].to_s.split(",")
+          LT_BODY
+        end)
+        SimpleEnglish::Engine.lint("Don't.\n", base_url: server.url)
+        server.shutdown
+      end
+      assert_includes seen, "SE_NO_CONTRACTIONS"
+      assert_includes seen, "MY_TEAM_RULE"
+    end
+  end
+
   def gem_available?
     require "tree_sitter_language_pack"
     true

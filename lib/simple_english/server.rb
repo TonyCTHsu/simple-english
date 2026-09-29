@@ -12,6 +12,7 @@ require "tempfile"
 require "tmpdir"
 
 require_relative "install"
+require_relative "config"
 
 module SimpleEnglish
   module Server
@@ -29,12 +30,30 @@ module SimpleEnglish
     module_function
 
     # LanguageTool's HTTP server has no --rulefile flag. Custom rules
-    # load from the classpath at this exact path.
-    def stage_rules(dir)
+    # load from the classpath at this exact path. User rule files
+    # (BYOR, from .simple-english.yml `rules:`) merge into the same
+    # staged file: LT loads exactly one grammar_custom.xml per language.
+    def stage_rules(dir, user_rules: [])
       target = File.join(dir, "org/languagetool/rules/en/grammar_custom.xml")
       FileUtils.mkdir_p(File.dirname(target))
-      FileUtils.cp(SimpleEnglish::LanguageTool::RULES_FILE, target)
+      File.write(target, merged_rules(user_rules))
       target
+    end
+
+    # One <rules> root holding the children of the built-in file and
+    # every user file. REXML (stdlib) rejects malformed XML here, at
+    # boot, with the file named: far clearer than the JVM's boot log.
+    def merged_rules(user_rules)
+      require "rexml/document"
+      root = REXML::Element.new("rules")
+      root.add_attribute("lang", "en")
+      [SimpleEnglish::LanguageTool::RULES_FILE, *user_rules].each do |path|
+        doc = REXML::Document.new(File.read(path))
+        doc.root.children.each { |child| root.add(child) }
+      rescue REXML::ParseException, SystemCallError => e
+        raise ServerError, "custom rules file #{path}: #{e.message}"
+      end
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n#{root}"
     end
 
     # Probes both loopback families: on IPv6-first resolvers a "localhost"
@@ -57,7 +76,9 @@ module SimpleEnglish
       # inner port raises in milliseconds instead of timing out later.
       assert_port_free(port + 1)
       rules_dir = Dir.mktmpdir("se-rules")
-      stage_rules(rules_dir)
+      # BYOR rules come from the daemon's start directory, not the
+      # lint caller's: the staged rule set is frozen at boot.
+      stage_rules(rules_dir, user_rules: Config.load[:rules])
       # The inner JVM's stderr goes to a file so failure messages can quote
       # its first line. Only an explicitly opened dev log (a File) is reused
       # for that. $stderr reports path "<STDERR>", so it creates a file

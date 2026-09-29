@@ -136,8 +136,13 @@ module SimpleEnglish
       end
     end
 
-    def rule_ids
-      File.read(RULES_FILE).scan(/<rule(?:group)? id="(\w+)"/).flatten
+    # All rule IDs in RULES_FILE plus any extra rule files. Order is
+    # stable: the built-in rules load first, user rules follow in config
+    # order, duplicates drop.
+    def rule_ids(paths = [RULES_FILE])
+      Array(paths).flat_map do |path|
+        File.read(path).scan(/<rule(?:group)? id=(["'])(\w+)\1/).map { |_, id| id }
+      end.uniq
     end
   end
 end
