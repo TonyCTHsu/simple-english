@@ -9,7 +9,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   the daemon HTTP API
 - `docs/RULES.md` lists every rule in prose. Regenerate it with
   `bin/render-rules` after a rule change.
-- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules, container)
+- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules, container).
+  `docs/RELEASING.md` holds the release flow (prepare, merge, publish)
 
 ## Branches
 
@@ -24,12 +25,17 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   Do not bypass a template by passing `--body` to `gh`.
 - `CONTRIBUTING.md` holds the process: false findings get an issue
   first, not a direct fix. Pull requests are drafts.
-- Changelog: add an `Unreleased` line to `CHANGELOG.md` only when the
-  tool's behavior changes. Documentation-only changes get no entry.
+- Changelog: run `changie new` and commit the fragment under `.changes/unreleased/`
+  only when the tool's behavior changes. Documentation-only changes get no entry.
+  The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
+  a major bump in `changie next auto`. Breaking means the change breaks
+  the CLI, the config, or an output format.
 
 ## Layout
 
 - `lib/simple_english.rb` is the composition root: `lint_text`, `corpus_test`
+- `lib/simple_english/version.rb` holds the gem version, and a version bump
+  is the only change that belongs in it
 - `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
   `annotated_text.rb`, `suppressions.rb`, `config.rb`, `client.rb`, `cli.rb` are
   separate modules with small public interfaces
@@ -61,7 +67,10 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   bundled gem alone is not enough, because `bundle exec` cannot
   require a bundled gem that the lockfile omits. `minitest-mock`
   restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
-  Both are dev-only, in the gemspec.
+  Both are dev-only, in the gemspec. `changie` (a brew binary, not
+  a gem) batches change fragments into `CHANGELOG.md` at release
+  time (2026-09-29). Pull requests add fragments, not changelog
+  lines, so they never conflict.
 - `Markdown.strip` must keep the line count identical to the source. Findings cite
   original line numbers, so stripping changes must preserve them.
 - Ruby 3.3 minimum. CI enforces it. The

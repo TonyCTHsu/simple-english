@@ -2,8 +2,10 @@
 # The corpus before files and the rendered rule examples break the
 # rules on purpose, and tmp/ holds the downloaded LanguageTool dist.
 # vendor/ holds the bundled gems under CI's bundler-cache.
+# .changes/ holds changie fragments that mirror the entries verbatim.
 ignore:
   - test/corpus/**
   - docs/RULES.md
   - tmp/**
   - vendor/**
+  - .changes/**

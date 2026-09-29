@@ -13,6 +13,12 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.requirements = ["Java 11 or newer (`se setup` locates it)"]
 
+  spec.metadata = {
+    "homepage_uri" => spec.homepage,
+    "source_code_uri" => spec.homepage,
+    "changelog_uri" => "#{spec.homepage}/blob/v#{spec.version}/CHANGELOG.md"
+  }
+
   spec.files = Dir["lib/**/*.rb"] + Dir["rules/*.xml"] +
     ["bin/se", "LICENSE", "README.md", "docs/RULES.md"]
   spec.bindir = "bin"

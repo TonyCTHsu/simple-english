@@ -115,40 +115,6 @@ match your checkout.
 
 ## Releasing
 
-Releasing is one command, one merge, one click.
-
-1. Run `rake 'release:prepare[0.1.1]'` on a clean tree. The task
-   sets the gem version and moves the `Unreleased` changelog entries
-   under a dated `## [0.1.1]` heading. It leaves a fresh empty
-   `Unreleased` above.
-2. Commit the diff, open a pull request, and merge it. CI runs first.
-3. Open the `Release` workflow on GitHub and run it on `master`.
-
-The release workflow starts only by hand, from the "Run workflow"
-button. It reads the gem version and checks the changelog holds a
-section for it, then runs three jobs in order:
-
-- `release`: tag the release commit and create the GitHub release
-  from the changelog body. One step does both, and it skips what
-  already exists.
-- `gem`: publish the gem to RubyGems through the trusted publisher
-  (no API key is stored)
-- `image`: build `ghcr.io/tonycthsu/simple-english` from the
-  published gem, tagged `v0.1.1` and `latest`
-
-Every behavior change needs one line under `Unreleased` in
-`CHANGELOG.md` before it merges. Documentation-only changes need no
-entry.
-The release workflow fails if the changelog section for the tagged
-version is missing, so a release cannot ship without notes.
-
-Version numbers follow semantic versioning. A `Fixed` entry bumps
-the patch. An `Added` or `Changed` entry bumps the minor. A change
-that breaks the CLI, the config, or an output format bumps the
-major.
-
-Do not push tags by hand. The workflow tags the release commit, so
-a hand-pushed tag can drift from the gem version.
-
-The version lives in `lib/simple_english/version.rb`, and a version
-bump is the only change that belongs in it.
+Releasing is a command-line flow with `gh`. It folds the changie
+fragments into a release, merges the version bump, and publishes
+the gem and the image. See `docs/RELEASING.md`.

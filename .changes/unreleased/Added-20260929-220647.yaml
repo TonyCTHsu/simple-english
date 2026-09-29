@@ -1,0 +1,3 @@
+kind: Added
+body: Comment linting supports C++ files (`.cpp`, `.cc`, `.cxx`, `.hpp`, `.h`)
+time: 2026-09-29T22:06:47.115311+02:00

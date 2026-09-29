@@ -15,27 +15,26 @@ task :lint do
 end
 
 namespace :release do
-  desc "Bump the version and move the Unreleased entries into a dated
- heading. Usage: rake 'release:prepare[0.1.1]'"
+  desc "Fold the change fragments into a release. Usage: rake 'release:prepare[0.1.1]'
+ The version comes from `changie next auto` unless you pass one."
   task :prepare, [:version] do |_t, args|
-    version = args[:version] || abort("usage: rake 'release:prepare[0.1.1]'")
+    abort "error: changie is missing. Install it with `brew install changie`." unless
+      system("changie --version", out: File::NULL, err: File::NULL)
+    abort "error: no change fragments. Run `changie new` first." if Dir[".changes/unreleased/*.yaml"].empty?
+
+    version = args[:version].to_s.empty? ? `changie next auto`.chomp : args[:version]
     abort "error: #{version} is not a X.Y.Z version" unless version.match?(/\A\d+\.\d+\.\d+\z/)
 
     version_file = "lib/simple_english/version.rb"
     source = File.read(version_file)
     current = source[/VERSION = "([^"]+)"/, 1]
     abort "error: VERSION is already #{current}" if current == version
+    abort "error: .changes/#{version}.md already exists" if File.exist?(".changes/#{version}.md")
 
-    changelog = File.read("CHANGELOG.md")
-    abort "error: CHANGELOG.md already holds #{version}" if changelog.include?("## [#{version}]")
-    unreleased = changelog.split("## [Unreleased]", 2).fetch(1).split(/^## /, 2).first
-    abort "error: Unreleased is empty. Add entries before you prepare a release." unless unreleased.match?(/^- /m)
-
+    sh "changie batch #{version}"
+    sh "changie merge"
     File.write(version_file, source.sub(/VERSION = "[^"]+"/, %(VERSION = "#{version}")))
-    File.write("CHANGELOG.md", changelog.sub(
-      "## [Unreleased]",
-      "## [Unreleased]\n\n## [#{version}] - #{Time.now.strftime("%Y-%m-%d")}"
-    ))
+    sh "bundle lock"
     puts "Release #{version} prepared. Review, then commit."
   end
 end
