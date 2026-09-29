@@ -1,0 +1,57 @@
+name: Release prep
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Override the computed version, like 1.0.0. Leave empty to let changie pick."
+        required: false
+        type: string
+
+env:
+  CHANGIE_VERSION: "1.26.0"
+
+jobs:
+  prep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Install changie ${{ env.CHANGIE_VERSION }}
+        run: |
+          curl -sSfL -o changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_amd64.tar.gz"
+          tar -xzf changie.tar.gz changie
+          sudo install -m 0755 changie /usr/local/bin/changie
+          changie --version
+
+      - name: Prepare the release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: rake "release:prepare[$VERSION]"
+
+      - name: Read the release version
+        id: version
+        run: echo "version=$(ruby -Ilib -rsimple_english/version -e 'print SimpleEnglish::VERSION')" >> "$GITHUB_OUTPUT"
+
+      - uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
+        with:
+          path: ./CHANGELOG.md
+          version: ${{ steps.version.outputs.version }}
+          validation_level: error
+          validation_depth: 100
+
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: release/v${{ steps.version.outputs.version }}
+          title: Release v${{ steps.version.outputs.version }}
+          commit-message: Release v${{ steps.version.outputs.version }}
+          draft: true
+          body-path: .changes/v${{ steps.version.outputs.version }}.md
