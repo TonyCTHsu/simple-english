@@ -13,14 +13,18 @@ repository.
 2. Approve:
 
    ```bash
-   gh pr review release/vX.Y.Z --approve
+   gh pr review "$(gh pr list --label release --state open --json headRefName --jq '.[0].headRefName')" --approve
    ```
 
-   The pull request merges itself once approved. It runs no CI.
-   The prep workflow validates the changelog. If auto-merge is off,
-   merge by hand with `gh pr merge release/vX.Y.Z --merge`.
+   If auto-merge is off, merge by hand with the same selector and `--merge`:
+
+   ```bash
+   gh pr merge "$(gh pr list --label release --state open --json headRefName --jq '.[0].headRefName')" --merge
+   ```
 
 3. Publish:
+
+   Wait for CI on master to finish before publishing.
 
    ```bash
    gh workflow run release.yml --ref master
