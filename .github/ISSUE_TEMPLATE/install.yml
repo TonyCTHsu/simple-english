@@ -1,0 +1,25 @@
+name: Installation problem
+description: The tool does not install, set up, or start.
+labels: ["bug", "installation"]
+body:
+  - type: textarea
+    id: tried
+    attributes:
+      label: What did you try?
+      description: The command you ran, for example `se setup` or the Docker command.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What happened?
+      description: Paste the full output or error message.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Ruby version, Java version, and how you installed the tool (gem or Docker image).
+    validations:
+      required: true
