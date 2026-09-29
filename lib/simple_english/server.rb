@@ -12,7 +12,10 @@ require "tempfile"
 require "tmpdir"
 
 require_relative "install"
+require_relative "client"
 require_relative "config"
+require_relative "fingerprint"
+require_relative "version"
 
 module SimpleEnglish
   module Server
@@ -61,34 +64,82 @@ module SimpleEnglish
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n#{root}"
     end
 
-    private_class_method :merged_rules
-
     # Probes both loopback families: on IPv6-first resolvers a "localhost"
     # probe falls back to IPv4 and misses an IPv6 listener.
     def assert_port_free(port)
+      raise PortInUse, port unless port_free?(port)
+    end
+
+    def port_free?(port)
       ["127.0.0.1", "::1"].each do |address|
         TCPServer.new(address, port).close
       rescue Errno::EADDRNOTAVAIL
+        # One family may be missing on this host: skip it and probe
+        # the other. A rescue at method scope returns here and never
+        # probes the second family.
         next
       end
+      true
     rescue Errno::EADDRINUSE
-      raise PortInUse, port
+      false
     rescue Errno::EACCES
       raise ServerError, "port #{port} cannot be bound. Use a port above 1024."
     end
 
+    # `se serve` over a live daemon (gem upgrade, BYOR change): when
+    # one of our daemons holds the port (it answers the
+    # handshake), stop it and take over the port. A service that
+    # does not answer the handshake, pre-handshake daemon included,
+    # keeps the PortInUse error: those need a manual look.
+    def takeover(port)
+      daemon = Client.info(base_url: "http://localhost:#{port}")
+      return if daemon.nil?
+      stop(daemon["pid"])
+      # The outer listener closes first. The inner JVM takes seconds
+      # longer. Both ports must free, or the next boot hits the inner
+      # port and dies.
+      deadline = Time.now + 10
+      sleep 0.2 until Time.now > deadline ||
+          (Client.info(base_url: "http://localhost:#{port}").nil? &&
+          port_free?(port + 1))
+    end
+
+    # Graceful only. SIGKILL skips the TERM trap and the inner JVM
+    # teardown. The orphan still holds port + 1 and breaks the next
+    # boot. The pid comes off the wire, so only a positive integer is
+    # TERMed: 0 signals the caller's own process group, a negative
+    # one every process the user may signal.
+    def stop(pid)
+      return nil unless pid.is_a?(Integer) && pid > 1
+      Process.kill("TERM", pid)
+    rescue Errno::ESRCH, Errno::EPERM
+      nil
+    end
+
     def start(port: Client::DEFAULT_PORT, install: Install.from_env, log: $stderr)
-      assert_port_free(port)
-      # The inner JVM lives on port + 1. Guard it too so an occupied
-      # inner port raises in milliseconds instead of timing out later.
-      assert_port_free(port + 1)
       rules_dir = Dir.mktmpdir("se-rules")
       # BYOR rules come from the daemon's start directory, not the
       # lint caller's: the staged rule set is frozen at boot. The
       # enabled IDs come from the staged file, so what LT loads and
       # what each request enables can never diverge.
-      staged = stage_rules(rules_dir, user_rules: Config.load[:rules])
+      user_rules = Config.load[:rules]
+      staged = stage_rules(rules_dir, user_rules: user_rules)
       enabled_rules = SimpleEnglish::LanguageTool.rule_ids([staged])
+      daemon_info = {"version" => VERSION, "pid" => Process.pid,
+                     "gem_digest" => Fingerprint.gem,
+                     "rules_digest" => Fingerprint.sha(File.read(staged))}
+      # Preflight everything the replacement needs before the
+      # takeover stops the old daemon: a reload that cannot boot must
+      # leave the running daemon alive.
+      unless File.exist?(install.server_jar) && install.java?
+        raise Install::SetupError,
+          install.java? ? install.setup_error : install.java_message
+      end
+      takeover(port)
+      assert_port_free(port)
+      # The inner JVM lives on port + 1. Guard it too so an occupied
+      # inner port raises in milliseconds instead of timing out later.
+      assert_port_free(port + 1)
       # The inner JVM's stderr goes to a file so failure messages can quote
       # its first line. Only an explicitly opened dev log (a File) is reused
       # for that. $stderr reports path "<STDERR>", so it creates a file
@@ -136,7 +187,7 @@ module SimpleEnglish
         client = server.accept
         Thread.new(client) { |c|
           HTTP.handle_client(c, port: port,
-            enabled_rules: enabled_rules)
+            enabled_rules: enabled_rules, info: daemon_info)
         }
       rescue IOError, Errno::EBADF
         # A trap or the inner-death monitor closed the listener. This

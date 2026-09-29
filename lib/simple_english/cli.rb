@@ -62,6 +62,12 @@ module SimpleEnglish
       results.empty? ? 0 : 1
     end
 
+    desc "version", "Print the gem version. The container image tag is v plus this."
+    def version
+      puts SimpleEnglish::VERSION
+      0
+    end
+
     desc "serve", "Run the lint daemon in the foreground"
     method_option :port, type: :numeric, default: SimpleEnglish::Client::DEFAULT_PORT,
       desc: "Port to listen on"

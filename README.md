@@ -68,7 +68,9 @@ docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
 Or keep the daemon in a container and lint through it:
 
 ```bash
-docker run -d --name se-daemon -p 8181:8181 ghcr.io/tonycthsu/simple-english:latest serve
+se version
+# 0.3.0
+docker run -d --name se-daemon -p 8181:8181 ghcr.io/tonycthsu/simple-english:v$(se version) serve
 SE_SERVER_URL=http://localhost:8181 se lint docs/
 ```
 
@@ -161,7 +163,9 @@ rules:
 [built-in set](rules/simple-english.xml). The rules merge into the
 built-in set, so your rules lint beside the standard ones. The daemon
 reads the rule files once, when it starts, from the directory it
-starts in. Rule changes need a daemon restart: `se serve` again.
+starts in. When you change your rules, run `se serve` again: it
+stops the old daemon and reloads. The CLI also warns at lint time
+when the daemon staged different rules than your project.
 
 Suppression and config work on your rules too:
 
@@ -209,6 +213,13 @@ curl -d "text=Don't do this." http://localhost:8181/lint
 ```
 
 The full wire format: [docs/DAEMON.md](docs/DAEMON.md).
+
+The CLI checks the daemon at every lint. When a new gem release
+changed the lint code, the first lint after the update restarts the
+daemon (about 15 s, once). When your own rule files changed instead,
+the lint prints a warning and you run `se serve` to reload. A daemon
+behind `SE_SERVER_URL` is never restarted for you: the CLI warns
+instead, because someone else may own it.
 
 ## Scope
 

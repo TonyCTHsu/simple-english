@@ -2,6 +2,7 @@
 
 require "tmpdir"
 require "json"
+require "fileutils"
 require "minitest/autorun"
 require "minitest/mock"
 require "socket"
@@ -91,5 +92,17 @@ end
 def in_tmpdir(chdir: false)
   Dir.mktmpdir do |dir|
     chdir ? Dir.chdir(dir) { yield dir } : yield(dir)
+  end
+end
+
+# An Install whose server jar is an empty file: passes Server.start's
+# preflight with no LanguageTool cache needed.
+# ponytail: fake jar. If the preflight grows checks, grow this too.
+def fake_install
+  in_tmpdir do |dir|
+    lt = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
+    FileUtils.mkdir_p(lt)
+    FileUtils.touch(File.join(lt, "languagetool-server.jar"))
+    yield SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
   end
 end

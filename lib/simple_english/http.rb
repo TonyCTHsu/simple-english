@@ -44,14 +44,19 @@ module SimpleEnglish
 
     # One thread per request: lint can take seconds, so a slow request
     # must not block readiness probes or other clients. The enabled
-    # rule IDs are frozen at boot (Server.start) and passed through.
-    def handle_client(client, port:, enabled_rules:)
+    # rule IDs and the handshake info are frozen at boot (Server.start)
+    # and passed through.
+    def handle_client(client, port:, enabled_rules:, info: {})
       request = read_request(client)
       if request.nil?
         # Malformed request or immediate hangup: nothing to answer.
       elsif request[:method] == "HEAD"
         # Client.up? does http.head("/") and treats any response as up.
         write_response(client, status: 200, body: "")
+      elsif request[:method] == "GET" && request[:path] == "/"
+        # The handshake: the daemon reports its version, pid, and the
+        # gem/rules digests the client compares against its own.
+        write_response(client, status: 200, body: JSON.generate(info))
       elsif request[:method] == "POST" && request[:path] == "/lint"
         begin
           # Ruling 2026-09-24: Client.lint posts form-encoded data, so the

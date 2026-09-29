@@ -75,4 +75,34 @@ class ClientHTTPTest < Minitest::Test
       assert SimpleEnglish::Client.up?(base_url: url)
     end
   end
+
+  def test_info_reads_the_daemon_handshake
+    info = {"version" => "0.2.0", "pid" => 42,
+            "gem_digest" => "a" * 64, "rules_digest" => "b" * 64}
+    with_stub_server("/" => JSON.generate(info)) do |url|
+      assert_equal info, SimpleEnglish::Client.info(base_url: url)
+    end
+  end
+
+  def test_info_is_nil_for_a_non_handshake_responder
+    with_stub_server("/" => "not a handshake") do |url|
+      assert_nil SimpleEnglish::Client.info(base_url: url)
+    end
+  end
+
+  def test_info_is_nil_when_daemon_is_down
+    assert_nil SimpleEnglish::Client.info(base_url: "http://localhost:1")
+  end
+
+  def test_info_is_nil_when_the_connection_dies_mid_poll
+    # A daemon being TERMed resets or closes the connection: the
+    # poll must return nil, not raise into the restart loop.
+    server = TCPServer.new("127.0.0.1", 0)
+    port = server.addr[1]
+    closer = Thread.new { server.accept.close }
+    assert_nil SimpleEnglish::Client.info(base_url: "http://127.0.0.1:#{port}")
+  ensure
+    closer&.join(1)
+    server&.close
+  end
 end
