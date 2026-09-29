@@ -70,10 +70,25 @@ class ExtractorTest < Minitest::Test
     assert_equal ["// Ensure that the value stays correct."], texts
   end
 
+  def test_cpp_line_and_block_comments
+    source = <<~SRC
+      // Ensure that the value stays correct.
+      int x = 1;
+      /* Free the handle after the response is send. */
+      /** Docs live here. */
+    SRC
+    texts = SimpleEnglish::Extractor.comment_spans(source, "cpp").map(&:text)
+    assert_equal ["// Ensure that the value stays correct.",
+      "/* Free the handle after the response is send. */",
+      "/** Docs live here. */"], texts
+  end
+
   def test_language_for_registry
     assert_equal "python", SimpleEnglish::Extractor.language_for("a/b/c.py")
     assert_equal "yaml", SimpleEnglish::Extractor.language_for("config.yml")
     assert_nil SimpleEnglish::Extractor.language_for("notes.md")
     assert_equal "csharp", SimpleEnglish::Extractor.language_for("src/Cs.cs")
+    assert_equal "cpp", SimpleEnglish::Extractor.language_for("src/thing.cpp")
+    assert_equal "cpp", SimpleEnglish::Extractor.language_for("include/header.h")
   end
 end

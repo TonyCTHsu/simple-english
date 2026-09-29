@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Comment linting supports C++ files (`.cpp`, `.cc`, `.cxx`, `.hpp`, `.h`)
+
 ### Changed
 
 - Pattern findings print exact ranges in text, JSON, and SARIF output
