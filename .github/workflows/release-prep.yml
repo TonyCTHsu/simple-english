@@ -52,6 +52,6 @@ jobs:
         with:
           branch: release/v${{ steps.version.outputs.version }}
           title: Release v${{ steps.version.outputs.version }}
+          labels: release
           commit-message: Release v${{ steps.version.outputs.version }}
-          draft: true
           body-path: .changes/v${{ steps.version.outputs.version }}.md

@@ -28,11 +28,14 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - Changelog: run `changie new` and commit the fragment under `.changes/unreleased/`
   only when the tool's behavior changes. Documentation-only changes get no entry.
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
-  a major bump in `changie next auto`.
+  a major bump in `changie next auto`. Breaking means the change breaks
+  the CLI, the config, or an output format.
 
 ## Layout
 
 - `lib/simple_english.rb` is the composition root: `lint_text`, `corpus_test`
+- `lib/simple_english/version.rb` holds the gem version, and a version bump
+  is the only change that belongs in it
 - `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
   `annotated_text.rb`, `suppressions.rb`, `config.rb`, `client.rb`, `cli.rb` are
   separate modules with small public interfaces
