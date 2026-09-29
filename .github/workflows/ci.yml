@@ -57,6 +57,15 @@ jobs:
           chmod +x hadolint
           ./hadolint Dockerfile
 
+      - name: Validate changie fragments
+        env:
+          CHANGIE_VERSION: 1.26.0
+        run: |
+          curl -sSfL -o changie.tar.gz "https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_amd64.tar.gz"
+          tar -xzf changie.tar.gz changie
+          sudo install -m 0755 changie /usr/local/bin/changie
+          changie next auto
+
       - name: Changelog
         uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
         with:
