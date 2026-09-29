@@ -136,8 +136,9 @@ section for it, then runs three jobs in order:
 - `image`: build `ghcr.io/tonycthsu/simple-english` from the
   published gem, tagged `v0.1.1` and `latest`
 
-Every user-visible change needs one line under `Unreleased` in
-`CHANGELOG.md` before it merges. Docs-only changes need no entry.
+Every behavior change needs one line under `Unreleased` in
+`CHANGELOG.md` before it merges. Documentation-only changes need no
+entry.
 The release workflow fails if the changelog section for the tagged
 version is missing, so a release cannot ship without notes.
 
