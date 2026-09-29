@@ -34,6 +34,7 @@ namespace :release do
     sh "changie batch #{version}"
     sh "changie merge"
     File.write(version_file, source.sub(/VERSION = "[^"]+"/, %(VERSION = "#{version}")))
+    sh "bundle lock"
     puts "Release #{version} prepared. Review, then commit."
   end
 end
