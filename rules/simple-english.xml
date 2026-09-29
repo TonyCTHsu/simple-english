@@ -56,10 +56,14 @@
     </rule>
 
     <rule id="SE_ING_AFTER_COMMA" name="No -ing after a comma">
-      <pattern><token>,</token><token postag="VBG"/></pattern>
+      <pattern><token>,</token><token postag="VBG"><exception scope="next" regexp="yes">[,)]|and|or</exception></token></pattern>
       <message>Start a new sentence instead of the -ing phrase.</message>
       <example type="incorrect">The tool runs<marker>, making</marker> it easy.</example>
       <example type="correct">The tool runs. It is easy.</example>
+      <example type="correct">The walkthrough (accounts, VPC, secrets, troubleshooting) is in the guide.</example>
+      <example type="correct">The guide covers billing, troubleshooting, and support for each environment.</example>
+      <example type="correct">The guide covers billing, troubleshooting and support for each environment.</example>
+      <example type="correct">The guide covers billing, troubleshooting or support for each environment.</example>
     </rule>
 
     <rule id="SE_KEEP_THAT" name="make sure that">
