@@ -3,14 +3,21 @@
 simple_english is a small project. Pull requests are limited to
 collaborators. You can help in other ways.
 
-## Report a bug or a false positive
+## Report a problem
 
-A false positive is a finding that flags correct text. Open an issue at
-https://github.com/TonyCTHsu/simple-english/issues. Include:
+Open an issue at https://github.com/TonyCTHsu/simple-english/issues.
+GitHub shows a form for each kind of problem. Pick the one that matches
+yours:
 
-- The text that triggered the finding.
-- The rule ID from the finding, for example `SE_SLOP_LEVERAGE`.
-- The output you expected instead.
+- Installation problem: the tool does not install or start.
+- Wrong finding: a rule flags correct text, or it does not flag incorrect
+  text.
+- Other bug: the tool behaves in a wrong way. The problem is not an
+  install failure and not a rule finding.
+
+A false positive is a finding that flags correct text. A false negative
+is incorrect text that the tool does not flag. Each form tells you what
+to include. If no form fits, open a blank issue.
 
 ## Suggest a rule or a feature
 
