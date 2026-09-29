@@ -13,7 +13,7 @@ repository.
 2. Merge, after CI passes:
 
    ```bash
-   gh pr merge release/v0.1.1 --merge
+   gh pr merge release/vX.Y.Z --merge
    ```
 
 3. Publish:

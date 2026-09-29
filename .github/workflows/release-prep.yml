@@ -54,4 +54,4 @@ jobs:
           title: Release v${{ steps.version.outputs.version }}
           labels: release
           commit-message: Release v${{ steps.version.outputs.version }}
-          body-path: .changes/v${{ steps.version.outputs.version }}.md
+          body-path: .changes/${{ steps.version.outputs.version }}.md
