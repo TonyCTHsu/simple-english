@@ -1,0 +1,34 @@
+name: Wrong finding
+description: A rule flags correct text, or it does not flag incorrect text.
+labels: ["bug", "rule"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of finding is wrong?
+      options:
+        - False positive (correct text was flagged)
+        - False negative (incorrect text was not flagged)
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: What did the linter report?
+      description: Paste the finding output as-is. It holds the rule ID. For a false negative, write "no finding".
+      placeholder: "note.md:1:5-11: [SE_MODAL_RESTRICTED] \"should\" - Use can, will, or must. State the requirement exactly."
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: What text did you lint?
+      description: The smallest Markdown or code snippet that reproduces the result.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+    validations:
+      required: true
