@@ -122,6 +122,7 @@ module SimpleEnglish
       when "json"
         puts JSON.pretty_generate(results.map do |path, finding|
           {"path" => path, "line" => finding.line, "column" => finding.column,
+           "end_line" => finding.end_line, "end_column" => finding.end_column,
            "rule" => finding.rule, "message" => finding.message}
         end)
       when "sarif"
@@ -129,10 +130,17 @@ module SimpleEnglish
           "version" => "2.1.0",
           "$schema" => "https://json.schemastore.org/sarif-2.1.0.json",
           "runs" => [{
+            "columnKind" => "utf16CodeUnits",
             "tool" => {"driver" => {"name" => "se"}},
             "results" => results.map do |path, finding|
               region = {"startLine" => finding.line}
-              region["startColumn"] = finding.column if finding.column
+              if finding.column
+                region["startColumn"] = finding.column
+                if finding.end_line && finding.end_column
+                  region["endLine"] = finding.end_line
+                  region["endColumn"] = finding.end_column
+                end
+              end
               {"ruleId" => finding.rule, "level" => "error",
                "message" => {"text" => finding.message},
                "locations" => [{"physicalLocation" => {
@@ -145,7 +153,14 @@ module SimpleEnglish
       else
         results.each do |path, finding|
           location = "#{path}:#{finding.line}"
-          location << ":#{finding.column}" if finding.column
+          if finding.column
+            location += ":#{finding.column}"
+            if finding.end_line && finding.end_column
+              finish = (finding.end_line == finding.line) ? finding.end_column :
+                "#{finding.end_line}:#{finding.end_column}"
+              location += "-#{finish}"
+            end
+          end
           puts "#{location}: [#{finding.rule}] #{finding.message}"
         end
       end

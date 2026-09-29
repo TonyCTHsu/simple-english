@@ -10,8 +10,7 @@ module SimpleEnglish
       end
 
       def locate(utf16_offset)
-        [Client.offset_to_line(text, utf16_offset),
-          Client.offset_to_column(text, utf16_offset)]
+        Client.offset_to_position(text, utf16_offset)
       end
     end
   end

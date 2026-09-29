@@ -6,7 +6,7 @@ require "tmpdir"
 require_relative "../../lib/simple_english"
 
 # Live LanguageTool round trip: comment -> AnnotatedText -> /v2/check ->
-# line and column. Needs java and the LanguageTool cache (CI has both).
+# source range. Needs java and the LanguageTool cache (CI has both).
 # Run `bin/se setup` to fill the cache.
 class RoundtripTest < Minitest::Test
   FIXTURE = "# Load the config from the path\n" \
@@ -39,7 +39,7 @@ class RoundtripTest < Minitest::Test
     flunk "inner LT server never became ready"
   end
 
-  def test_se_no_contractions_lands_on_line_3_column_14
+  def test_se_no_contractions_reports_the_exact_range
     skip_unless_lt
     pid = nil
     Dir.mktmpdir do |rules_dir|
@@ -53,11 +53,11 @@ class RoundtripTest < Minitest::Test
       findings = SimpleEnglish::Client.check(result, base_url: "http://localhost:#{port}")
       finding = findings.find { |f| f.rule == "SE_NO_CONTRACTIONS" }
       refute_nil finding, findings.map(&:rule).inspect
-      assert_equal 3, finding.line
       # LT splits "didn't" into the tokens "did" and "n't". se: ignore
       # The match region is "n't". se: ignore
       # whose n is column 17 on line 3.
-      assert_equal 17, finding.column
+      assert_equal [3, 17], [finding.line, finding.column]
+      assert_equal [3, 20], [finding.end_line, finding.end_column]
     ensure
       Process.kill("TERM", pid) if pid
       Process.wait(pid) if pid

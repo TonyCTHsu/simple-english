@@ -4,7 +4,8 @@ require_relative "test_helper"
 
 class CLIFormatTest < Minitest::Test
   DAEMON_FINDINGS = [
-    {"line" => 3, "column" => 17, "rule" => "SE_NO_CONTRACTIONS",
+    {"line" => 3, "column" => 17, "end_line" => 3, "end_column" => 23,
+     "rule" => "SE_NO_CONTRACTIONS",
      "message" => "Write the words in full. No contractions."}
   ].to_json
 
@@ -23,6 +24,7 @@ class CLIFormatTest < Minitest::Test
       capture_io { SimpleEnglish::CLI.run(["--format", "json", "-"]) }.first
     end
     assert_equal [{"path" => "-", "line" => 3, "column" => 17,
+                   "end_line" => 3, "end_column" => 23,
                    "rule" => "SE_NO_CONTRACTIONS",
                    "message" => "Write the words in full. No contractions."}],
       JSON.parse(out)
@@ -34,21 +36,25 @@ class CLIFormatTest < Minitest::Test
     end
     log = JSON.parse(out)
     assert_equal "2.1.0", log.fetch("version")
-    result = log.fetch("runs").first.fetch("results").first
+    run = log.fetch("runs").first
+    assert_equal "utf16CodeUnits", run.fetch("columnKind")
+    result = run.fetch("results").first
     assert_equal "SE_NO_CONTRACTIONS", result.fetch("ruleId")
     region = result.fetch("locations").first.fetch("physicalLocation").fetch("region")
     assert_equal 3, region.fetch("startLine")
     assert_equal 17, region.fetch("startColumn")
+    assert_equal 3, region.fetch("endLine")
+    assert_equal 23, region.fetch("endColumn")
   end
 
   def test_format_text_stays_the_default
     out, = with_stub_daemon do
       capture_io { SimpleEnglish::CLI.run(["-"]) }.first
     end
-    assert_equal "-:3:17: [SE_NO_CONTRACTIONS] Write the words in full. No contractions.\n", out
+    assert_equal "-:3:17-23: [SE_NO_CONTRACTIONS] Write the words in full. No contractions.\n", out
   end
 
-  def test_format_text_omits_the_column_when_absent
+  def test_format_text_omits_the_range_when_column_is_absent
     server = StubHTTPServer.new("/lint" => [
       {"line" => 5, "column" => nil, "rule" => "SE_SENTENCE_TOO_LONG",
        "message" => "Split it."}
@@ -60,5 +66,19 @@ class CLIFormatTest < Minitest::Test
   ensure
     ENV["SE_SERVER_URL"] = old_url
     server&.shutdown
+  end
+
+  def test_format_text_prints_both_positions_for_a_multiline_range
+    finding = SimpleEnglish::Finding.new(line: 3, column: 17,
+      end_line: 4, end_column: 6, rule: "RULE", message: "Message.")
+    out, = capture_io { SimpleEnglish::CLI.report([["file.md", finding]], "text") }
+    assert_equal "file.md:3:17-4:6: [RULE] Message.\n", out
+  end
+
+  def test_format_text_keeps_a_start_only_location_from_an_older_daemon
+    finding = SimpleEnglish::Finding.new(line: 3, column: 17,
+      rule: "RULE", message: "Message.")
+    out, = capture_io { SimpleEnglish::CLI.report([["file.md", finding]], "text") }
+    assert_equal "file.md:3:17: [RULE] Message.\n", out
   end
 end

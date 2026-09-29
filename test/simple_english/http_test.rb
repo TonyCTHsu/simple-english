@@ -8,7 +8,7 @@ require_relative "test_helper"
 class HTTPHandleClientTest < Minitest::Test
   def test_post_lint_is_answered_through_the_real_socket_loop
     inner = StubHTTPServer.new("/v2/check" => lambda do |_body|
-      {matches: [{message: "No contractions.", offset: 5,
+      {matches: [{message: "No contractions.", offset: 0, length: 5,
                   rule: {id: "SE_NO_CONTRACTIONS"}}]}.to_json
     end)
     outer = TCPServer.new("127.0.0.1", 0)

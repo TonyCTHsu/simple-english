@@ -7,7 +7,7 @@ require "json"
 class ClientHTTPTest < Minitest::Test
   LT_BODY = {
     matches: [
-      {message: "No contractions.", offset: 6,
+      {message: "No contractions.", offset: 6, length: 6,
        rule: {id: "SE_NO_CONTRACTIONS"}}
     ]
   }.to_json
@@ -22,8 +22,12 @@ class ClientHTTPTest < Minitest::Test
   def test_check_posts_and_parses
     with_stub_server("/v2/check" => LT_BODY) do |url|
       findings = SimpleEnglish::Client.check("first\nsecond line", base_url: url)
-      assert_equal [[2, "SE_NO_CONTRACTIONS", "No contractions."]],
-        findings.map { |f| [f.line, f.rule, f.message] }
+      positions = findings.map do |finding|
+        [finding.line, finding.column, finding.end_line, finding.end_column,
+          finding.rule, finding.message]
+      end
+      assert_equal [[2, 1, 2, 7, "SE_NO_CONTRACTIONS", "No contractions."]],
+        positions
     end
   end
 

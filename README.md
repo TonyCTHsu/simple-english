@@ -13,9 +13,9 @@ instead.
 ```console
 $ printf 'You should leverage this tool in order to make sure that your docs are readable.' > note.md
 $ se note.md
-note.md:1:5: [SE_MODAL_RESTRICTED] "should" - Use can, will, or must. State the requirement exactly.
-note.md:1:12: [SE_SLOP_LEVERAGE] "leverage" - Write "use".
-note.md:1:31: [SE_SLOP_IN_ORDER_TO] "in order to" - Write "to".
+note.md:1:5-11: [SE_MODAL_RESTRICTED] "should" - Use can, will, or must. State the requirement exactly.
+note.md:1:31-42: [SE_SLOP_IN_ORDER_TO] "in order to" - Write "to".
+note.md:1:12-20: [SE_SLOP_LEVERAGE] "leverage" - Write "use".
 ```
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
@@ -31,7 +31,7 @@ text, JSON, or SARIF.
 - **Contractions:** write every word in full.
 - **Sentence shape:** condition before command, no `-ing` phrase after a comma.
 - **Word choice:** about 50 substitution rules, from `leverage` to `in conclusion`. `make sure that` keeps its "that".
-- **Code comments:** same pattern rules, with line and column.
+- **Code comments:** same pattern rules, with line and column range.
 - **Counts (Markdown only):** 20 words per sentence in list items, 25 in paragraphs, six sentences per paragraph at most.
 
 The full list, with a wrong and a right example for each rule:
@@ -93,7 +93,11 @@ git diff --name-only --diff-filter=ACM main | xargs se
 
 ### Outputs
 
-Findings print as `file:line: [RULE_ID] message`. Code-comment findings also carry a column in `--format json` and `--format sarif`:
+Pattern findings print an exclusive column range as
+`file:line:start-end: [RULE_ID] message`. A range that crosses lines ends
+with `end-line:end-column`. Columns count UTF-16 code units. Counting findings
+identify only the paragraph's first line. JSON and SARIF output expose the same
+source ranges:
 
 ```bash
 se --format json docs/
@@ -180,7 +184,7 @@ Any tool or language can lint through its HTTP API:
 
 ```bash
 curl -d "text=Don't do this." http://localhost:8181/lint
-# [{"line":1,"column":null,"rule":"SE_NO_CONTRACTIONS","message":"..."}]
+# [{"line":1,"column":3,"end_line":1,"end_column":6,"rule":"SE_NO_CONTRACTIONS","message":"..."}]
 ```
 
 The full wire format: [docs/DAEMON.md](docs/DAEMON.md).

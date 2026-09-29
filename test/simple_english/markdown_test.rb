@@ -15,12 +15,36 @@ class StripMarkdownTest < Minitest::Test
     @stripped = SimpleEnglish::Markdown.strip(@source)
   end
 
-  def test_keeps_line_count_identical
+  def test_keeps_line_count_and_utf16_line_widths_identical
     assert_equal @source.lines.count, @stripped.lines.count
+    widths = lambda do |text|
+      text.lines.map { |line| line.each_char.sum { |char| (char.ord > 0xFFFF) ? 2 : 1 } }
+    end
+    assert_equal widths.call(@source), widths.call(@stripped)
   end
 
   def test_neutralizes_inline_code
     refute_includes @stripped, "don't"
+  end
+
+  def test_preserves_line_endings
+    source = "Use `code`.\r\nKeep this.\nLast line."
+    assert_equal ["\r\n", "\n"], SimpleEnglish::Markdown.strip(source).scan(/\r?\n/)
+  end
+
+  def test_preserves_width_after_astral_inline_code
+    source = "Use `\u{1F4A1}` but don't stop.\n"
+    stripped = SimpleEnglish::Markdown.strip(source)
+    source_offset = source.each_char.take_while { |char| char != "d" }.sum do |char|
+      (char.ord > 0xFFFF) ? 2 : 1
+    end
+    assert_equal [1, source_offset + 1],
+      SimpleEnglish::Client.offset_to_position(stripped, stripped.index("don't"))
+  end
+
+  def test_inline_code_remains_one_word_when_followed_by_punctuation
+    stripped = SimpleEnglish::Markdown.strip("Use `first`, `second`, and `third`.\n")
+    assert_equal 5, stripped.split.size
   end
 
   def test_blanks_fenced_code_blocks
