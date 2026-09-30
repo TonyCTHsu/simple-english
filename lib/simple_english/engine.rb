@@ -43,5 +43,7 @@ module SimpleEnglish
       warn "se: ignoring custom rules: #{e.message}"
       []
     end
+
+    private_class_method :rules_paths
   end
 end
