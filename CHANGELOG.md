@@ -6,11 +6,6 @@
 
 - Comment linting supports C++ files (`.cpp`, `.cc`, `.cxx`, `.hpp`, `.h`)
 
-### Added
-
-- BYOR (bring your own rules): a `rules:` key in `.simple-english.yml`
-  names extra LanguageTool rule files. They merge into the built-in set
-
 ### Changed
 
 - Pattern findings print exact ranges in text, JSON, and SARIF output
