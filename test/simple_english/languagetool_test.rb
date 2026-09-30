@@ -12,6 +12,29 @@ class LanguageToolHelpersTest < Minitest::Test
     assert_includes ids, "SE_NO_SEMICOLON"
   end
 
+  def test_rule_ids_finds_id_regardless_of_attribute_order
+    Dir.mktmpdir do |dir|
+      user = File.join(dir, "team.xml")
+      File.write(user, <<~XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rules lang="en">
+          <rule name="No foobar" id="MY_TEAM_RULE">
+            <pattern><token>foobar</token></pattern>
+          </rule>
+          <rule id="MY_OTHER_RULE" name="No buzz"/>
+          <rulegroup id="MY_GROUP" name="group">
+            <rule name="sub"><pattern><token>sub</token></pattern></rule>
+          </rulegroup>
+        </rules>
+      XML
+      ids = SimpleEnglish::LanguageTool.rule_ids([user])
+      assert_includes ids, "MY_TEAM_RULE"
+      assert_includes ids, "MY_OTHER_RULE"
+      assert_includes ids, "MY_GROUP"
+      refute_includes ids, "sub" # id-less sub-rule stays out
+    end
+  end
+
   def test_lt_version_is_pinned_to_6_6
     assert_equal "6.6", SimpleEnglish::LanguageTool::LT_VERSION
   end

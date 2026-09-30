@@ -138,10 +138,12 @@ module SimpleEnglish
 
     # All rule IDs in RULES_FILE plus any extra rule files. Order is
     # stable: the built-in rules load first, user rules follow in config
-    # order, duplicates drop.
+    # order, duplicates drop. The id attribute may sit anywhere in the
+    # tag: XML attribute order is free.
     def rule_ids(paths = [RULES_FILE])
       Array(paths).flat_map do |path|
-        File.read(path).scan(/<rule(?:group)? id=(["'])(\w+)\1/).map { |_, id| id }
+        File.read(path).scan(/<rule(?:group)?\b[^>]*\bid=(["'])(\w+)\1/)
+          .map { |_, id| id }
       end.uniq
     end
   end
