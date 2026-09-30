@@ -57,4 +57,26 @@ class ServerStagingTest < Minitest::Test
       assert_match(/empty\.xml/, error.message)
     end
   end
+
+  def test_stage_rules_rejects_a_root_other_than_rules_lang_en
+    ["<grammar/>", "<rules lang=\"de\"/>", "<rules lang=\"fr\"/>"].each do |xml|
+      Dir.mktmpdir do |dir|
+        user = File.join(dir, "bad.xml")
+        File.write(user, xml)
+        error = assert_raises(SimpleEnglish::Server::ServerError) do
+          SimpleEnglish::Server.stage_rules(dir, user_rules: [user])
+        end
+        assert_match(/bad\.xml.*rules lang/, error.message)
+      end
+    end
+  end
+
+  def test_stage_rules_accepts_a_rules_root_without_a_lang_attribute
+    Dir.mktmpdir do |dir|
+      user = File.join(dir, "plain.xml")
+      File.write(user, "<rules><rule id=\"X\" name=\"x\"/></rules>")
+      staged = SimpleEnglish::Server.stage_rules(dir, user_rules: [user])
+      assert_includes SimpleEnglish::LanguageTool.rule_ids([staged]), "X"
+    end
+  end
 end
