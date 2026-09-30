@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "tmpdir"
 require "json"
 require "minitest/autorun"
 require "minitest/mock"
@@ -72,5 +73,23 @@ class StubHTTPServer
     end
   ensure
     client.close
+  end
+end
+
+# Sets ENV keys for the block and restores them (or unsets them) after,
+# even on failure. A nil value means the key stays unset.
+def with_env(overrides)
+  saved = overrides.keys.map { |k| [k, ENV[k]] }.to_h
+  overrides.each { |k, v| v ? ENV[k] = v : ENV.delete(k) }
+  yield
+ensure
+  saved.each { |k, v| v ? ENV[k] = v : ENV.delete(k) }
+end
+
+# Runs the block in a fresh temp dir, removed after, even on failure.
+# chdir: true also makes it the working dir for the block.
+def in_tmpdir(chdir: false)
+  Dir.mktmpdir do |dir|
+    chdir ? Dir.chdir(dir) { yield dir } : yield(dir)
   end
 end

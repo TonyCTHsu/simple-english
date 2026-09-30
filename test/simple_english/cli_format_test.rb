@@ -11,11 +11,8 @@ class CLIFormatTest < Minitest::Test
 
   def with_stub_daemon
     server = StubHTTPServer.new("/lint" => DAEMON_FINDINGS)
-    old_url = ENV["SE_SERVER_URL"]
-    ENV["SE_SERVER_URL"] = server.url
-    yield
+    with_env("SE_SERVER_URL" => server.url) { yield }
   ensure
-    ENV["SE_SERVER_URL"] = old_url
     server&.shutdown
   end
 
@@ -59,12 +56,11 @@ class CLIFormatTest < Minitest::Test
       {"line" => 5, "column" => nil, "rule" => "SE_SENTENCE_TOO_LONG",
        "message" => "Split it."}
     ].to_json)
-    old_url = ENV["SE_SERVER_URL"]
-    ENV["SE_SERVER_URL"] = server.url
-    out, = capture_io { SimpleEnglish::CLI.run(["-"]) }
+    out, = with_env("SE_SERVER_URL" => server.url) do
+      capture_io { SimpleEnglish::CLI.run(["-"]) }.first
+    end
     assert_equal "-:5: [SE_SENTENCE_TOO_LONG] Split it.\n", out
   ensure
-    ENV["SE_SERVER_URL"] = old_url
     server&.shutdown
   end
 

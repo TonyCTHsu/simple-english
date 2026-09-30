@@ -4,7 +4,7 @@ require_relative "test_helper"
 
 class CLIExpandCodePathsTest < Minitest::Test
   def test_expands_directories_to_all_supported_extensions
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       File.write(File.join(dir, "a.md"), "x")
       File.write(File.join(dir, "b.py"), "x = 1\n")
       File.write(File.join(dir, "c.yaml"), "key: value\n")

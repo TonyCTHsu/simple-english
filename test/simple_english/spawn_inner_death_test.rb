@@ -6,7 +6,6 @@ require "fileutils"
 require "socket"
 require "tempfile"
 require "timeout"
-require "tmpdir"
 
 class SpawnInnerDeathTest < Minitest::Test
   # A JVM that dies instantly must raise InnerDied fast, not after the
@@ -14,7 +13,7 @@ class SpawnInnerDeathTest < Minitest::Test
   # log's first line. Drives the real spawn_inner with java stubbed to a
   # dying script.
   def test_spawn_inner_raises_quickly_when_inner_dies_instantly
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       lt_dir = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
       FileUtils.mkdir_p(lt_dir)
       File.write(File.join(lt_dir, "languagetool-commandline.jar"), "x")

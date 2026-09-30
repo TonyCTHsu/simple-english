@@ -12,13 +12,12 @@ class CLIDispatchTest < Minitest::Test
 
   def test_stdin_dash_routed_to_lint
     server = StubHTTPServer.new("/lint" => "[]")
-    old_url = ENV["SE_SERVER_URL"]
-    ENV["SE_SERVER_URL"] = server.url
     status = nil
-    capture_io { status = SimpleEnglish::CLI.run(["-"]) }
+    with_env("SE_SERVER_URL" => server.url) do
+      capture_io { status = SimpleEnglish::CLI.run(["-"]) }
+    end
     assert_equal 0, status
   ensure
-    ENV["SE_SERVER_URL"] = old_url
     server&.shutdown
   end
 
