@@ -17,16 +17,16 @@ class LintFileNoCommentsTest < Minitest::Test
       called = true
       [200, "[]"]
     end)
-    old_url = ENV["SE_SERVER_URL"]
-    ENV["SE_SERVER_URL"] = server.url
-    assert_empty SimpleEnglish.lint_file("a.py", "x = 1\n")
-    refute called, "a comment-free file must not reach the daemon"
-    # A dead custom URL: reaching [] without SystemExit proves that no
-    # daemon code ran.
-    ENV["SE_SERVER_URL"] = "http://localhost:1"
-    assert_empty SimpleEnglish.lint_file("b.py", "y = 2\n")
+    with_env("SE_SERVER_URL" => server.url) do
+      assert_empty SimpleEnglish.lint_file("a.py", "x = 1\n")
+      refute called, "a comment-free file must not reach the daemon"
+      # A dead custom URL: reaching [] without SystemExit proves that no
+      # daemon code ran.
+      with_env("SE_SERVER_URL" => "http://localhost:1") do
+        assert_empty SimpleEnglish.lint_file("b.py", "y = 2\n")
+      end
+    end
   ensure
-    ENV["SE_SERVER_URL"] = old_url
     server&.shutdown
   end
 end

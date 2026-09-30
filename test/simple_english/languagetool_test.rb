@@ -2,7 +2,6 @@
 
 require_relative "test_helper"
 
-require "tmpdir"
 require "zip"
 
 class LanguageToolHelpersTest < Minitest::Test
@@ -13,7 +12,7 @@ class LanguageToolHelpersTest < Minitest::Test
   end
 
   def test_rule_ids_finds_id_regardless_of_attribute_order
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       user = File.join(dir, "team.xml")
       File.write(user, <<~XML)
         <?xml version="1.0" encoding="UTF-8"?>
@@ -41,7 +40,7 @@ class LanguageToolHelpersTest < Minitest::Test
 
   def test_download_writes_the_response_body_to_the_file
     server = StubHTTPServer.new("/download" => lambda { |_body| [200, "zip bytes"] })
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       target = File.join(dir, "lt.zip")
       assert SimpleEnglish::LanguageTool.download(
         "#{server.url}/download", target
@@ -54,7 +53,7 @@ class LanguageToolHelpersTest < Minitest::Test
 
   def test_download_warns_and_fails_on_an_http_error
     server = StubHTTPServer.new("/download" => lambda { |_body| [500, "boom"] })
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       _out, err = capture_io do
         refute SimpleEnglish::LanguageTool.download(
           "#{server.url}/download", File.join(dir, "lt.zip")
@@ -67,7 +66,7 @@ class LanguageToolHelpersTest < Minitest::Test
   end
 
   def test_extract_unpacks_entries_under_the_dir
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       zip = File.join(dir, "lt.zip")
       src = File.join(dir, "src.jar")
       File.write(src, "jar body")
@@ -81,7 +80,7 @@ class LanguageToolHelpersTest < Minitest::Test
   end
 
   def test_extract_refuses_entries_that_escape_the_dir
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       zip = File.join(dir, "evil.zip")
       src = File.join(dir, "src.txt")
       File.write(src, "payload")
@@ -127,7 +126,7 @@ class LanguageToolHelpersTest < Minitest::Test
   end
 
   def test_remove_stale_versions_keeps_the_current_dir_and_zips
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       keep = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
       stale_dir = File.join(dir, "LanguageTool-6.5")
       zip = File.join(dir, "LanguageTool-6.5.zip")

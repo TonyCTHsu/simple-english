@@ -13,7 +13,7 @@ class DaemonEndToEndTest < Minitest::Test
     skip "needs java and the LanguageTool cache" unless install.java? &&
       File.exist?(install.commandline_jar)
 
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       port = 8281
       root = File.expand_path("../..", __dir__)
       pid = Process.spawn(RbConfig.ruby, File.join(root, "bin/se"), "serve",
@@ -55,7 +55,7 @@ class DaemonEndToEndTest < Minitest::Test
     skip "needs java and the LanguageTool cache" unless install.java? &&
       File.exist?(install.commandline_jar)
 
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       File.write(File.join(dir, "team.xml"), <<~XML)
         <?xml version="1.0" encoding="UTF-8"?>
         <rules lang="en">

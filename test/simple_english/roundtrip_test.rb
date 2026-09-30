@@ -2,8 +2,7 @@
 
 require "minitest/autorun"
 require "socket"
-require "tmpdir"
-require_relative "../../lib/simple_english"
+require_relative "test_helper"
 
 # Live LanguageTool round trip: comment -> AnnotatedText -> /v2/check ->
 # source range. Needs java and the LanguageTool cache (CI has both).
@@ -42,7 +41,7 @@ class RoundtripTest < Minitest::Test
   def test_se_no_contractions_reports_the_exact_range
     skip_unless_lt
     pid = nil
-    Dir.mktmpdir do |rules_dir|
+    in_tmpdir do |rules_dir|
       SimpleEnglish::Server.stage_rules(rules_dir)
       probe = TCPServer.new("127.0.0.1", 0)
       port = probe.addr[1]

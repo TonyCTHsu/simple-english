@@ -12,18 +12,16 @@ class ClientEnsureUpTest < Minitest::Test
   end
 
   def test_lint_text_returns_nil_when_custom_url_is_dead
-    old_url = ENV["SE_SERVER_URL"]
-    ENV["SE_SERVER_URL"] = "http://localhost:1"
-    _out, err = capture_io do
-      assert_nil SimpleEnglish.lint_text("Fine text.\n")
+    with_env("SE_SERVER_URL" => "http://localhost:1") do
+      _out, err = capture_io do
+        assert_nil SimpleEnglish.lint_text("Fine text.\n")
+      end
+      assert_match(/SE_SERVER_URL is set but/, err)
     end
-    assert_match(/SE_SERVER_URL is set but/, err)
-  ensure
-    ENV["SE_SERVER_URL"] = old_url
   end
 
   def test_ensure_up_fails_fast_with_setup_message_when_jar_is_missing
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       install = SimpleEnglish::Install.new(cache_dir: dir)
       # The jar matters only when the daemon is down and we need to
       # spawn it.

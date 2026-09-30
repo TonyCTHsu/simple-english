@@ -3,7 +3,6 @@
 require_relative "test_helper"
 
 require "fileutils"
-require "tmpdir"
 
 class ServerStagingTest < Minitest::Test
   USER_RULES = <<~XML
@@ -17,7 +16,7 @@ class ServerStagingTest < Minitest::Test
   XML
 
   def test_stage_rules_copies_to_classpath_layout
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       staged = SimpleEnglish::Server.stage_rules(dir)
       assert_equal File.join(dir, "org/languagetool/rules/en/grammar_custom.xml"), staged
       assert File.read(staged).start_with?("<?xml")
@@ -26,7 +25,7 @@ class ServerStagingTest < Minitest::Test
   end
 
   def test_stage_rules_merges_user_rules_into_the_staged_file
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       user = File.join(dir, "team.xml")
       File.write(user, USER_RULES)
       staged = SimpleEnglish::Server.stage_rules(dir, user_rules: [user])
@@ -37,7 +36,7 @@ class ServerStagingTest < Minitest::Test
   end
 
   def test_stage_rules_names_the_file_on_malformed_xml
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       user = File.join(dir, "broken.xml")
       File.write(user, "<rules lang=\"en\"><rule id=\"X\">")
       error = assert_raises(SimpleEnglish::Server::ServerError) do
@@ -48,7 +47,7 @@ class ServerStagingTest < Minitest::Test
   end
 
   def test_stage_rules_names_the_file_on_an_empty_rule_file
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       user = File.join(dir, "empty.xml")
       File.write(user, "")
       error = assert_raises(SimpleEnglish::Server::ServerError) do
@@ -60,7 +59,7 @@ class ServerStagingTest < Minitest::Test
 
   def test_stage_rules_rejects_a_root_other_than_rules_lang_en
     ["<grammar/>", "<rules lang=\"de\"/>", "<rules lang=\"fr\"/>"].each do |xml|
-      Dir.mktmpdir do |dir|
+      in_tmpdir do |dir|
         user = File.join(dir, "bad.xml")
         File.write(user, xml)
         error = assert_raises(SimpleEnglish::Server::ServerError) do
@@ -72,7 +71,7 @@ class ServerStagingTest < Minitest::Test
   end
 
   def test_stage_rules_accepts_a_rules_root_without_a_lang_attribute
-    Dir.mktmpdir do |dir|
+    in_tmpdir do |dir|
       user = File.join(dir, "plain.xml")
       File.write(user, "<rules><rule id=\"X\" name=\"x\"/></rules>")
       staged = SimpleEnglish::Server.stage_rules(dir, user_rules: [user])
