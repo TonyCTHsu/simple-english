@@ -17,7 +17,7 @@ module SimpleEnglish
       require "yaml"
       data = YAML.safe_load_file(file) || {}
       rules = Array(data["rules"]).map do |path|
-        unless path.is_a?(String)
+        unless path.is_a?(String) && !path.strip.empty?
           raise ConfigError, ".simple-english.yml: rules entries must be file paths"
         end
         File.expand_path(path, dir)
