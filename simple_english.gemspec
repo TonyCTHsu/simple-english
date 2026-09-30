@@ -29,6 +29,9 @@ Gem::Specification.new do |spec|
   # rubyzip unpacks the LanguageTool download, replacing the curl/unzip
   # system dependencies.
   spec.add_runtime_dependency "rubyzip", "~> 3.0"
+  # rexml merges user rule files into the staged set at daemon boot.
+  # It stopped shipping as a Ruby default gem in 4.x.
+  spec.add_runtime_dependency "rexml"
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 6.0"
@@ -37,5 +40,4 @@ Gem::Specification.new do |spec|
   # Bundled gems the suite requires under `bundle exec`: the require
   # shim refuses bundled gems that the lockfile omits.
   spec.add_development_dependency "json"
-  spec.add_development_dependency "rexml"
 end

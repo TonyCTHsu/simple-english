@@ -15,7 +15,10 @@ class HTTPHandleClientTest < Minitest::Test
     accept = Thread.new do
       loop do
         client = outer.accept
-        Thread.new(client) { |c| SimpleEnglish::HTTP.handle_client(c, port: inner_port(inner)) }
+        Thread.new(client) { |c|
+          SimpleEnglish::HTTP.handle_client(c,
+            port: inner_port(inner), enabled_rules: %w[SE_NO_CONTRACTIONS])
+        }
       end
     rescue IOError, Errno::EBADF
       # The teardown closes the socket while accept is blocked. Same

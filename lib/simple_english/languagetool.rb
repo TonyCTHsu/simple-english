@@ -136,14 +136,20 @@ module SimpleEnglish
       end
     end
 
-    # All rule IDs in RULES_FILE plus any extra rule files. Order is
-    # stable: the built-in rules load first, user rules follow in config
-    # order, duplicates drop. The id attribute may sit anywhere in the
-    # tag: XML attribute order is free.
+    # All rule IDs in RULES_FILE plus any extra rule files, in
+    # document order, duplicates dropped. REXML reads the ids wherever
+    # they sit in the tag: a regex tied to attribute order or spacing
+    # silently drops user-written rules. Called at daemon boot on the
+    # staged file, so a malformed file never reaches here.
     def rule_ids(paths = [RULES_FILE])
+      require "rexml/document"
       Array(paths).flat_map do |path|
-        File.read(path).scan(/<rule(?:group)?\b[^>]*\bid=(["'])(\w+)\1/)
-          .map { |_, id| id }
+        doc = REXML::Document.new(File.read(path))
+        ids = []
+        REXML::XPath.each(doc, "//rule | //rulegroup") do |element|
+          ids << element.attributes["id"] if element.attributes["id"]
+        end
+        ids
       end.uniq
     end
   end
