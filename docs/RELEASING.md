@@ -10,17 +10,17 @@ repository.
    gh run watch
    ```
 
-2. Approve:
+2. Review, approve, and merge:
 
    ```bash
-   gh pr review "$(gh pr list --label release --state open --json headRefName --jq '.[0].headRefName')" --approve
+   release_pr="$(gh pr list --label release --state open --json headRefName --jq '.[0].headRefName')"
+   gh pr review "$release_pr" --approve
+   gh pr merge "$release_pr" --merge
    ```
 
-   If auto-merge is off, merge by hand with the same selector and `--merge`:
-
-   ```bash
-   gh pr merge "$(gh pr list --label release --state open --json headRefName --jq '.[0].headRefName')" --merge
-   ```
+   The pull request runs no CI. GitHub does not start workflows for
+   a pull request opened with `GITHUB_TOKEN`. Your merge starts the
+   CI run on master. The prep workflow validates the changelog.
 
 3. Publish:
 
