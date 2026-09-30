@@ -16,7 +16,12 @@ module SimpleEnglish
       return DEFAULT unless File.exist?(file)
       require "yaml"
       data = YAML.safe_load_file(file) || {}
-      rules = Array(data["rules"]).map { |path| File.expand_path(path, dir) }
+      rules = Array(data["rules"]).map do |path|
+        unless path.is_a?(String)
+          raise ConfigError, ".simple-english.yml: rules entries must be file paths"
+        end
+        File.expand_path(path, dir)
+      end
       rules.each do |path|
         unless File.file?(path)
           raise ConfigError, ".simple-english.yml: rules file not found: #{path}"
