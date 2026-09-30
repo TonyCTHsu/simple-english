@@ -21,7 +21,8 @@ class ClientHTTPTest < Minitest::Test
 
   def test_check_posts_and_parses
     with_stub_server("/v2/check" => LT_BODY) do |url|
-      findings = SimpleEnglish::Client.check("first\nsecond line", base_url: url)
+      findings = SimpleEnglish::Client.check("first\nsecond line", base_url: url,
+        enabled_rules: SimpleEnglish::LanguageTool.rule_ids)
       positions = findings.map do |finding|
         [finding.line, finding.column, finding.end_line, finding.end_column,
           finding.rule, finding.message]

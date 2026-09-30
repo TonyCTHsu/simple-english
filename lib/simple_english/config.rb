@@ -20,12 +20,11 @@ module SimpleEnglish
         unless path.is_a?(String) && !path.strip.empty?
           raise ConfigError, ".simple-english.yml: rules entries must be file paths"
         end
-        File.expand_path(path, dir)
-      end
-      rules.each do |path|
-        unless File.file?(path)
-          raise ConfigError, ".simple-english.yml: rules file not found: #{path}"
+        expanded = File.expand_path(path, dir)
+        unless File.file?(expanded)
+          raise ConfigError, ".simple-english.yml: rules file not found: #{expanded}"
         end
+        expanded
       end
       {ignore: Array(data["ignore"]),
        disabled_rules: Array(data["disabled-rules"]),
