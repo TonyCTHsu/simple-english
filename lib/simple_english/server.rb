@@ -12,6 +12,7 @@ require "tempfile"
 require "tmpdir"
 
 require_relative "install"
+require_relative "config"
 
 module SimpleEnglish
   module Server
@@ -29,13 +30,38 @@ module SimpleEnglish
     module_function
 
     # LanguageTool's HTTP server has no --rulefile flag. Custom rules
-    # load from the classpath at this exact path.
-    def stage_rules(dir)
+    # load from the classpath at this exact path. User rule files
+    # (BYOR, from .simple-english.yml `rules:`) merge into the same
+    # staged file: LT loads exactly one grammar_custom.xml per language.
+    def stage_rules(dir, user_rules: [])
       target = File.join(dir, "org/languagetool/rules/en/grammar_custom.xml")
       FileUtils.mkdir_p(File.dirname(target))
-      FileUtils.cp(SimpleEnglish::LanguageTool::RULES_FILE, target)
+      File.write(target, merged_rules(user_rules))
       target
     end
+
+    # One <rules> root holding the children of the built-in file and
+    # every user file. REXML (stdlib) rejects malformed XML here, at
+    # boot, with the file named: far clearer than the JVM's boot log.
+    def merged_rules(user_rules)
+      require "rexml/document"
+      root = REXML::Element.new("rules")
+      root.add_attribute("lang", "en")
+      [SimpleEnglish::LanguageTool::RULES_FILE, *user_rules].each do |path|
+        doc = REXML::Document.new(File.read(path))
+        unless doc.root && doc.root.name == "rules" &&
+            ["en", ""].include?(doc.root.attribute("lang").to_s)
+          raise ServerError,
+            "custom rules file #{path}: expected a <rules lang=\"en\"> root"
+        end
+        doc.root.children.each { |child| root.add(child) }
+      rescue REXML::ParseException, SystemCallError => e
+        raise ServerError, "custom rules file #{path}: #{e.message}"
+      end
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n#{root}"
+    end
+
+    private_class_method :merged_rules
 
     # Probes both loopback families: on IPv6-first resolvers a "localhost"
     # probe falls back to IPv4 and misses an IPv6 listener.
@@ -57,7 +83,12 @@ module SimpleEnglish
       # inner port raises in milliseconds instead of timing out later.
       assert_port_free(port + 1)
       rules_dir = Dir.mktmpdir("se-rules")
-      stage_rules(rules_dir)
+      # BYOR rules come from the daemon's start directory, not the
+      # lint caller's: the staged rule set is frozen at boot. The
+      # enabled IDs come from the staged file, so what LT loads and
+      # what each request enables can never diverge.
+      staged = stage_rules(rules_dir, user_rules: Config.load[:rules])
+      enabled_rules = SimpleEnglish::LanguageTool.rule_ids([staged])
       # The inner JVM's stderr goes to a file so failure messages can quote
       # its first line. Only an explicitly opened dev log (a File) is reused
       # for that. $stderr reports path "<STDERR>", so it creates a file
@@ -103,7 +134,10 @@ module SimpleEnglish
         # Select timeout on an idle socket: loop back and select again.
         next if ready.nil?
         client = server.accept
-        Thread.new(client) { |c| HTTP.handle_client(c, port: port) }
+        Thread.new(client) { |c|
+          HTTP.handle_client(c, port: port,
+            enabled_rules: enabled_rules)
+        }
       rescue IOError, Errno::EBADF
         # A trap or the inner-death monitor closed the listener. This
         # happens during the select, or between select and accept.

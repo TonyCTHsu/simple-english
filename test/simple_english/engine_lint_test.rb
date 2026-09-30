@@ -54,6 +54,22 @@ class EngineLintTest < Minitest::Test
     end
   end
 
+  def test_lint_sends_the_enabled_rules_the_caller_gives
+    # The engine reads nothing from disk: the daemon captures the rule
+    # IDs at boot and passes them in. End-to-end coverage of the
+    # config-to-boot capture lives in the daemon test.
+    seen = nil
+    server = StubHTTPServer.new("/v2/check" => lambda do |body|
+      seen = URI.decode_www_form(body).to_h["enabledRules"].to_s.split(",")
+      LT_BODY
+    end)
+    SimpleEnglish::Engine.lint("Don't.\n", base_url: server.url,
+      enabled_rules: %w[SE_NO_CONTRACTIONS MY_TEAM_RULE])
+    server.shutdown
+    assert_includes seen, "SE_NO_CONTRACTIONS"
+    assert_includes seen, "MY_TEAM_RULE"
+  end
+
   def gem_available?
     require "tree_sitter_language_pack"
     true

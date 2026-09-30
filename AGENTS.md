@@ -59,7 +59,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   needs a stated reason here first. (Thor was a
   user-directed refactor, 2026-02-27.) `rubyzip` unpacks the
   LanguageTool download. It replaces the curl and unzip system
-  dependencies (2026-09-28).
+  dependencies (2026-09-28). `rexml` merges user rule files into
+  the staged set at daemon boot. It stopped shipping as a Ruby
+  default gem in 4.x (2026-09-30).
 - Dev and test tools are the exception. Pick the best tool for the
   job even when it adds a dev-only dependency. Record it here with a
   one-line reason. Keep such tools out of the gemspec runtime list.
@@ -93,7 +95,7 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Config
 
-`.simple-english.yml` in the CWD. Keys: `ignore:` (path globs. `**` crosses directories and `*` does not) and `disabled-rules:` (rule IDs dropped from every file).
+`.simple-english.yml` in the CWD. Keys: `ignore:` (path globs. `**` crosses directories and `*` does not) and `disabled-rules:` (rule IDs dropped from every file). `rules:` names LanguageTool XML rule files, merged into the built-in set. The daemon reads them at start, from its start CWD.
 
 ## Tests
 

@@ -35,7 +35,8 @@ class ClientAnnotatedCheckTest < Minitest::Test
       captured = body
       [200, {"matches" => []}.to_json]
     end)
-    SimpleEnglish::Client.check(result, base_url: server.url)
+    SimpleEnglish::Client.check(result, base_url: server.url,
+      enabled_rules: SimpleEnglish::LanguageTool.rule_ids)
     server.shutdown
     assert_includes captured, "data=" # {"annotation" is URL-encoded in the body
     refute_includes captured, "text="

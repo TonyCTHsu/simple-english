@@ -21,13 +21,26 @@ class ClientHTTPTest < Minitest::Test
 
   def test_check_posts_and_parses
     with_stub_server("/v2/check" => LT_BODY) do |url|
-      findings = SimpleEnglish::Client.check("first\nsecond line", base_url: url)
+      findings = SimpleEnglish::Client.check("first\nsecond line", base_url: url,
+        enabled_rules: SimpleEnglish::LanguageTool.rule_ids)
       positions = findings.map do |finding|
         [finding.line, finding.column, finding.end_line, finding.end_column,
           finding.rule, finding.message]
       end
       assert_equal [[2, 1, 2, 7, "SE_NO_CONTRACTIONS", "No contractions."]],
         positions
+    end
+  end
+
+  def test_check_sends_the_enabled_rules_param
+    seen = nil
+    with_stub_server("/v2/check" => lambda do |body|
+      seen = URI.decode_www_form(body).to_h
+      LT_BODY
+    end) do |url|
+      SimpleEnglish::Client.check("text", base_url: url, enabled_rules: %w[A B])
+      assert_equal "A,B", seen["enabledRules"]
+      assert_equal "true", seen["enabledOnly"]
     end
   end
 

@@ -136,8 +136,21 @@ module SimpleEnglish
       end
     end
 
-    def rule_ids
-      File.read(RULES_FILE).scan(/<rule(?:group)? id="(\w+)"/).flatten
+    # All rule IDs in RULES_FILE plus any extra rule files, in
+    # document order, duplicates dropped. REXML reads the ids wherever
+    # they sit in the tag: a regex tied to attribute order or spacing
+    # silently drops user-written rules. Called at daemon boot on the
+    # staged file, so a malformed file never reaches here.
+    def rule_ids(paths = [RULES_FILE])
+      require "rexml/document"
+      Array(paths).flat_map do |path|
+        doc = REXML::Document.new(File.read(path))
+        ids = []
+        REXML::XPath.each(doc, "//rule | //rulegroup") do |element|
+          ids << element.attributes["id"] if element.attributes["id"]
+        end
+        ids
+      end.uniq
     end
   end
 end

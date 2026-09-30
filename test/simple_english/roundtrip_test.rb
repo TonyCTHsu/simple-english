@@ -50,7 +50,8 @@ class RoundtripTest < Minitest::Test
       pid = start_lt(port, rules_dir)
       spans = SimpleEnglish::Extractor.comment_spans(FIXTURE, "python")
       result = SimpleEnglish::AnnotatedText.build(FIXTURE, spans)
-      findings = SimpleEnglish::Client.check(result, base_url: "http://localhost:#{port}")
+      findings = SimpleEnglish::Client.check(result, base_url: "http://localhost:#{port}",
+        enabled_rules: SimpleEnglish::LanguageTool.rule_ids)
       finding = findings.find { |f| f.rule == "SE_NO_CONTRACTIONS" }
       refute_nil finding, findings.map(&:rule).inspect
       # LT splits "didn't" into the tokens "did" and "n't". se: ignore

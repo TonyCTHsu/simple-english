@@ -72,7 +72,8 @@ module SimpleEnglish
       SimpleEnglish::Server.start(port: options[:port],
         install: SimpleEnglish::Install.from_env, log: log)
       0
-    rescue SimpleEnglish::Install::SetupError, SimpleEnglish::Server::ServerError => e
+    rescue SimpleEnglish::Install::SetupError, SimpleEnglish::Server::ServerError,
+      SimpleEnglish::Config::ConfigError => e
       warn "error: #{e.message}"
       2
     end

@@ -43,8 +43,9 @@ module SimpleEnglish
     end
 
     # One thread per request: lint can take seconds, so a slow request
-    # must not block readiness probes or other clients.
-    def handle_client(client, port:)
+    # must not block readiness probes or other clients. The enabled
+    # rule IDs are frozen at boot (Server.start) and passed through.
+    def handle_client(client, port:, enabled_rules:)
       request = read_request(client)
       if request.nil?
         # Malformed request or immediate hangup: nothing to answer.
@@ -60,7 +61,7 @@ module SimpleEnglish
           write_response(client, status: 200,
             body: SimpleEnglish::Engine.lint_json(params["text"],
               base_url: "http://localhost:#{port + 1}",
-              language: params["language"]))
+              language: params["language"], enabled_rules: enabled_rules))
         rescue => e
           write_response(client, status: 500,
             body: JSON.generate({"error" => e.message}))
