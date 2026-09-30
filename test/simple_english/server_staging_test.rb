@@ -46,4 +46,15 @@ class ServerStagingTest < Minitest::Test
       assert_match(/broken\.xml/, error.message)
     end
   end
+
+  def test_stage_rules_names_the_file_on_an_empty_rule_file
+    Dir.mktmpdir do |dir|
+      user = File.join(dir, "empty.xml")
+      File.write(user, "")
+      error = assert_raises(SimpleEnglish::Server::ServerError) do
+        SimpleEnglish::Server.stage_rules(dir, user_rules: [user])
+      end
+      assert_match(/empty\.xml/, error.message)
+    end
+  end
 end

@@ -49,6 +49,9 @@ module SimpleEnglish
       root.add_attribute("lang", "en")
       [SimpleEnglish::LanguageTool::RULES_FILE, *user_rules].each do |path|
         doc = REXML::Document.new(File.read(path))
+        if doc.root.nil?
+          raise ServerError, "custom rules file #{path}: no root element"
+        end
         doc.root.children.each { |child| root.add(child) }
       rescue REXML::ParseException, SystemCallError => e
         raise ServerError, "custom rules file #{path}: #{e.message}"
