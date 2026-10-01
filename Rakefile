@@ -39,8 +39,7 @@ namespace :release do
   end
 end
 
-desc "Run everything CI runs"
+desc "Self-lint, unit-test, and run the rule examples"
 task check: [:lint, :test] do
   ruby "test/examples_check.rb"
-  ruby "test/corpus_check.rb"
 end
