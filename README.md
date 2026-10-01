@@ -204,6 +204,24 @@ SimpleEnglish project. This tool does not check ASD-STE100 compliance.
 This repo holds no ASD-STE100 text. If you need full compliance, read
 the free standard at <https://www.asd-ste100.org/>.
 
+## FAQ
+
+### Have you thought about an agent skill?
+
+The [SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
+ships one. Its skill guides an agent while it writes. This tool does
+the other half of the work. It checks the result against fixed
+rules. Use both: the skill helps the first draft, and the linter
+catches what the agent missed.
+
+### Why not Vale?
+
+[Vale](https://vale.sh) matches words and patterns. The rule set here
+also needs grammar: active voice, tense, contractions with context.
+Vale has no grammar engine, so this tool uses LanguageTool for those
+rules. It adds the counting rules in Ruby and code comment linting
+through tree-sitter.
+
 ## Develop
 
 To change the linter, add rules, or run the tests, read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
