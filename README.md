@@ -65,9 +65,7 @@ se setup    # run once: downloads LanguageTool, locates Java, verifies both
 se README.md
 ```
 
-`se setup` puts LanguageTool into `~/.cache/se` and touches nothing
-in your shell profile. Set `SE_CACHE_DIR` to put the cache somewhere
-else. If `java` is not on PATH, set `SE_JAVA` to your java binary.
+If `java` is not on PATH, set `SE_JAVA` to your java binary.
 
 ### Container
 
