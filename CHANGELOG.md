@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0] - 2026-10-01
+
+### Added
+
+- Daemon handshake: `GET /` on the daemon reports its version, pid, and digests.
+- The first lint after a gem update warns about an outdated daemon. Run `se serve --detached` to restart it.
+- `se version` prints its version.
+- `se serve --detached` replaces a running daemon and runs the new one in the background.
+
+### Changed
+
+- `se serve` stops a running se daemon and takes over its port.
+- `se setup` reports each check as it completes.
+- `se setup` no longer takes `--dir`. Set `SE_CACHE_DIR` instead.
+
 ## [0.3.0] - 2026-09-29
 
 ### Added
