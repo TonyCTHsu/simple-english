@@ -83,7 +83,7 @@ se - < notes.md     # stdin (Markdown)
 Lint only what changed:
 
 ```bash
-git diff --name-only --diff-filter=ACM main | xargs se
+git diff --name-only --diff-filter=ACM main | xargs -I{} se {}
 ```
 
 ### Outputs
@@ -107,7 +107,7 @@ se --format sarif src/ > results.sarif
 
 ### CI
 
-Gate the docs in the pull request that changes them. The plain run
+Gate the prose in the pull request that changes it. The plain run
 fails the build on findings, and the SARIF report puts them inline:
 
 ```yaml
