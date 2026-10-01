@@ -16,7 +16,11 @@ class FastPathTest < Minitest::Test
 
   def test_lint_text_uses_daemon_when_up
     with_stub_daemon do
-      findings = SimpleEnglish.lint_text("Don't.\n")
+      findings = nil
+      # The stub is not handshake-capable, so the probe warns about
+      # a foreign daemon. Capture it: this test checks the lint, not
+      # the warning.
+      capture_io { findings = SimpleEnglish.lint_text("Don't.\n") }
       assert_equal [[1, "SE_NO_CONTRACTIONS", "No contractions."]],
         findings.map { |f| [f.line, f.rule, f.message] }
     end
