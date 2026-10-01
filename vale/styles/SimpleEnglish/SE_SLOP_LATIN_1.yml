@@ -1,0 +1,7 @@
+extends: existence
+message: "Write \"for example\", or name the items."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:e)\b\s*(?:\.)\s*\b(?:g)\b

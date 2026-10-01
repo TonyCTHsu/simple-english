@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it, or name the parts."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:vibrant|nuanced|multifaceted)\b

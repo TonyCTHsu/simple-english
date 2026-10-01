@@ -50,6 +50,11 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - `daemon/` holds the server tier: `engine.rb` (lint pipeline),
   `http.rb` (wire framing), `server.rb` (lifecycle). Server failures
   raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
+- `vale/` holds the Vale edition of the rule set. `bin/render-vale`
+  generates `vale/styles` from the rule XML. Rules the generator
+  cannot translate (part-of-speech patterns, negation) have
+  hand-written checks in `vale/overrides`. `docs/VALE.md` documents
+  the edition
 - One object definition per file: value objects live in their own files
   in `lint/` (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`,
   `result.rb`, `plain_text.rb`)
@@ -76,7 +81,10 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   Both are dev-only, in the gemspec. `changie` (a brew binary, not
   a gem) batches change fragments into `CHANGELOG.md` at release
   time (2026-09-29). Pull requests add fragments, not changelog
-  lines, so they never conflict.
+  lines, so they never conflict. `vale` (a pinned downloaded binary,
+  3.20.0, not a gem) runs the corpus through the generated Vale
+  edition (2026-10-01). CI's `vale` job and `test/vale_corpus_check.rb`
+  use it.
 - `Markdown.strip` must keep the line count identical to the source. Findings cite
   original line numbers, so stripping changes must preserve them.
 - Ruby 3.3 minimum. CI enforces it. The
@@ -114,5 +122,7 @@ line the finding reports. Counting findings cite the paragraph's first line.
 - `rake test`: unit tests only, no LanguageTool needed
 - `ruby test/examples_check.rb` and `ruby test/corpus_check.rb`: need
   LanguageTool (run `bin/se setup` first)
+- `ruby test/vale_corpus_check.rb`: needs the `vale` binary on PATH.
+  It lints the corpus through the generated Vale edition
 
 See `docs/DEVELOPMENT.md` for the full test strategy.

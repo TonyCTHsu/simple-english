@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it, or give the measurable property."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:robust|powerful|comprehensive|performant|seamless|blazingly)\b

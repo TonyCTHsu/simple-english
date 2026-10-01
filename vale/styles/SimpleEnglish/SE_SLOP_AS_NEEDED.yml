@@ -1,0 +1,7 @@
+extends: existence
+message: "State the condition."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:as)\b\s+\b(?:needed|necessary)\b

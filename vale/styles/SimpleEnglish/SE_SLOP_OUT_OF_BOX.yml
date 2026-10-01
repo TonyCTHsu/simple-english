@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:out)\b\s+\b(?:of)\b\s+\b(?:the)\b\s+\b(?:box)\b

@@ -1,0 +1,7 @@
+extends: existence
+message: "Pick one. Or write \"X, or Y, or both\"."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:and)\b\s*(?:/)\s*\b(?:or)\b

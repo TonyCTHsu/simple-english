@@ -1,0 +1,7 @@
+extends: existence
+message: "Write \"that is\", or name the items."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:i)\b\s*(?:\.)\s*\b(?:e)\b

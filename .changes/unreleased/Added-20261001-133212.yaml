@@ -1,0 +1,3 @@
+kind: Added
+body: A generated Vale edition of the rule set under vale/styles. bin/render-vale renders it from the rule XML, five hand-written checks in vale/overrides cover the part-of-speech rules, and a CI job lints the corpus through the edition. The edition enforces 63 of the 67 built-in rules. See docs/VALE.md.
+time: 2026-10-01T13:32:12.416082+02:00

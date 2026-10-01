@@ -1,0 +1,7 @@
+extends: existence
+message: "Write  or ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:functionality(?:s|es|ed|d|ing)?)\b

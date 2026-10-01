@@ -1,0 +1,193 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Renders the Vale edition of the rule set into vale/styles. Word
+# and phrase rules become existence checks, generated from
+# rules/simple-english.xml. Run after every rule change and commit
+# the result.
+#
+# Rules the generator cannot express faithfully (part-of-speech
+# patterns, negation) are hand-written in vale/overrides and copied
+# in. The generator fails when a rule needs an override that does
+# not exist. Punctuation and counting rules have no Vale
+# equivalent, so they stay out. The generated manifest names them.
+# test/vale_corpus_check.rb lints the corpus through the edition.
+
+require "rexml/document"
+
+module RenderVale
+  ROOT = File.expand_path("..", __dir__)
+  XML_FILE = File.join(ROOT, "rules/simple-english.xml")
+  STYLES_DIR = File.join(ROOT, "vale/styles/SimpleEnglish")
+  OVERRIDES_DIR = File.join(ROOT, "vale/overrides")
+
+  # Rules with no faithful Vale form. Punctuation is invisible to
+  # Vale's word-based checks. The counting rules live in the CLI.
+  # They are not XML units, but the manifest counts coverage against
+  # the full built-in set, so they belong here.
+  OMITTED = {
+    "SE_NO_EMDASH" => "Vale checks match words, not punctuation.",
+    "SE_NO_SEMICOLON" => "Vale checks match words, not punctuation.",
+    "SE_SENTENCE_TOO_LONG" => "A counting rule. It lives in the se CLI, not in styles.",
+    "SE_PARAGRAPH_TOO_LONG" => "A counting rule. It lives in the se CLI, not in styles."
+  }.freeze
+
+  module_function
+
+  def word_char?(string)
+    string.match?(/[A-Za-z0-9]/)
+  end
+
+  # One XML token -> one regex fragment: the surface text, with
+  # the inflected stem suffix where LT matches inflections.
+  def base(token)
+    text = token.texts.join
+    (token.attributes["regexp"] == "yes") ? text : Regexp.escape(text)
+  end
+
+  # Guards and grouping around the base text. Word characters get
+  # boundaries. The stem suffix sits inside, so "design" and
+  # "designed" both end on a boundary. (?:...) groups alternations.
+  def decorated(token)
+    source = base(token)
+    pre = word_char?(source[0]) ? "\\b" : ""
+    post = word_char?(source[-1]) ? "\\b" : ""
+    if token.attributes["inflected"] == "yes"
+      source = source.split("|").map { |alt| "#{alt}(?:s|es|ed|d|ing)?" }.join("|")
+    end
+    "#{pre}(?:#{source})#{post}"
+  end
+
+  # LT tokens are adjacent. A punctuation token carries no
+  # whitespace. One or more spaces separate words.
+  def separator(left, right)
+    boundary = [left[-1], right[0]].any? { |char| !word_char?(char) }
+    boundary ? "\\s*" : "\\s+"
+  end
+
+  def phrase(tokens)
+    bases = tokens.map { |token| base(token) }
+    separators = bases.each_cons(2).map { |left, right| separator(left, right) }
+    tokens.map { |token| decorated(token) }.zip(separators).map(&:join).join
+  end
+
+  def simple?(tokens)
+    tokens.none? do |token|
+      token.attributes.keys.any? { |key| %w[postag negate min max].include?(key) }
+    end
+  end
+
+  def existence_yaml(message, regex)
+    <<~YAML
+      extends: existence
+      message: #{message.inspect}
+      level: error
+      ignorecase: false
+      tokens:
+        - |-
+          #{regex}
+    YAML
+  end
+
+  def message_of(rule)
+    REXML::XPath.match(rule, "message").first.texts.join
+  end
+
+  def tokens_of(rule)
+    REXML::XPath.match(rule, "pattern/token")
+  end
+
+  # One unit (a lone rule, or a rulegroup) -> a check file map. A
+  # group whose members agree on the message merges into one
+  # alternation, so the check id stays the group id. Anything else
+  # keeps one file per member, suffixed by position.
+  def unit_checks(id, rules)
+    if rules.size > 1 && rules.map { |r| message_of(r) }.uniq.one? &&
+        rules.all? { |r| simple?(tokens_of(r)) }
+      regex = rules.map { |r| phrase(tokens_of(r)) }.join("|")
+      return {"#{id}.yml" => existence_yaml(message_of(rules.first), regex)}
+    end
+
+    rules.each_with_index.filter_map do |rule, index|
+      name = rules.one? ? id : "#{id}_#{index + 1}"
+      tokens = tokens_of(rule)
+      next ["#{name}.yml", existence_yaml(message_of(rule), phrase(tokens))] if simple?(tokens)
+
+      override = File.join(OVERRIDES_DIR, "#{name}.yml")
+      raise "no override for #{name}: add #{override} or simplify the rule" unless File.exist?(override)
+
+      ["#{name}.yml", File.read(override)]
+    end.to_h
+  end
+
+  # The XML units: rulegroups with their member rules, then the lone
+  # rules. Both live under /rules/category.
+  def units
+    document = REXML::Document.new(File.read(XML_FILE))
+    REXML::XPath.match(document, "/rules/category/rulegroup")
+      .map { |group| [group.attributes["id"], REXML::XPath.match(group, "rule")] } +
+      REXML::XPath.match(document, "/rules/category/rule")
+        .map { |rule| [rule.attributes["id"], [rule]] }
+  end
+
+  def checks
+    units.reject { |id, _| OMITTED.key?(id) }
+      .flat_map { |id, rules| unit_checks(id, rules).to_a }
+      .to_h
+  end
+
+  def override_names(checks)
+    Dir.children(OVERRIDES_DIR).select { |name| checks.key?(name) }.sort
+  end
+
+  def manifest(checks)
+    hand = override_names(checks)
+    covered = units.count { |id, _| !OMITTED.key?(id) }
+    total = units.size + OMITTED.count { |id, _| id.end_with?("TOO_LONG") }
+    <<~MD
+      # SimpleEnglish for Vale
+
+      Do not edit these files by hand. They are generated by
+      `bin/render-vale`. Vendor the directory, or point Vale's
+      StylesPath at vale/styles.
+
+      This edition enforces #{covered} of the #{total} built-in rules.
+
+      ## Hand-written checks
+
+      These rules need part-of-speech matching or negation, which the
+      generator does not translate. Each has a hand-written check in
+      vale/overrides:
+
+      #{hand.map { |name| "- `#{name.delete_suffix(".yml")}`" }.join("\n")}
+
+      `SE_CONDITION_FIRST` is degraded: Vale's tagger does not mark
+      imperative verbs reliably, so it misses some cases.
+
+      Sequence checks also match case-sensitively, so a
+      sentence-initial verb can escape.
+
+      ## Not in this edition
+
+      #{OMITTED.map { |id, reason| "- `#{id}`: #{reason}" }.join("\n")}
+
+      The se CLI enforces the full set. The source of truth is
+      rules/simple-english.xml. This edition serves pipelines
+      that already run Vale.
+    MD
+  end
+
+  def render
+    files = checks
+    files.merge("README.md" => manifest(files))
+  end
+
+  def write!
+    require "fileutils"
+    FileUtils.rm_rf(STYLES_DIR)
+    FileUtils.mkdir_p(STYLES_DIR)
+    render.each { |name, body| File.write(File.join(STYLES_DIR, name), body) }
+  end
+end
+
+RenderVale.write! if $PROGRAM_NAME == __FILE__

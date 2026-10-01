@@ -1,0 +1,7 @@
+extends: existence
+message: "Name the items."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:etc)\b

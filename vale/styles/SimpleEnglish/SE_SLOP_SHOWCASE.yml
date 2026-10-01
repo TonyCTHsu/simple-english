@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:showcase(?:s|es|ed|d|ing)?|underscore(?:s|es|ed|d|ing)?|emphasize(?:s|es|ed|d|ing)?)\b

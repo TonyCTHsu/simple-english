@@ -1,0 +1,13 @@
+# Hand-written: the postag VBN token needs Vale's sequence check.
+# The two skip windows approximate LT's gaps: LT allows only
+# "not"/"never" before the participle and only non-"by" words after
+# it. Vale's skip admits any token, so this check is slightly wider.
+extends: sequence
+message: "Use the active voice. Say who does the action."
+level: error
+tokens:
+  - pattern: 'am|is|are|was|were|be|been|being'
+  - tag: VBN
+    skip: 1
+  - pattern: 'by'
+    skip: 6

@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:leverage(?:s|es|ed|d|ing)?|utilize(?:s|es|ed|d|ing)?)\b

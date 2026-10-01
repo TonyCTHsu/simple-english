@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it. Say what changes."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:transformative|game-changer|game changer)\b

@@ -1,0 +1,7 @@
+extends: existence
+message: "Write  or ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:embark(?:s|es|ed|d|ing)?|endeavor(?:s|es|ed|d|ing)?)\b
