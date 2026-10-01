@@ -1,3 +1,0 @@
-kind: Changed
-body: '`se setup` reports each check as it completes: whether LanguageTool was downloaded or already cached, which java it picked and from where (SE_JAVA, PATH, or Homebrew), and the smoke test result'
-time: 2026-10-02T00:00:00+02:00
