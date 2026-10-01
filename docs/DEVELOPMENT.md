@@ -58,8 +58,8 @@ All modules keep internals `private_class_method`.
 ## Running the tests
 
 ```
-rake check                  # everything CI runs: standardrb, tests,
-                            # examples, corpus, self-lint
+rake check                  # standardrb, tests, examples, corpus,
+                            # self-lint
 rake test                   # unit tests only, no LanguageTool needed
 ruby test/examples_check.rb   # every rule against its own examples
 ruby test/corpus_check.rb   # corpus pairs
@@ -90,6 +90,11 @@ except the tests whose job is the JVM boundary.
    example. It proves the rule stays silent on its correct example.
    `roundtrip_test.rb` and the daemon end-to-end test check offset
    mapping and the full serve → lint path with a real daemon.
+5. **CI user story** (`e2e` job in `.github/workflows/ci.yml`): builds
+   and installs the gem, runs `se setup`, and lints files outside the
+   repo. It asserts the exit codes. The first lint boots the daemon.
+   It also lints a code comment through the comment pipeline. This
+   tier runs on CI only, never locally.
 
 Priority order: line and column fidelity first, then failure paths
 (every `exit 2` has a test), then rule correctness. Last: a JVM-free

@@ -97,3 +97,48 @@ jobs:
 
       - name: Run the rules checks
         run: bundle exec rake check
+
+  e2e:
+    # The user story: build and install the gem, set up the
+    # environment, lint files. Everything runs off the installed gem,
+    # not the checkout's bundle. So the shipped package, the se
+    # shim, and the daemon auto-boot are what gets tested.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Build and install the gem
+        run: |
+          gem build simple_english.gemspec
+          gem install --no-document ./simple-english-*.gem
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/se
+          # Shared with the rules job. Same distro pin, same download.
+          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+
+      - name: Set up the environment
+        run: se setup
+
+      - name: Lint as a user
+        run: |
+          story="$RUNNER_TEMP/story"
+          mkdir "$story"
+          cp test/corpus/01-before.md test/corpus/01-after.md "$story/"
+          printf '# Read the log; then act.\n' > "$story/broken.rb"
+          cd "$story"
+          # A repo checkout carries .simple-english.yml. Lint runs
+          # outside it, so no config applies. The first lint boots
+          # the daemon. It takes about 15 seconds.
+          rc=0; se lint 01-before.md || rc=$?
+          [ "$rc" -eq 1 ] || { echo "01-before.md: expected exit 1, got $rc"; exit 1; }
+          rc=0; se lint 01-after.md || rc=$?
+          [ "$rc" -eq 0 ] || { echo "01-after.md: expected exit 0, got $rc"; exit 1; }
+          rc=0; se lint broken.rb || rc=$?
+          [ "$rc" -eq 1 ] || { echo "broken.rb: expected exit 1, got $rc"; exit 1; }
