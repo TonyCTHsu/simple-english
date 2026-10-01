@@ -152,7 +152,13 @@ module SimpleEnglish
         read_timeout: 2) { |http| http.get("/") }
       return nil unless response.is_a?(Net::HTTPSuccess)
       data = JSON.parse(response.body)
-      return nil unless data.is_a?(Hash) && data.key?("gem_digest") && data.key?("pid")
+      # The whole contract or nothing: a responder with a string pid
+      # or a missing field is not a daemon we can reason about, and
+      # letting it through crashes the restart probe later.
+      return nil unless data.is_a?(Hash) &&
+        data["version"].is_a?(String) && data["pid"].is_a?(Integer) &&
+        data["pid"].positive? && data["gem_digest"].is_a?(String) &&
+        data["rules_digest"].is_a?(String)
       data
     rescue Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EPIPE,
       SocketError, Timeout::Error, EOFError, JSON::ParserError, TypeError

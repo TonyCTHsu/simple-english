@@ -90,6 +90,16 @@ class ClientHTTPTest < Minitest::Test
     end
   end
 
+  def test_info_is_nil_for_a_malformed_handshake
+    # Key presence alone is not a handshake: a string pid reaches
+    # the restart probe and raises TypeError mid-lint.
+    bad = {"version" => "0.2.0", "pid" => "42",
+           "gem_digest" => "a" * 64, "rules_digest" => "b" * 64}
+    with_stub_server("/" => JSON.generate(bad)) do |url|
+      assert_nil SimpleEnglish::Client.info(base_url: url)
+    end
+  end
+
   def test_info_is_nil_when_daemon_is_down
     assert_nil SimpleEnglish::Client.info(base_url: "http://localhost:1")
   end
