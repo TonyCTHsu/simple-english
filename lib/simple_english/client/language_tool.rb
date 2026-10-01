@@ -37,8 +37,8 @@ module SimpleEnglish
       # AnnotatedText::Result (code comments): one payload interface,
       # #lt_params and #locate, either side of the daemon's LT request.
       # The caller owns the enabled rule IDs (the daemon captures them
-      # at boot). There is no default, so no call silently drops BYOR
-      # rules.
+      # at boot). There is no default, so no call silently lints with
+      # every rule disabled.
       def check(payload, enabled_rules:, base_url:)
         payload = to_payload(payload)
         params = {"language" => "en",

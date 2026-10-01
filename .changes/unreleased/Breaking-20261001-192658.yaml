@@ -1,0 +1,3 @@
+kind: Breaking
+body: 'Removed the `rules:` key (BYOR) from `.simple-english.yml`. Extra LanguageTool XML rule files no longer merge into the built-in rule set. Remove the key from your config; `se` warns while it is present.'
+time: 2026-10-01T19:26:58.889806+02:00

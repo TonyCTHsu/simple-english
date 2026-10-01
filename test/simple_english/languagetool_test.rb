@@ -26,7 +26,7 @@ class LanguageToolHelpersTest < Minitest::Test
           </rulegroup>
         </rules>
       XML
-      ids = SimpleEnglish::LanguageTool.rule_ids([user])
+      ids = SimpleEnglish::LanguageTool.rule_ids(user)
       assert_includes ids, "MY_TEAM_RULE"
       assert_includes ids, "MY_OTHER_RULE"
       assert_includes ids, "MY_GROUP"

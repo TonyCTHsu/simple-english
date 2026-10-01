@@ -14,7 +14,6 @@ require "tmpdir"
 
 require_relative "../setup/install"
 require_relative "../client/daemon"
-require_relative "../setup/config"
 require_relative "../setup/fingerprint"
 require_relative "../version"
 
@@ -34,35 +33,12 @@ module SimpleEnglish
     module_function
 
     # LanguageTool's HTTP server has no --rulefile flag. Custom rules
-    # load from the classpath at this exact path. User rule files
-    # (BYOR, from .simple-english.yml `rules:`) merge into the same
-    # staged file: LT loads exactly one grammar_custom.xml per language.
-    def stage_rules(dir, user_rules: [])
+    # load from the classpath at this exact path.
+    def stage_rules(dir)
       target = File.join(dir, "org/languagetool/rules/en/grammar_custom.xml")
       FileUtils.mkdir_p(File.dirname(target))
-      File.write(target, merged_rules(user_rules))
+      FileUtils.cp(SimpleEnglish::LanguageTool::RULES_FILE, target)
       target
-    end
-
-    # One <rules> root holding the children of the built-in file and
-    # every user file. REXML (stdlib) rejects malformed XML here, at
-    # boot, with the file named: far clearer than the JVM's boot log.
-    def merged_rules(user_rules)
-      require "rexml/document"
-      root = REXML::Element.new("rules")
-      root.add_attribute("lang", "en")
-      [SimpleEnglish::LanguageTool::RULES_FILE, *user_rules].each do |path|
-        doc = REXML::Document.new(File.read(path))
-        unless doc.root && doc.root.name == "rules" &&
-            ["en", ""].include?(doc.root.attribute("lang").to_s)
-          raise ServerError,
-            "custom rules file #{path}: expected a <rules lang=\"en\"> root"
-        end
-        doc.root.children.each { |child| root.add(child) }
-      rescue REXML::ParseException, SystemCallError => e
-        raise ServerError, "custom rules file #{path}: #{e.message}"
-      end
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n#{root}"
     end
 
     # Probes both loopback families: on IPv6-first resolvers a "localhost"
@@ -88,7 +64,7 @@ module SimpleEnglish
       raise ServerError, "port #{port} cannot be bound. Use a port above 1024."
     end
 
-    # `se serve` over a live daemon (gem upgrade, BYOR change): when
+    # `se serve` over a live daemon (gem upgrade): when
     # one of our daemons holds the port (it answers the
     # handshake), stop it and take over the port. A service that
     # does not answer the handshake, pre-handshake daemon included,
@@ -120,13 +96,10 @@ module SimpleEnglish
 
     def start(port: Client::DEFAULT_PORT, install: Install.from_env, log: $stderr)
       rules_dir = Dir.mktmpdir("se-rules")
-      # BYOR rules come from the daemon's start directory, not the
-      # lint caller's: the staged rule set is frozen at boot. The
-      # enabled IDs come from the staged file, so what LT loads and
-      # what each request enables can never diverge.
-      user_rules = Config.load[:rules]
-      staged = stage_rules(rules_dir, user_rules: user_rules)
-      enabled_rules = SimpleEnglish::LanguageTool.rule_ids([staged])
+      # The enabled IDs come from the staged file, so what LT loads
+      # and what each request enables can never diverge.
+      staged = stage_rules(rules_dir)
+      enabled_rules = SimpleEnglish::LanguageTool.rule_ids
       daemon_info = {"version" => VERSION, "pid" => Process.pid,
                      "gem_digest" => Fingerprint.gem,
                      "rules_digest" => Fingerprint.sha(File.read(staged))}
