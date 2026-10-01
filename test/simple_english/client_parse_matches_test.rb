@@ -22,7 +22,7 @@ class ClientParseMatchesTest < Minitest::Test
 
   def test_parse_matches_converts_offsets_to_lines
     text = "first line\nsecond line"
-    findings = SimpleEnglish::Client.parse_matches(MATCHES, text)
+    findings = SimpleEnglish::LTApi.parse_matches(MATCHES, text)
     assert_equal [
       [2, 2, 2, 8, "SE_NO_CONTRACTIONS"],
       [2, 10, 2, 12, "SE_SENTENCE_TOO_LONG"]
@@ -30,7 +30,7 @@ class ClientParseMatchesTest < Minitest::Test
   end
 
   def test_parse_matches_empty
-    assert_empty SimpleEnglish::Client.parse_matches([], "anything")
+    assert_empty SimpleEnglish::LTApi.parse_matches([], "anything")
   end
 
   def test_parse_matches_prefixes_the_offending_text
@@ -42,7 +42,7 @@ class ClientParseMatchesTest < Minitest::Test
       "context" => {"text" => "You should leverage this",
                     "offset" => 11, "length" => 8}
     }]
-    findings = SimpleEnglish::Client.parse_matches(matches, "You should leverage this")
+    findings = SimpleEnglish::LTApi.parse_matches(matches, "You should leverage this")
     assert_equal "\"leverage\" - Write \"use\".", findings.first.message
   end
 
@@ -55,7 +55,7 @@ class ClientParseMatchesTest < Minitest::Test
       "context" => {"text" => "\u{1F4A1} leverage this",
                     "offset" => 3, "length" => 8}
     }]
-    findings = SimpleEnglish::Client.parse_matches(matches, "\u{1F4A1} leverage this")
+    findings = SimpleEnglish::LTApi.parse_matches(matches, "\u{1F4A1} leverage this")
     assert_equal "\"leverage\" - Write \"use\".", findings.first.message
   end
 
@@ -64,7 +64,7 @@ class ClientParseMatchesTest < Minitest::Test
       "message" => "Write \"use\".", "offset" => 4, "length" => 8,
       "rule" => {"id" => "SE_SLOP_LEVERAGE"}
     }]
-    findings = SimpleEnglish::Client.parse_matches(matches, "You should leverage this")
+    findings = SimpleEnglish::LTApi.parse_matches(matches, "You should leverage this")
     assert_equal "Write \"use\".", findings.first.message
   end
 end

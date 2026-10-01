@@ -36,20 +36,23 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - `lib/simple_english.rb` is the composition root: `lint_text`,
   `lint_file`. `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
-  is the only change that belongs in it
-- `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
-  `annotated_text.rb`, `suppressions.rb`, `config.rb`, `client.rb`, `fingerprint.rb`, `cli.rb` are
-  separate modules with small public interfaces
+  is the only change that belongs in it. `cli.rb` is the Thor CLI
+- The tree groups files by domain: `setup/`, `lint/`, `client/`,
+  `daemon/`
+- `setup/` resolves the environment once, at the process edge. It
+  holds `languagetool.rb` (pinned-distro facts), `install.rb`
+  (cache dir, jar paths, java), `config.rb`, and `fingerprint.rb`
+- `lint/` is the pipeline domain: `lint_plan.rb`, `markdown.rb`,
+  `extractor.rb`, `annotated_text.rb`, `counts.rb`, `suppressions.rb`
+- `client/` is the client tier. `lt_api.rb` speaks the LanguageTool
+  wire protocol, used by the daemon's engine. `daemon.rb` probes,
+  trusts, and boots the daemon
+- `daemon/` holds the server tier: `engine.rb` (lint pipeline),
+  `http.rb` (wire framing), `server.rb` (lifecycle). Server failures
+  raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
 - One object definition per file: value objects live in their own files
-  (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`, `result.rb`,
-  `plain_text.rb`, `install.rb`)
-- `lib/simple_english/languagetool.rb` holds the pinned-distro facts (version,
-  rules file, download). `install.rb` resolves the on-machine installation
-  (cache dir, jar paths, java) once, from the environment, at the process edge
-- `lib/simple_english/engine.rb` (lint pipeline), `http.rb` (wire framing), and
-  `server.rb` (daemon lifecycle) hold the daemon side. Server failures raise
-  typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`). `cli.rb` turns them
-  into warnings and exit codes
+  in `lint/` (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`,
+  `result.rb`, `plain_text.rb`)
 - Internals are `private_class_method`
 
 ## Constraints
@@ -83,7 +86,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and correct
    examples
-2. Counting rule: `lib/simple_english/counts.rb`
+2. Counting rule: `lib/simple_english/lint/counts.rb`
 3. Add a corpus pair `test/corpus/NN-before.md` / `NN-after.md`. The before file
    must trigger the rule. The after file must stay clean.
 

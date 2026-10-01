@@ -39,7 +39,7 @@ class StripMarkdownTest < Minitest::Test
       (char.ord > 0xFFFF) ? 2 : 1
     end
     assert_equal [1, source_offset + 1],
-      SimpleEnglish::Client.offset_to_position(stripped, stripped.index("don't"))
+      SimpleEnglish::PlainText.new(stripped).locate(stripped.index("don't"))
   end
 
   def test_inline_code_remains_one_word_when_followed_by_punctuation

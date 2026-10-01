@@ -2,7 +2,7 @@
 
 require "minitest/autorun"
 require_relative "../../lib/simple_english"
-require_relative "../../lib/simple_english/suppressions"
+require_relative "../../lib/simple_english/lint/suppressions"
 
 class SuppressionsTest < Minitest::Test
   def test_directive_without_rules_suppresses_the_whole_line

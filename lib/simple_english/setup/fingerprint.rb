@@ -18,7 +18,7 @@ module SimpleEnglish
     # only changes caller-side code triggers one needless restart.
     # ponytail: whole-lib glob. If restarts ever hurt, curate per-file.
     def gem
-      files = Dir.glob(File.expand_path("../**/*.rb", __dir__)).sort
+      files = Dir.glob(File.expand_path("../../**/*.rb", __dir__)).sort
       files << LanguageTool::RULES_FILE
       # Each file is length-prefixed: bare concatenation cannot tell
       # ["ab", "c"] from ["a", "bc"], so bytes moved across a file

@@ -20,11 +20,11 @@ module SimpleEnglish
       if plan == :prose
         stripped = SimpleEnglish::Markdown.strip(text)
         (SimpleEnglish::Counts.check(stripped) +
-          SimpleEnglish::Client.check(stripped, base_url: base_url,
+          SimpleEnglish::LTApi.check(stripped, base_url: base_url,
             enabled_rules: enabled_rules))
           .sort_by { |finding| [finding.line, finding.rule] }
       else
-        SimpleEnglish::Client.check(
+        SimpleEnglish::LTApi.check(
           SimpleEnglish::AnnotatedText.build(text, plan), base_url: base_url,
           enabled_rules: enabled_rules
         )
