@@ -1,3 +1,0 @@
-kind: Fixed
-body: '`se setup --dir` now smokes the LanguageTool it just installed into that dir. The smoke test read the cache dir instead, so a fresh install into a custom dir was reported as corrupt.'
-time: 2026-10-02T00:00:00+02:00

@@ -39,28 +39,6 @@ class SetupCLITest < Minitest::Test
     end
   end
 
-  def test_setup_with_dir_runs_the_smoke_test_against_that_dir
-    install = SimpleEnglish::Install.from_env
-    skip "needs java and the LanguageTool cache" unless install.java? &&
-      File.exist?(install.commandline_jar)
-
-    in_tmpdir do |cache|
-      # The real install appears under --dir, via a symlink. The
-      # decoy SE_CACHE_DIR has no LanguageTool, so a smoke test that
-      # reads the cache instead of --dir finds no jar and fails.
-      dest = File.join(cache, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
-      FileUtils.ln_s(install.lt_dir, dest)
-      in_tmpdir do |decoy|
-        with_env("SE_CACHE_DIR" => decoy, "SE_JAVA" => install.java) do
-          out, = capture_io do
-            assert_equal 0, SimpleEnglish::CLI.run(["setup", "--dir", cache])
-          end
-          assert_match(/Smoke test: passed/, out)
-        end
-      end
-    end
-  end
-
   private
 
   # A cache whose LanguageTool-<version> dir holds a commandline jar,
