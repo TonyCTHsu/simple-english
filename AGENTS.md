@@ -44,9 +44,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   (cache dir, jar paths, java), `config.rb`, and `fingerprint.rb`
 - `lint/` is the pipeline domain: `lint_plan.rb`, `markdown.rb`,
   `extractor.rb`, `annotated_text.rb`, `counts.rb`, `suppressions.rb`
-- `client/` is the client tier. `lt_api.rb` speaks the LanguageTool
-  wire protocol, used by the daemon's engine. `daemon.rb` probes,
-  trusts, and boots the daemon
+- `client/` is the client tier. `language_tool.rb` speaks the
+  LanguageTool wire protocol, used by the daemon's engine.
+  `daemon.rb` probes, trusts, and boots the daemon
 - `daemon/` holds the server tier: `engine.rb` (lint pipeline),
   `http.rb` (wire framing), `server.rb` (lifecycle). Server failures
   raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)

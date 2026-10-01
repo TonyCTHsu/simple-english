@@ -24,7 +24,7 @@ client/daemon seam visible in `client/` and `daemon/`.
   `suppressions.rb` applies `se: ignore`
 - Value objects live one per file: `finding.rb`, `paragraph.rb`,
   `span.rb`, `segment.rb`, `result.rb`, `plain_text.rb`
-- `lib/simple_english/client/` is the client tier. `lt_api.rb`
+- `lib/simple_english/client/` is the client tier. `language_tool.rb`
   speaks the LanguageTool wire protocol. The daemon's engine calls
   it against the inner JVM. `daemon.rb` is the se daemon client:
   probe, handshake, boot, lint

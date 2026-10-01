@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # HTTP client for the se daemon: probe, handshake, boot, lint. The
-# LanguageTool wire protocol lives in lib/simple_english/client/lt_api.rb.
+# LanguageTool wire protocol lives in lib/simple_english/client/language_tool.rb.
 
 require "json"
 require "net/http"
