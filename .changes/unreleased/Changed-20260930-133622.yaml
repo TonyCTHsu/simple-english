@@ -1,3 +1,0 @@
-kind: Changed
-body: '`se serve` stops a running se daemon and takes over its port.'
-time: 2026-09-30T13:36:22.254748+02:00
