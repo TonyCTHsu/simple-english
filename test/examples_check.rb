@@ -36,7 +36,7 @@ module ExampleChecks
     SimpleEnglish::Client.ensure_up
     rules = rule_examples
     # rule_ids feeds enabledRules on every lint request. It is a regex
-    # scan; this is the real parser. If the two disagree, the daemon
+    # scan and this is the real parser. If the two disagree, the daemon
     # enables a rule set the XML does not define, or misses one it does.
     ids = rules.keys
     regex_ids = SimpleEnglish::LanguageTool.rule_ids
