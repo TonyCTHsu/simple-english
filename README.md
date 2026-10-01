@@ -216,11 +216,12 @@ catches what the agent missed.
 
 ### Why not Vale?
 
-[Vale](https://vale.sh) matches words and patterns. The rule set here
-also needs grammar: active voice, tense, contractions with context.
-Vale has no grammar engine, so this tool uses LanguageTool for those
-rules. It adds the counting rules in Ruby and code comment linting
-through tree-sitter.
+Vale checks patterns, and its sequence checks match parts of speech.
+So grammar rules are possible. The rules here are LanguageTool XML
+with incorrect and correct examples, and CI verifies every example.
+Porting them means rewriting them. The counting rules and the code
+comment pipeline are Ruby, so a different checker replaces only part
+of this tool anyway.
 
 ## Develop
 
