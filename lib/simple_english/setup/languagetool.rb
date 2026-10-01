@@ -22,16 +22,17 @@ module SimpleEnglish
     module_function
 
     # Download and unpack the pinned LanguageTool into DIR. Idempotent:
-    # returns the install directory, or nil after warning why. Pure Ruby
-    # throughout: the download uses Net::HTTP and the unpack parses the
-    # zip with stdlib Zlib, so setup needs no curl, unzip, or unpack gem
-    # on the machine.
+    # returns {"dir" => install dir, "downloaded" => bool} so `se setup`
+    # can say what it found and what it fetched, or nil after warning
+    # why. Pure Ruby throughout: the download uses Net::HTTP and the
+    # unpack parses the zip with stdlib Zlib, so setup needs no curl,
+    # unzip, or unpack gem on the machine.
     def install(dir)
       require "fileutils"
       dest = File.join(dir, "LanguageTool-#{LT_VERSION}")
       if File.exist?(File.join(dest, "languagetool-commandline.jar"))
         remove_stale_versions(dir, dest)
-        return dest
+        return {"dir" => dest, "downloaded" => false}
       end
       zip = File.join(dir, "LanguageTool-#{LT_VERSION}.zip")
       FileUtils.mkdir_p(dir)
@@ -39,7 +40,7 @@ module SimpleEnglish
       return nil unless extract(zip, dir)
       File.delete(zip)
       remove_stale_versions(dir, dest)
-      dest
+      {"dir" => dest, "downloaded" => true}
     end
 
     def download_url

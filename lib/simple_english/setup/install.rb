@@ -13,11 +13,12 @@ module SimpleEnglish
     class SetupError < StandardError
     end
 
-    attr_reader :cache_dir, :java
+    attr_reader :cache_dir, :java, :java_source
 
-    def initialize(cache_dir:, java: nil)
+    def initialize(cache_dir:, java: nil, java_source: nil)
       @cache_dir = cache_dir
       @java = java
+      @java_source = java_source
     end
 
     # The one place the environment is read. SE_JAVA wins outright,
@@ -25,15 +26,21 @@ module SimpleEnglish
     # Otherwise the code probes the PATH candidate by running it,
     # because a file can exist and still be the macOS stub that
     # reports no runtime. The last resort is the Homebrew location,
-    # which sits outside PATH.
+    # which sits outside PATH. java_source records which of the three
+    # won, so `se setup` can say so.
     def self.from_env(env = ENV)
       cache = File.expand_path(env.fetch(LanguageTool::CACHE_DIR_ENV) do
         File.join(Dir.home, ".cache", "se")
       end)
-      java = env[LanguageTool::JAVA_ENV] ||
-        ("java" if probe?("java", env)) ||
-        (LanguageTool::HOMEBREW_JAVA if File.executable?(LanguageTool::HOMEBREW_JAVA))
-      new(cache_dir: cache, java: java)
+      java, source =
+        if (explicit = env[LanguageTool::JAVA_ENV])
+          [explicit, :env]
+        elsif probe?("java", env)
+          ["java", :path]
+        elsif File.executable?(LanguageTool::HOMEBREW_JAVA)
+          [LanguageTool::HOMEBREW_JAVA, :homebrew]
+        end
+      new(cache_dir: cache, java: java, java_source: source)
     end
 
     # Runs the candidate under the given PATH, isolated from this
