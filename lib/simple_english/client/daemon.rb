@@ -171,7 +171,7 @@ module SimpleEnglish
         return
       end
       fix = ENV["SE_SERVER_URL"] ? "It is not restarted automatically." :
-        "Run `se serve` to restart it."
+        "Run `se serve --detached` to restart it."
       warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install " \
         "(#{VERSION}). #{fix} Linting against it meanwhile."
     end
@@ -191,9 +191,13 @@ module SimpleEnglish
       end
     end
 
-    def spawn_daemon
+    # Boots `se serve` as a detached child, output discarded: the
+    # daemon must outlive the caller. Extra arguments (a port, a
+    # dev-log path) are forwarded to the child serve.
+    def spawn_daemon(*serve_args)
       bin = File.expand_path("../../../bin/se", __dir__)
-      Process.spawn(RbConfig.ruby, bin, "serve", out: File::NULL, err: File::NULL)
+      Process.spawn(RbConfig.ruby, bin, "serve", *serve_args,
+        out: File::NULL, err: File::NULL)
     end
 
     def wait_for(seconds: 90)
@@ -216,7 +220,6 @@ module SimpleEnglish
     end
 
     private_class_method :boot, :check_daemon, :warn_mismatched_code,
-      :spawn_daemon, :wait_for,
       :newer_daemon?, :with_spawn_lock
   end
 end

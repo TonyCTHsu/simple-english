@@ -33,3 +33,26 @@ class CLIDispatchTest < Minitest::Test
     assert_match(/lint/, out)
   end
 end
+
+class CLIServeTest < Minitest::Test
+  def test_serve_detached_prints_the_handshake_and_exits_0
+    SimpleEnglish::Server.stub :start_detached, ->(*) { {"pid" => 4242} } do
+      out, = capture_io do
+        assert_equal 0,
+          SimpleEnglish::CLI.run(["serve", "--detached", "--port", "28291"])
+      end
+      assert_match(/pid 4242/, out)
+      assert_match(/28291/, out)
+    end
+  end
+
+  def test_serve_detached_failure_points_at_the_visible_serve
+    SimpleEnglish::Server.stub :start_detached, ->(*) {} do
+      _out, err = capture_io do
+        assert_equal 2,
+          SimpleEnglish::CLI.run(["serve", "--detached", "--port", "28291"])
+      end
+      assert_match(/Run `se serve` and read its output/, err)
+    end
+  end
+end

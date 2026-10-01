@@ -94,6 +94,56 @@ module SimpleEnglish
       nil
     end
 
+    # Everything a boot needs on the machine, checked before the
+    # takeover stops the old daemon: a reload that cannot boot must
+    # leave the running daemon alive.
+    def preflight_install(install)
+      return if File.exist?(install.server_jar) && install.java?
+      raise Install::SetupError,
+        install.java? ? install.setup_error : install.java_message
+    end
+    private_class_method :preflight_install
+
+    # `se serve --detached`: replace any se daemon on the port, then
+    # boot a plain foreground serve as a detached child - the same
+    # shape the auto-boot spawns. The parent returns once the
+    # handshake answers. nil means the child never came up, and the
+    # visible serve (same command, no flag) shows why. dev_log is
+    # forwarded so a detached daemon can still get a log file.
+    def start_detached(port: Client::DEFAULT_PORT, install: Install.from_env,
+      dev_log: nil)
+      preflight_install(install)
+      takeover(port)
+      # A foreign port holder survives the takeover untouched: fail
+      # in milliseconds like the foreground boot, not after the
+      # 90 s spawn timeout.
+      assert_port_free(port)
+      assert_port_free(port + 1)
+      args = ["--port", port.to_s]
+      args.concat(["--dev-log", dev_log]) if dev_log
+      pid = Client.spawn_daemon(*args)
+      # The child gives its inner JVM TIMEOUT_SECONDS to boot, and
+      # the handshake answers only after that: wait the child's own
+      # budget, not the default 90 s, or a slow boot reads as
+      # failure while the child is still coming up.
+      daemon = Client.wait_for(
+        seconds: SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10
+      ) { Client.info(base_url: "http://localhost:#{port}") }
+      return daemon if daemon.is_a?(Hash)
+      # Readiness failed. The child is either dead (InnerTimeout and
+      # InnerDied make it exit itself) or a straggler that later
+      # takes over the port from whatever daemon comes next.
+      # Stop it either way, and reap so nothing is left behind.
+      stop(pid)
+      begin
+        Process.wait(pid)
+      rescue SystemCallError
+        # The child already exited on its own (InnerTimeout,
+        # InnerDied): only the reap is left.
+      end
+      nil
+    end
+
     def start(port: Client::DEFAULT_PORT, install: Install.from_env, log: $stderr)
       rules_dir = Dir.mktmpdir("se-rules")
       # The enabled IDs come from the staged file, so what LT loads
@@ -104,12 +154,8 @@ module SimpleEnglish
                      "gem_digest" => Fingerprint.gem,
                      "rules_digest" => Fingerprint.sha(File.read(staged))}
       # Preflight everything the replacement needs before the
-      # takeover stops the old daemon: a reload that cannot boot must
-      # leave the running daemon alive.
-      unless File.exist?(install.server_jar) && install.java?
-        raise Install::SetupError,
-          install.java? ? install.setup_error : install.java_message
-      end
+      # takeover stops the old daemon.
+      preflight_install(install)
       takeover(port)
       assert_port_free(port)
       # The inner JVM lives on port + 1. Guard it too so an occupied

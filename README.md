@@ -171,8 +171,9 @@ The CLI runs a small background server on your machine. The first
 lint starts it, which takes about 15 seconds. Later lints take
 milliseconds.
 
-The first lint after a gem update prints a warning. Run `se serve`
-then. It stops the old daemon and reloads it. You never talk to the daemon directly. Its HTTP
+The first lint after a gem update prints a warning. Run `se serve --detached` then.
+It stops the old daemon and starts the new one in the
+background. You never talk to the daemon directly. Its HTTP
 interface is internal and can change in any release.
 
 ## Scope

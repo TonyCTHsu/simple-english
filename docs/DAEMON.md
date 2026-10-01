@@ -15,10 +15,11 @@ automatically. Later lints take milliseconds.
 
 The first lint starts the daemon automatically (about 15 seconds
 once, then you need Java and one run of `se setup`). Later lints hit
-the running daemon and take milliseconds. To start it ahead of time:
+the running daemon and take milliseconds. To start it ahead of time,
+or to replace one after a gem update:
 
 ```bash
-se serve --port 8181 &
+se serve --detached
 ```
 
 ## The HTTP wire (internal)
@@ -56,7 +57,7 @@ A `gem_digest` mismatch means the daemon runs different code than
 the caller. The CLI never replaces a running daemon: `se serve`
 owns that. It warns at every lint until the daemon is replaced,
 and lints against the old code meanwhile. The warning names
-`se serve`. When the daemon is newer than the CLI, the warning
+`se serve --detached`. When the daemon is newer than the CLI, the warning
 says `Update this gem` instead: `se serve` from an older CLI
 boots an older daemon in its place.
 
@@ -93,5 +94,8 @@ restarted for you.
 - `se serve` stops a running se daemon of its own, then boots in its
   place. A service that does not answer the se handshake keeps the
   `port is already in use` error.
+- `se serve --detached` does the same replacement, then leaves the
+  daemon in the background and returns the terminal. The daemon
+  outlives the session, like the auto-started one.
 - A custom `SE_SERVER_URL` is never auto-started: if it does not
   answer, the CLI exits 2.

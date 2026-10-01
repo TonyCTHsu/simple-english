@@ -73,7 +73,21 @@ module SimpleEnglish
       desc: "Port to listen on"
     method_option :"dev-log", type: :string, banner: "PATH",
       desc: "Write daemon stderr to PATH"
+    method_option :detached, type: :boolean,
+      desc: "Replace any running se daemon and run in the background"
     def serve
+      if options[:detached]
+        daemon = SimpleEnglish::Server.start_detached(port: options[:port],
+          install: SimpleEnglish::Install.from_env, dev_log: options[:"dev-log"])
+        if daemon
+          puts "se daemon detached, pid #{daemon["pid"]}, " \
+            "on http://localhost:#{options[:port]}"
+          return 0
+        end
+        warn "error: detached daemon did not come up. " \
+          "Run `se serve` and read its output."
+        return 2
+      end
       log = options[:"dev-log"] ? File.open(options[:"dev-log"], "w") : $stderr
       SimpleEnglish::Server.start(port: options[:port],
         install: SimpleEnglish::Install.from_env, log: log)
