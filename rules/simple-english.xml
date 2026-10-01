@@ -53,6 +53,11 @@
       <example type="correct">The worker wrote the log.</example>
     </rule>
 
+    <!-- A passive agent changes the finding, not the rule match:
+         "has been read by X" also matches SE_ACTIVE_VOICE, and
+         LanguageTool reports only the first of two overlapping
+         matches, so this rule stays silent there. The active-voice
+         finding names the fix. -->
     <rule id="SE_PRESENT_PERFECT" name="Simple tenses only">
       <pattern>
         <token regexp="yes">have|has|had</token>
