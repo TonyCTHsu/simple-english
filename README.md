@@ -216,12 +216,14 @@ catches what the agent missed.
 
 ### Why not Vale?
 
-Vale checks patterns, and its sequence checks match parts of speech.
-So grammar rules are possible. The rules here are LanguageTool XML
-with incorrect and correct examples, and CI verifies every example.
-Porting them means rewriting them. The counting rules and the code
-comment pipeline are Ruby, so a different checker replaces only part
-of this tool anyway.
+We ported all 67 rules to Vale and ran the corpus on both engines.
+About 60 rules behave the same. Vale has no check for the em-dash
+and semicolon rules: its checks see words, not punctuation. Its
+tagger also mislabels verbs, so the condition-first rule stays
+silent. The rules here are LanguageTool XML with examples that CI
+verifies. Closing the Vale gaps needs scripts or an external
+tagger, and that erases Vale's main advantage: one binary with no
+service behind it.
 
 ## Develop
 
