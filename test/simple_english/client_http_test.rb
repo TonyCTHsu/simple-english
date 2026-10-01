@@ -91,8 +91,8 @@ class ClientHTTPTest < Minitest::Test
   end
 
   def test_info_is_nil_for_a_malformed_handshake
-    # Key presence alone is not a handshake: a string pid reaches
-    # the restart probe and raises TypeError mid-lint.
+    # Key presence alone is not a handshake: a malformed daemon is
+    # not one we can reason about.
     bad = {"version" => "0.2.0", "pid" => "42",
            "gem_digest" => "a" * 64, "rules_digest" => "b" * 64}
     with_stub_server("/" => JSON.generate(bad)) do |url|
@@ -106,7 +106,7 @@ class ClientHTTPTest < Minitest::Test
 
   def test_info_is_nil_when_the_connection_dies_mid_poll
     # A daemon being TERMed resets or closes the connection: the
-    # poll must return nil, not raise into the restart loop.
+    # poll must return nil, not raise into the lint path.
     server = TCPServer.new("127.0.0.1", 0)
     port = server.addr[1]
     closer = Thread.new { server.accept.close }

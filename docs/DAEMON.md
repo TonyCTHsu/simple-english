@@ -44,12 +44,19 @@ GET / answers the handshake:
 files. The CLI compares both at every lint.
 
 A `gem_digest` mismatch means the daemon runs different code than
-the caller. The CLI restarts it when it runs this gem's build or
-older code. It warns instead when the daemon is newer or behind
-`SE_SERVER_URL`.
+the caller. The CLI never replaces a running daemon: `se serve`
+owns that. It warns at every lint until the daemon is replaced,
+and lints against the old code meanwhile. The warning names
+`se serve`. When the daemon is newer than the CLI, the warning
+says `Update this gem` instead: `se serve` from an older CLI
+boots an older daemon in its place.
 
 A `rules_digest` mismatch means the daemon staged different rules
 than the caller's config, so the CLI warns and `se serve` reloads.
+
+The daemon is machine-global: one per port, shared by every
+project. The project that runs `se serve` last owns its staged
+rules, and every other project is warned at lint time.
 
 ## No Java? Run the daemon in a container
 
@@ -77,8 +84,9 @@ your machine, map another port on both sides, for example
 
 - Stop it with Ctrl-C or `kill` (TERM). If the inner server dies on
   its own, the daemon exits with code 2.
-- The first lint after a gem update restarts an outdated daemon
-  (about 15 s).
+- A lint starts the daemon when the port is cold (the first lint
+  takes about 15 s). A lint never replaces a running daemon:
+  `se serve` does that.
 - `se serve` stops a running se daemon of its own, then boots in its
   place. A service that does not answer the se handshake keeps the
   `port is already in use` error.

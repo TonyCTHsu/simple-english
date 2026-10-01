@@ -153,8 +153,7 @@ module SimpleEnglish
       return nil unless response.is_a?(Net::HTTPSuccess)
       data = JSON.parse(response.body)
       # The whole contract or nothing: a responder with a string pid
-      # or a missing field is not a daemon we can reason about, and
-      # letting it through crashes the restart probe later.
+      # or a missing field is not a daemon we can reason about.
       return nil unless data.is_a?(Hash) &&
         data["version"].is_a?(String) && data["pid"].is_a?(Integer) &&
         data["pid"].positive? && data["gem_digest"].is_a?(String) &&
@@ -165,17 +164,19 @@ module SimpleEnglish
       nil
     end
 
-    # True when the daemon answers. Starts or restarts it when we own
-    # the default URL. A custom SE_SERVER_URL belongs to someone
-    # else, so never spawn or kill against it. It returns false when
-    # unusable. The caller owns the exit status. Diagnostics go to
-    # stderr here, where the cause is known.
+    # True when the daemon answers. Starts it when the port is
+    # cold and we own the default URL. A running daemon is never
+    # replaced by a lint: `se serve` owns that. A custom
+    # SE_SERVER_URL belongs to someone else, so never spawn against
+    # it. It returns false when unusable. The caller owns the exit
+    # status. Diagnostics go to stderr here, where the cause is
+    # known.
     def ensure_up(install: SimpleEnglish::Install.from_env)
       return boot(install) unless up?
       daemon = info
       # Reachable but not handshake-capable (an older release, a
       # foreign service): lint against it, there is nothing to check
-      # or restart automatically. Say so: a silent stale lint is the
+      # or replace automatically. Say so: a silent stale lint is the
       # bug the handshake exists to catch.
       if daemon.nil?
         if ENV["SE_SERVER_URL"]
@@ -192,7 +193,8 @@ module SimpleEnglish
         warn_stale_rules(daemon)
         return true
       end
-      restart(daemon, install: install)
+      warn_mismatched_code(daemon)
+      true
     end
 
     # The daemon is unreachable. Start it when we own the default
@@ -202,92 +204,50 @@ module SimpleEnglish
         warn "error: SE_SERVER_URL is set but #{url} does not answer."
         return false
       end
-      # Preflight everything the replacement needs, like the restart
-      # path: a missing prerequisite must fail fast with the real
-      # blocker named, not spawn a doomed child and wait out 90 s.
+      # Preflight everything the spawn needs: a missing prerequisite
+      # must fail fast with the real blocker named, not spawn a
+      # doomed child and wait out 90 s.
       unless File.exist?(install.server_jar) && install.java?
         warn(install.java? ? install.setup_error : install.java_message)
         return false
       end
-      warn "se: daemon not running; starting it (first lint takes ~15s)..."
-      spawn_daemon
-      ok = wait_for { up? }
-      warn "error: se daemon did not come up. Run `se serve` and read its output." unless ok
-      ok
+      # One boot at a time: a concurrent lint that also found the
+      # port cold waits here, re-checks, and skips its own spawn.
+      with_spawn_lock(install) do
+        return true if up?
+        warn "se: daemon not running; starting it (first lint takes ~15s)..."
+        spawn_daemon
+        ok = wait_for { up? }
+        warn "error: se daemon did not come up. Run `se serve` and read its output." unless ok
+        ok
+      end
     end
 
     # The daemon runs different code: older, or another build of
-    # this version (a dev checkout beside the installed gem). Stop it
-    # through the takeover in `se serve` (graceful TERM only) and
-    # boot this gem's daemon. Newer daemons never get here, because
-    # the guard below keeps them running. Every unfixable mismatch
-    # ends in warn + lint: a stale lint with a warning beats a
-    # refused lint.
-    def restart(daemon, install:)
+    # this version (a dev checkout beside the installed gem). A
+    # lint never stops a daemon: `se serve` owns replacement. Say
+    # what runs and how to fix it, then lint against it: a stale
+    # lint with a warning beats a refused lint.
+    def warn_mismatched_code(daemon)
       if newer_daemon?(daemon)
-        # Never downgrade: restarting a newer daemon boots the
-        # caller's older build in its place. The fix is updating
-        # this gem, not touching the daemon.
+        # `se serve` from this install boots an older daemon in its
+        # place. The fix is updating this gem, not the daemon.
         warn "se: daemon at #{url} runs se #{daemon["version"]}, newer than this install " \
           "(#{VERSION}). Update this gem. Linting against it meanwhile."
-        return true
+        return
       end
-      if ENV["SE_SERVER_URL"]
-        warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install. " \
-          "SE_SERVER_URL is set, so it is not restarted automatically."
-        return true
-      end
-      unless File.exist?(install.server_jar) && install.java?
-        # Preflight everything the replacement needs: the child
-        # takeover stops the old daemon before its own boot errors,
-        # so a missing prerequisite leaves no daemon at all.
-        fix = install.java? ? install.setup_error : install.java_message
-        warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install. " \
-          "#{fix} Linting against it meanwhile."
-        return true
-      end
-      begin
-        # Signal 0 probes existence: a container daemon reports a pid
-        # from its own namespace, and a same-machine daemon can belong
-        # to another user. Either way TERMing it fails or is wrong,
-        # and the replacement stalls on the occupied port.
-        Process.kill(0, daemon["pid"])
-      rescue Errno::ESRCH, Errno::EPERM
-        warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install, " \
-          "but its pid is not signalable from here (container or another user). " \
-          "It is not restarted. Linting against it meanwhile."
-        return true
-      end
-      warn "se: daemon runs different code than this install (se #{daemon["version"]}), " \
-        "restarting (takes ~15s)..."
-      # One restarter at a time: a second lint that saw the same
-      # stale digest waits here and re-reads the handshake on wake,
-      # so it never TERMs the fresh daemon the winner booted.
-      with_restart_lock(install) do
-        fresh = info
-        if fresh&.dig("gem_digest") == Fingerprint.gem
-          # The winner linted from another CWD, so its rules can
-          # differ from this project's: run the same rules check as
-          # the main lint path before returning.
-          warn_stale_rules(fresh)
-          return true
-        end
-        spawn_daemon
-        # The old daemon answers until the takeover stops it. Wait for
-        # the replacement to answer with this code's digest.
-        expected = Fingerprint.gem
-        ok = wait_for { info&.dig("gem_digest") == expected }
-        warn "error: se daemon did not come up. Run `se serve` and read its output." unless ok
-        return ok
-      end
+      fix = ENV["SE_SERVER_URL"] ? "It is not restarted automatically." :
+        "Run `se serve` to restart it."
+      warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install " \
+        "(#{VERSION}). #{fix} Linting against it meanwhile."
     end
 
     # A lock file in the install's cache dir: per user by default,
     # and it follows SE_CACHE_DIR to whatever machine the cache sits
     # on. flock releases when the block ends, even on failure.
-    def with_restart_lock(install)
+    def with_spawn_lock(install)
       FileUtils.mkdir_p(install.cache_dir)
-      File.open(File.join(install.cache_dir, "restart.lock"), "w") do |lock|
+      File.open(File.join(install.cache_dir, "spawn.lock"), "w") do |lock|
         lock.flock(File::LOCK_EX)
         yield
       end
@@ -330,15 +290,15 @@ module SimpleEnglish
 
     # The handshake reports the daemon's version: a digest mismatch
     # alone cannot tell older from newer. A malformed version counts
-    # as not newer, so the restart path decides what to do with it.
+    # as not newer, so the warning path decides what to do with it.
     def newer_daemon?(daemon)
       Gem::Version.new(daemon["version"]) > Gem::Version.new(VERSION)
     rescue ArgumentError
       false
     end
 
-    private_class_method :boot, :restart, :warn_stale_rules,
+    private_class_method :boot, :warn_mismatched_code, :warn_stale_rules,
       :expected_rules_digest, :spawn_daemon, :wait_for, :newer_daemon?,
-      :with_restart_lock
+      :with_spawn_lock
   end
 end
