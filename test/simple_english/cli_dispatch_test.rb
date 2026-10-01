@@ -14,7 +14,9 @@ class CLIDispatchTest < Minitest::Test
     server = StubHTTPServer.new("/lint" => "[]")
     status = nil
     with_env("SE_SERVER_URL" => server.url) do
-      capture_io { status = SimpleEnglish::CLI.run(["-"]) }
+      with_stdin("") do
+        capture_io { status = SimpleEnglish::CLI.run(["-"]) }
+      end
     end
     assert_equal 0, status
   ensure

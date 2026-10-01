@@ -18,7 +18,9 @@ class CLIFormatTest < Minitest::Test
 
   def test_format_json_prints_one_object_per_finding
     out, = with_stub_daemon do
-      capture_io { SimpleEnglish::CLI.run(["--format", "json", "-"]) }.first
+      with_stdin("") do
+        capture_io { SimpleEnglish::CLI.run(["--format", "json", "-"]) }.first
+      end
     end
     assert_equal [{"path" => "-", "line" => 3, "column" => 17,
                    "end_line" => 3, "end_column" => 23,
@@ -29,7 +31,9 @@ class CLIFormatTest < Minitest::Test
 
   def test_format_sarif_prints_a_sarif_log
     out, = with_stub_daemon do
-      capture_io { SimpleEnglish::CLI.run(["--format", "sarif", "-"]) }.first
+      with_stdin("") do
+        capture_io { SimpleEnglish::CLI.run(["--format", "sarif", "-"]) }.first
+      end
     end
     log = JSON.parse(out)
     assert_equal "2.1.0", log.fetch("version")
@@ -46,7 +50,9 @@ class CLIFormatTest < Minitest::Test
 
   def test_format_text_stays_the_default
     out, = with_stub_daemon do
-      capture_io { SimpleEnglish::CLI.run(["-"]) }.first
+      with_stdin("") do
+        capture_io { SimpleEnglish::CLI.run(["-"]) }.first
+      end
     end
     assert_equal "-:3:17-23: [SE_NO_CONTRACTIONS] Write the words in full. No contractions.\n", out
   end
@@ -57,7 +63,9 @@ class CLIFormatTest < Minitest::Test
        "message" => "Split it."}
     ].to_json)
     out, = with_env("SE_SERVER_URL" => server.url) do
-      capture_io { SimpleEnglish::CLI.run(["-"]) }.first
+      with_stdin("") do
+        capture_io { SimpleEnglish::CLI.run(["-"]) }.first
+      end
     end
     assert_equal "-:5: [SE_SENTENCE_TOO_LONG] Split it.\n", out
   ensure
