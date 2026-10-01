@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Lint the body of every unreleased changie fragment. The release
+# PR runs no CI, so this is the only gate on fragment prose before
+# changie folds it into CHANGELOG.md. `rake lint` runs this after
+# the repo self-lint.
+
+require "yaml"
+require_relative "../lib/simple_english"
+
+# One daemon handshake for the whole run: one warning, not one per
+# fragment, when the running daemon runs different code.
+install = SimpleEnglish::Install.from_env
+unless SimpleEnglish::Client.ensure_up(install: install)
+  warn "error: the se daemon did not come up. Run `bin/se serve` and retry."
+  exit 2
+end
+
+failed = false
+Dir[".changes/unreleased/*.yaml"].sort.each do |path|
+  body = YAML.safe_load_file(path, permitted_classes: [Time])["body"]
+  next unless body.is_a?(String) && !body.empty?
+  findings = SimpleEnglish::Client.lint(body)
+  # nil means the response was unusable. Say so and fail the run.
+  if findings.nil?
+    warn "error: #{path}: no usable lint answer. Is the daemon up?"
+    failed = true
+    next
+  end
+  findings.each do |finding|
+    where = finding.column ? ":#{finding.column}" : ""
+    puts "#{path}:#{finding.line}#{where}: " \
+      "[#{finding.rule}] #{finding.message}"
+  end
+  failed = true unless findings.empty?
+end
+exit 1 if failed
