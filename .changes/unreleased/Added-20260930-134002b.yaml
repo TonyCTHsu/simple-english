@@ -1,0 +1,3 @@
+kind: Added
+body: 'The first lint after a gem update warns about an outdated daemon. Run `se serve --detached` to restart it.'
+time: 2026-09-30T13:40:02.095628+02:00

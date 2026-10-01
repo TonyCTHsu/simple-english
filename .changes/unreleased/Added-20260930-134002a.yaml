@@ -1,0 +1,3 @@
+kind: Added
+body: 'Daemon handshake: `GET /` on the daemon reports its version, pid, and digests.'
+time: 2026-09-30T13:40:02.095628+02:00
