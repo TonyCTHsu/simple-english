@@ -89,13 +89,12 @@ except the tests whose job is the JVM boundary.
    example. It proves the rule stays silent on its correct example.
    `roundtrip_test.rb` and the daemon end-to-end test check offset
    mapping and the full serve → lint path with a real daemon.
-5. **CI user story** (`e2e` job in `.github/workflows/ci.yml`): builds
-   and installs the gem, runs `se setup`, and lints outside the
-   repo. It lints every corpus pair, so the corpus has one CI home.
-   It asserts exit codes: findings on each before file, clean on
-   each after file. It also lints a code comment through the comment
-   pipeline. The first lint boots the daemon. This tier runs on CI
-   only, never locally.
+5. **CI user story** (`bin/e2e-story`): CI's `e2e` job builds and
+   installs the gem, runs `se setup`, then runs this script. It lints
+   every corpus pair outside the repo, so the corpus has one CI
+   home. It asserts exit codes: findings on each before file, clean
+   on each after file. It also lints a code comment through the
+   comment pipeline. The first lint boots the daemon.
 
 Priority order: line and column fidelity first, then failure paths
 (every `exit 2` has a test), then rule correctness. Last: a JVM-free

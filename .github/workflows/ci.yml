@@ -127,23 +127,4 @@ jobs:
         run: se setup
 
       - name: Lint as a user
-        run: |
-          story="$RUNNER_TEMP/story"
-          mkdir "$story"
-          cp test/corpus/*-before.md test/corpus/*-after.md "$story/"
-          printf '# Read the log; then act.\n' > "$story/broken.rb"
-          cd "$story"
-          # A repo checkout carries .simple-english.yml. Lint runs
-          # outside it, so no config applies. The corpus has one CI
-          # home: here, through the installed gem. The first lint
-          # boots the daemon. It takes about 15 seconds.
-          for file in *-before.md; do
-            rc=0; se lint "$file" || rc=$?
-            [ "$rc" -eq 1 ] || { echo "$file: expected exit 1, got $rc"; exit 1; }
-          done
-          for file in *-after.md; do
-            rc=0; se lint "$file" || rc=$?
-            [ "$rc" -eq 0 ] || { echo "$file: expected exit 0, got $rc"; exit 1; }
-          done
-          rc=0; se lint broken.rb || rc=$?
-          [ "$rc" -eq 1 ] || { echo "broken.rb: expected exit 1, got $rc"; exit 1; }
+        run: bin/e2e-story
