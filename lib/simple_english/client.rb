@@ -264,7 +264,14 @@ module SimpleEnglish
       # stale digest waits here and re-reads the handshake on wake,
       # so it never TERMs the fresh daemon the winner booted.
       with_restart_lock(install) do
-        return true if info&.dig("gem_digest") == Fingerprint.gem
+        fresh = info
+        if fresh&.dig("gem_digest") == Fingerprint.gem
+          # The winner linted from another CWD, so its rules can
+          # differ from this project's: run the same rules check as
+          # the main lint path before returning.
+          warn_stale_rules(fresh)
+          return true
+        end
         spawn_daemon
         # The old daemon answers until the takeover stops it. Wait for
         # the replacement to answer with this code's digest.

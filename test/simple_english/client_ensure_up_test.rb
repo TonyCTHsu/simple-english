@@ -226,6 +226,32 @@ class ClientEnsureUpTest < Minitest::Test
     end
   end
 
+  def test_the_lock_loser_warns_when_the_winner_staged_other_rules
+    # The winner linted from another project: the daemon runs fresh
+    # code with that project's rules. The waiting lint must still get
+    # the stale-rules warning, not a silent lint against foreign rules.
+    winner = {"version" => SimpleEnglish::VERSION, "pid" => Process.pid,
+              "gem_digest" => SimpleEnglish::Fingerprint.gem,
+              "rules_digest" => "winner project's rules"}
+    answers = [winner.merge("gem_digest" => "old")]
+    with_se_server_url(nil) do
+      SimpleEnglish::Client.stub :up?, true do
+        SimpleEnglish::Client.stub :info, ->(base_url: nil) { answers.shift || winner } do
+          SimpleEnglish::Client.stub :expected_rules_digest, "this project's rules" do
+            SimpleEnglish::Client.stub :spawn_daemon,
+              -> { flunk "the fresh daemon must not be replaced" } do
+              _out, err = capture_io do
+                assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+              end
+              assert_match(/different rules/, err)
+              assert_match(/se serve/, err)
+            end
+          end
+        end
+      end
+    end
+  end
+
   def test_ensure_up_warns_when_the_callers_rules_cannot_be_computed
     # A broken rule file in the lint caller's CWD must not lint
     # silently against the daemon's old rules.
