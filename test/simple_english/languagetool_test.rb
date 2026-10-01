@@ -11,6 +11,20 @@ class LanguageToolHelpersTest < Minitest::Test
     assert_includes ids, "SE_NO_SEMICOLON"
   end
 
+  def test_rule_ids_reads_rules_under_a_us_ascii_locale
+    # A launchd service runs with no LANG, so Ruby reads files as
+    # US-ASCII. The rules file holds UTF-8 bytes, and the scan
+    # without an explicit encoding dies on the first one. The
+    # child process reproduces that locale. A crash fails the
+    # test.
+    lib = File.expand_path("../../lib/simple_english", __dir__).inspect
+    child = "require #{lib} and exit(SimpleEnglish::" \
+      "LanguageTool.rule_ids.empty? ? 1 : 0)"
+    IO.popen([{"LC_ALL" => "C", "LANG" => "C"}, RbConfig.ruby, "-e", child],
+      &:read)
+    assert $?.success?, "rule_ids crashed under a US-ASCII locale"
+  end
+
   def test_rule_ids_finds_id_regardless_of_attribute_order
     in_tmpdir do |dir|
       user = File.join(dir, "team.xml")
