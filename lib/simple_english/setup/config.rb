@@ -16,13 +16,6 @@ module SimpleEnglish
       return DEFAULT unless File.exist?(file)
       require "yaml"
       data = YAML.safe_load_file(file) || {}
-      # BYOR is gone: a config from an older project must not
-      # silently lint with the built-in rules alone. Say the key is
-      # ignored until it is removed.
-      if data.is_a?(Hash) && data.key?("rules")
-        warn "se: .simple-english.yml: `rules:` is no longer supported " \
-          "and is ignored. Remove the key."
-      end
       {ignore: Array(data["ignore"]),
        disabled_rules: Array(data["disabled-rules"])}
     rescue Psych::SyntaxError => e

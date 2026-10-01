@@ -25,19 +25,6 @@ class ConfigTest < Minitest::Test
     end
   end
 
-  def test_warns_when_the_rules_key_is_present
-    in_tmpdir do |dir|
-      File.write(File.join(dir, "team.xml"), "<rules lang=\"en\"/>")
-      File.write(File.join(dir, ".simple-english.yml"), "rules: [team.xml]\n")
-      config = nil
-      _out, err = capture_io do
-        config = SimpleEnglish::Config.load(dir)
-      end
-      assert_match(/`rules:` is no longer supported and is ignored/, err)
-      refute config.key?(:rules)
-    end
-  end
-
   def test_filter_ignores_paths_and_drops_disabled_rules
     config = {ignore: ["vendor/**"], disabled_rules: ["SE_NO_EMDASH"]}
     dropped = SimpleEnglish::Finding.new(line: 1, column: 3, rule: "SE_NO_EMDASH", message: "x")
