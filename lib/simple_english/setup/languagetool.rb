@@ -23,8 +23,9 @@ module SimpleEnglish
 
     # Download and unpack the pinned LanguageTool into DIR. Idempotent:
     # returns the install directory, or nil after warning why. Pure Ruby
-    # throughout: the download uses Net::HTTP and the unpack uses rubyzip,
-    # so setup needs no curl or unzip on the machine.
+    # throughout: the download uses Net::HTTP and the unpack parses the
+    # zip with stdlib Zlib, so setup needs no curl, unzip, or unpack gem
+    # on the machine.
     def install(dir)
       require "fileutils"
       dest = File.join(dir, "LanguageTool-#{LT_VERSION}")
@@ -76,24 +77,93 @@ module SimpleEnglish
       false
     end
 
-    # Unpacks ZIP into DIR and refuses entries that try to escape it.
-    # Warns and returns false on any failure.
+    # Unpacks ZIP into DIR on stdlib Zlib: the End of Central Directory
+    # record locates the central directory, each entry names a local
+    # header, and each stream inflates raw. The input is the one pinned
+    # LanguageTool distro, not arbitrary archives, so zip64 (4 GB+ or
+    # 65,535+ entries) is refused, not parsed. Warns and returns false
+    # on any failure.
     def extract(zip, dir)
-      require "zip"
-      Zip::File.open(zip) do |archive|
-        archive.each do |entry|
-          unless safe_entry_target(dir, entry.name)
-            warn "error: zip entry escapes the install dir: #{entry.name}"
-            return false
-          end
-          entry.extract(entry.name, destination_directory: dir,
-            create_parent_directories: true)
+      require "fileutils"
+      require "zlib"
+      bytes = File.binread(zip)
+      tail = eocd(bytes)
+      raise Zlib::DataError, "not a zip archive" if tail.nil?
+      count, cd_offset = tail
+      pos = cd_offset
+      count.times do
+        name, method, csize, crc, local, pos = cd_entry(bytes, pos)
+        raise Zlib::DataError, "corrupt central directory" if name.nil?
+        next if name.end_with?("/")
+        target = safe_entry_target(dir, name)
+        if target.nil?
+          warn "error: zip entry escapes the install dir: #{name}"
+          return false
         end
+        data_at = local_data_offset(bytes, local)
+        raise Zlib::DataError, "corrupt local header" if data_at.nil?
+        data = inflate_entry(bytes.byteslice(data_at, csize), method)
+        raise Zlib::DataError, "CRC mismatch: #{name}" unless Zlib.crc32(data) == crc
+        FileUtils.mkdir_p(File.dirname(target))
+        File.binwrite(target, data)
       end
       true
-    rescue SystemCallError, Zip::Error => e
+    rescue Zlib::Error, SystemCallError => e
       warn "error: unpack failed: #{e.class}: #{e.message}"
       false
+    end
+
+    # The End of Central Directory record: the entry count and the
+    # central directory offset, or nil. The record ends the archive,
+    # possibly behind a comment of at most 65,535 bytes, so the scan
+    # starts at the tail. Zip64 sentinels are refused: the pinned
+    # distro is far under the limits.
+    def eocd(bytes)
+      limit = [bytes.bytesize, 65_557].min
+      window = bytes.byteslice(bytes.bytesize - limit, limit)
+      at = window.rindex("PK\x05\x06")
+      return nil if at.nil?
+      rec = window.byteslice(at, 22)
+      return nil if rec.bytesize < 22
+      count = rec.byteslice(10, 2).unpack1("v")
+      cd = rec.byteslice(16, 4).unpack1("V")
+      return nil if count == 0xFFFF || cd == 0xFFFFFFFF
+      [count, cd]
+    end
+
+    # One central-directory record at POS: the entry name,
+    # compression method, compressed size, CRC-32, local header
+    # offset, and the offset of the next record. nil when the record
+    # is truncated or unsigned.
+    def cd_entry(bytes, pos)
+      head = bytes.byteslice(pos, 46)
+      return nil unless head.byteslice(0, 4) == "PK\x01\x02" && head.bytesize == 46
+      name_len = head.byteslice(28, 2).unpack1("v")
+      name = bytes.byteslice(pos + 46, name_len)
+      [name,
+        head.byteslice(10, 2).unpack1("v"),
+        head.byteslice(20, 4).unpack1("V"),
+        head.byteslice(16, 4).unpack1("V"),
+        head.byteslice(42, 4).unpack1("V"),
+        pos + 46 + name_len + head.byteslice(30, 2).unpack1("v") +
+          head.byteslice(32, 2).unpack1("v")]
+    end
+
+    # Where an entry's data sits: the local header at OFFSET names
+    # its own name and extra lengths, and the data follows them. nil
+    # when the header is truncated or unsigned.
+    def local_data_offset(bytes, offset)
+      head = bytes.byteslice(offset, 30)
+      return nil unless head.byteslice(0, 4) == "PK\x03\x04" && head.bytesize == 30
+      offset + 30 + head.byteslice(26, 2).unpack1("v") +
+        head.byteslice(28, 2).unpack1("v")
+    end
+
+    # One entry's bytes: STORED is copied, DEFLATE is inflated raw.
+    def inflate_entry(blob, method)
+      return blob if method.zero?
+      return Zlib::Inflate.new(-Zlib::MAX_WBITS).inflate(blob) if method == 8
+      raise Zlib::DataError, "unsupported compression method #{method}"
     end
 
     # The path to write zip entry NAME into, or nil when NAME escapes

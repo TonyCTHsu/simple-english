@@ -3,7 +3,6 @@ PATH
   specs:
     simple_english (0.3.0)
       rexml
-      rubyzip (~> 3.0)
       thor (~> 1.0)
       tree_sitter_language_pack (~> 1.20)
 
@@ -42,6 +41,7 @@ DEPENDENCIES
   minitest (~> 6.0)
   minitest-mock (~> 5.27)
   rake (~> 13.0)
+  rubyzip (~> 3.0)
   simple_english!
 
 CHECKSUMS
