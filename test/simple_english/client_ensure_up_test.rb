@@ -286,6 +286,29 @@ class ClientEnsureUpTest < Minitest::Test
     end
   end
 
+  def test_the_spawn_lock_is_keyed_by_port_not_the_cache_dir
+    # Daemon ownership is scoped to the port, not the cache: two
+    # lints with different SE_CACHE_DIR values still take the same
+    # lock, because it lives under HOME, keyed by the port.
+    home = Dir.mktmpdir
+    (@tmpdirs ||= []) << home
+    with_env("HOME" => home) do
+      with_se_server_url(nil) do
+        SimpleEnglish::Client.stub :info, nil do
+          SimpleEnglish::Client.stub :spawn_daemon, -> {} do
+            SimpleEnglish::Client.stub :wait_for, false do
+              _out, _err = capture_io do
+                refute SimpleEnglish::Client.ensure_up(install: install_with_jar)
+              end
+            end
+          end
+        end
+      end
+    end
+    assert File.exist?(File.join(home, ".cache", "simple_english", "spawn-8181.lock"))
+    refute File.exist?(File.join(install_with_jar.cache_dir, "spawn.lock"))
+  end
+
   private
 
   def with_se_server_url(value)

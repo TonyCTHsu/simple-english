@@ -222,7 +222,7 @@ module SimpleEnglish
       # Whatever answers on wake is classified like the first probe:
       # the loser must get the same warnings, never a silent lint
       # against the winner's rules or build.
-      with_spawn_lock(install) do
+      with_spawn_lock do
         daemon = info
         unless daemon
           warn "se: daemon not running; starting it (first lint takes ~15s)..."
@@ -257,12 +257,16 @@ module SimpleEnglish
         "(#{VERSION}). #{fix} Linting against it meanwhile."
     end
 
-    # A lock file in the install's cache dir: per user by default,
-    # and it follows SE_CACHE_DIR to whatever machine the cache sits
-    # on. flock releases when the block ends, even on failure.
-    def with_spawn_lock(install)
-      FileUtils.mkdir_p(install.cache_dir)
-      File.open(File.join(install.cache_dir, "spawn.lock"), "w") do |lock|
+    # A per-user lock keyed by the port, independent of the
+    # installation cache: daemon ownership is scoped to the port,
+    # so two lints with different SE_CACHE_DIR values still
+    # coordinate. flock releases when the block ends, even on
+    # failure.
+    def with_spawn_lock
+      dir = File.join(Dir.home, ".cache", "simple_english")
+      FileUtils.mkdir_p(dir)
+      port = URI(url).port
+      File.open(File.join(dir, "spawn-#{port}.lock"), "w") do |lock|
         lock.flock(File::LOCK_EX)
         yield
       end
