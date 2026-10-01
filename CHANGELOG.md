@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2026-10-01
+
+### Fixed
+
+- Fix `brew services start simple-english` crashing: the daemon crashed at boot and launchd kept retrying it.
+
 ## [0.4.0] - 2026-10-01
 
 ### Added
