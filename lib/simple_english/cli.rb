@@ -28,6 +28,10 @@ module SimpleEnglish
       start(argv)
     end
 
+    # How each Install.java_source found its java, for `se setup`'s
+    # report line.
+    JAVA_SOURCES = {env: "SE_JAVA", path: "PATH", homebrew: "Homebrew fallback"}.freeze
+
     default_task :lint
     desc "lint FILE_OR_DIR...", "Lint Markdown prose and code comments (- reads stdin)"
     method_option :format, type: :string, default: "text", enum: %w[text json sarif],
@@ -99,27 +103,25 @@ module SimpleEnglish
     end
 
     desc "setup", "Download LanguageTool and locate Java. Idempotent."
-    method_option :dir, type: :string, banner: "PATH",
-      desc: "Install into PATH (default: the shared cache)"
     def setup
       install = SimpleEnglish::Install.from_env
-      lt_dir = SimpleEnglish::LanguageTool.install(options[:dir] || install.cache_dir)
-      return 2 unless lt_dir
+      lt = SimpleEnglish::LanguageTool.install(install.cache_dir)
+      return 2 unless lt
+      puts "LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION}: " \
+        "#{lt["downloaded"] ? "downloaded to" : "already present at"} #{lt["dir"]}"
       unless install.java?
-        warn "error: java not found. Install a JRE (on macOS: brew install openjdk), " \
-          "or set SE_JAVA to your java binary."
+        warn "error: #{install.java_message}"
         return 2
       end
+      puts "Java: #{install.java} (#{JAVA_SOURCES[install.java_source]})"
       unless SimpleEnglish::LanguageTool.smoke(install)
         warn "error: LanguageTool smoke test failed. The download may be corrupt. " \
-          "Delete #{lt_dir} and rerun `se setup`."
+          "Delete #{lt["dir"]} and rerun `se setup`."
         return 2
       end
-      puts <<~SETUP
-        LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION} is at #{lt_dir}
-
-        se finds it there automatically. Nothing to export.
-      SETUP
+      puts "Smoke test: passed"
+      puts
+      puts "se finds them automatically. Nothing to export."
       0
     end
 

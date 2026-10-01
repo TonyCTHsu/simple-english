@@ -38,8 +38,3 @@ namespace :release do
     puts "Release #{version} prepared. Review, then commit."
   end
 end
-
-desc "Self-lint, unit-test, and run the rule examples"
-task check: [:lint, :test] do
-  ruby "test/examples_check.rb"
-end

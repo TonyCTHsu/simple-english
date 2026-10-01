@@ -95,8 +95,11 @@ jobs:
       - name: Set up LanguageTool
         run: bundle exec bin/se setup
 
-      - name: Run the rules checks
-        run: bundle exec rake check
+      - name: Run the self-lint
+        run: bundle exec rake lint
+
+      - name: Run the rule examples
+        run: bundle exec ruby test/examples_check.rb
 
   e2e:
     # The user story: build and install the gem, set up the

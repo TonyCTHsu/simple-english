@@ -107,9 +107,11 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Tests
 
-- `rake check`: unit tests, rule examples, self-lint. CI adds
-  `standardrb`, `actionlint`, `hadolint`, and an `e2e` job on top
-  of it. The e2e job installs the built gem and runs `se setup`.
+- `rake lint`: self-lint the repo's own prose. CI's `rules` job runs it,
+  then `ruby test/examples_check.rb` for the rule examples. The
+  `unit` job runs `rake test` on the Ruby matrix. CI adds
+  `standardrb`, `actionlint`, `hadolint`, and an `e2e` job on top.
+  The e2e job installs the built gem and runs `se setup`.
   It then runs `bin/e2e-story`, which lints the corpus and a code
   comment outside the repo. The corpus has that one CI home. standardrb stays out of the bundle.
   Reason: rubocop pins `json ~> 2.3`,

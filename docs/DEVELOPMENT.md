@@ -58,7 +58,7 @@ All modules keep internals `private_class_method`.
 ## Running the tests
 
 ```
-rake check                  # self-lint, unit tests, rule examples
+rake lint                   # self-lint the repo's own prose
 rake test                   # unit tests only, no LanguageTool needed
 ruby test/examples_check.rb   # every rule against its own examples
 ruby test/corpus_check.rb   # corpus pairs

@@ -7,7 +7,7 @@ ARG VERSION
 RUN gem install --no-document simple_english -v "${VERSION}"
 ENV SE_CACHE_DIR=/opt
 USER 1000
-RUN se setup --dir /opt
+RUN se setup
 EXPOSE 8181
 WORKDIR /work
 ENTRYPOINT ["se"]

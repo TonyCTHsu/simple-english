@@ -53,9 +53,8 @@ se README.md
 ```
 
 `se setup` puts LanguageTool into `~/.cache/se` and touches nothing
-in your shell profile. Pass `--dir PATH` or set `SE_CACHE_DIR` to
-put the cache somewhere else. If `java` is not on PATH, set `SE_JAVA`
-to your java binary.
+in your shell profile. Set `SE_CACHE_DIR` to put the cache somewhere
+else. If `java` is not on PATH, set `SE_JAVA` to your java binary.
 
 ### Container
 
