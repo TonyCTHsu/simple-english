@@ -115,7 +115,7 @@ jobs:
       - name: Build and install the gem
         run: |
           gem build simple_english.gemspec
-          gem install --no-document ./simple-english-*.gem
+          gem install --no-document ./simple_english-*.gem
 
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
