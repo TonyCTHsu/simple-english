@@ -1,7 +1,15 @@
-# The daemon
+# The daemon (internal)
 
-The daemon speaks plain HTTP, so any tool or language can lint
-through it: editors, pipelines, agents.
+This document describes the daemon for maintainers. The HTTP
+surface is internal. It can change in any release. Do not build
+tools against it. `se serve` and the CLI are the supported ways to
+reach the daemon.
+
+## Why a daemon
+
+LanguageTool is a JVM process. A cold start takes seconds, so the
+CLI keeps a daemon running between lints. The first lint starts it
+automatically. Later lints take milliseconds.
 
 ## Start
 
@@ -12,6 +20,8 @@ the running daemon and take milliseconds. To start it ahead of time:
 ```bash
 se serve --port 8181 &
 ```
+
+## The HTTP wire (internal)
 
 ## The HTTP API
 
@@ -58,27 +68,20 @@ The daemon is machine-global: one per port, shared by every
 project. The project that runs `se serve` last owns its staged
 rules, and every other project is warned at lint time.
 
-## No Java? Run the daemon in a container
+## No Java? Run the CLI in a container
 
-You need no Java and no Ruby on your machine. Pull the image and run
-the daemon in it:
-
-```bash
-docker run -d --name se-daemon -p 8181:8181 \
-  ghcr.io/tonycthsu/simple-english:v$(se version) serve
-```
-
-Then point the CLI at it:
+The image holds Ruby, Java, and LanguageTool. Lint with it in one
+shot when the machine has no Java:
 
 ```bash
-SE_SERVER_URL=http://localhost:8181 se lint README.md
+docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
 ```
 
-The CLI sends text over HTTP, so it needs no Java and never starts a
-daemon of its own. The tag is `v` plus `se version`, so the image
-carries the same rules as your gem. If port 8181 is busy on
-your machine, map another port on both sides, for example
-`-p 8281:8181` and `SE_SERVER_URL=http://localhost:8281`.
+The daemon also runs in a container, with `serve` as the image
+entrypoint. A user who needs that knows why. The CLI reaches a
+remote daemon through `SE_SERVER_URL`. Both stay undocumented on
+purpose: the wire is internal, and a remote daemon is never
+restarted for you.
 
 ## Lifecycle
 

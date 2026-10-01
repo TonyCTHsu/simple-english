@@ -65,15 +65,6 @@ The image holds Ruby, Java, and LanguageTool, so it needs no setup:
 docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
 ```
 
-Or keep the daemon in a container and lint through it:
-
-```bash
-se version
-# 0.3.0
-docker run -d --name se-daemon -p 8181:8181 ghcr.io/tonycthsu/simple-english:v$(se version) serve
-SE_SERVER_URL=http://localhost:8181 se lint docs/
-```
-
 ### Git repository
 
 Run `bundle install`, then use `bin/se`.
@@ -195,31 +186,16 @@ In a code comment:
 # Don't touch this constant. se: ignore=SE_NO_CONTRACTIONS
 ```
 
-## The daemon
+## The background daemon
 
-The first lint starts the daemon automatically (about 15 seconds
-once, then you need Java and one run of `se setup`). Later lints hit
-the running daemon and take milliseconds. To start it ahead of time:
+The CLI runs a small background server on your machine. The first
+lint starts it, which takes about 15 seconds. Later lints take
+milliseconds.
 
-```bash
-se serve --port 8181 &
-```
-
-Any tool or language can lint through its HTTP API:
-
-```bash
-curl -d "text=Don't do this." http://localhost:8181/lint
-# [{"line":1,"column":3,"end_line":1,"end_column":6,"rule":"SE_NO_CONTRACTIONS","message":"..."}]
-```
-
-The full wire format: [docs/DAEMON.md](docs/DAEMON.md).
-
-The CLI checks the daemon at every lint. When a new gem release
-changed the lint code, the first lint after the update restarts the
-daemon (about 15 s, once). When your own rule files changed instead,
-the lint prints a warning and you run `se serve` to reload. A daemon
-behind `SE_SERVER_URL` is never restarted for you: the CLI warns
-instead, because someone else may own it.
+The first lint after a gem update or after a change to your `rules:`
+files prints a warning. Run `se serve` then. It stops the old daemon
+and reloads it. You never talk to the daemon directly. Its HTTP
+interface is internal and can change in any release.
 
 ## Scope
 
