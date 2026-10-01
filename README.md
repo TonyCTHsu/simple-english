@@ -47,18 +47,15 @@ LanguageTool. The Docker image bundles both.
 
 ### Homebrew (macOS)
 
-The formula installs the gem under Homebrew's own Ruby and pulls in
-OpenJDK. Your machine needs neither Ruby nor Java. Run:
-
 ```bash
 brew install TonyCTHsu/tap/simple-english
-se setup    # run once: downloads LanguageTool (about 300 MB)
-se README.md
+brew services start simple-english
 ```
 
-To keep a warm daemon, run `brew services start simple-english`.
-It starts the daemon at login and restarts it after a crash. Run
-`brew services stop simple-english` to stop it.
+Homebrew installs Ruby and Java alongside, so the machine needs
+neither. The service keeps a background daemon running. Its first
+start downloads LanguageTool (about 300 MB), and later lints take
+milliseconds. Run `brew services stop simple-english` to stop it.
 
 ### Ruby gem (Linux, Windows, CI)
 
