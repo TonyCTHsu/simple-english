@@ -36,20 +36,23 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - `lib/simple_english.rb` is the composition root: `lint_text`,
   `lint_file`. `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
-  is the only change that belongs in it
-- `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
-  `annotated_text.rb`, `suppressions.rb`, `config.rb`, `client.rb`, `fingerprint.rb`, `cli.rb` are
-  separate modules with small public interfaces
+  is the only change that belongs in it. `cli.rb` is the Thor CLI
+- The tree groups files by domain: `setup/`, `lint/`, `client/`,
+  `daemon/`
+- `setup/` resolves the environment once, at the process edge. It
+  holds `languagetool.rb` (pinned-distro facts), `install.rb`
+  (cache dir, jar paths, java), `config.rb`, and `fingerprint.rb`
+- `lint/` is the pipeline domain: `lint_plan.rb`, `markdown.rb`,
+  `extractor.rb`, `annotated_text.rb`, `counts.rb`, `suppressions.rb`
+- `client/` is the client tier. `language_tool.rb` speaks the
+  LanguageTool wire protocol, used by the daemon's engine.
+  `daemon.rb` probes, trusts, and boots the daemon
+- `daemon/` holds the server tier: `engine.rb` (lint pipeline),
+  `http.rb` (wire framing), `server.rb` (lifecycle). Server failures
+  raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
 - One object definition per file: value objects live in their own files
-  (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`, `result.rb`,
-  `plain_text.rb`, `install.rb`)
-- `lib/simple_english/languagetool.rb` holds the pinned-distro facts (version,
-  rules file, download). `install.rb` resolves the on-machine installation
-  (cache dir, jar paths, java) once, from the environment, at the process edge
-- `lib/simple_english/engine.rb` (lint pipeline), `http.rb` (wire framing), and
-  `server.rb` (daemon lifecycle) hold the daemon side. Server failures raise
-  typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`). `cli.rb` turns them
-  into warnings and exit codes
+  in `lint/` (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`,
+  `result.rb`, `plain_text.rb`)
 - Internals are `private_class_method`
 
 ## Constraints
@@ -83,7 +86,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and correct
    examples
-2. Counting rule: `lib/simple_english/counts.rb`
+2. Counting rule: `lib/simple_english/lint/counts.rb`
 3. Add a corpus pair `test/corpus/NN-before.md` / `NN-after.md`. The before file
    must trigger the rule. The after file must stay clean.
 
@@ -100,9 +103,12 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Tests
 
-- `rake check`: unit tests, rule examples, corpus, self-lint. CI adds
-  `standardrb`, `actionlint`, and `hadolint` steps on top of it.
-  standardrb stays out of the bundle. Reason: rubocop pins `json ~> 2.3`,
+- `rake check`: unit tests, rule examples, self-lint. CI adds
+  `standardrb`, `actionlint`, `hadolint`, and an `e2e` job on top
+  of it. The e2e job installs the built gem and runs `se setup`.
+  It then runs `bin/e2e-story`, which lints the corpus and a code
+  comment outside the repo. The corpus has that one CI home. standardrb stays out of the bundle.
+  Reason: rubocop pins `json ~> 2.3`,
   and Ruby 4.0's default json gem is 3.x. Bundling it breaks
   `bundle exec` on 4.0
 - `rake test`: unit tests only, no LanguageTool needed

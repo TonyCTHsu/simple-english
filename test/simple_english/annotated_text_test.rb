@@ -2,7 +2,7 @@
 
 require "minitest/autorun"
 require "json"
-require_relative "../../lib/simple_english/annotated_text"
+require_relative "../../lib/simple_english/lint/annotated_text"
 
 # Pure golden tests: spans are hand-built so no gem is needed.
 class AnnotatedTextTest < Minitest::Test

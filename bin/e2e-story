@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# The e2e user story: lint the whole corpus through the installed
+# gem, outside the repo. CI's e2e job runs this. Locally, put the
+# checkout's bin on PATH first, and run `se setup` once.
+set -euo pipefail
+
+story="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/se-story"
+repo="$(cd "$(dirname "$0")/.." && pwd)"
+
+rm -rf "$story"
+mkdir "$story"
+cp "$repo"/test/corpus/*-before.md "$story/"
+cp "$repo"/test/corpus/*-after.md "$story/"
+printf '# Read the log; then act.\n' > "$story/broken.rb"
+cd "$story"
+
+# A repo checkout carries .simple-english.yml. Lint runs outside it,
+# so no config applies. The corpus has one CI home: here, through
+# the installed gem. The first lint boots the daemon. It takes
+# about 15 seconds.
+for file in *-before.md; do
+  rc=0; se lint "$file" || rc=$?
+  [ "$rc" -eq 1 ] || { echo "$file: expected exit 1, got $rc"; exit 1; }
+done
+for file in *-after.md; do
+  rc=0; se lint "$file" || rc=$?
+  [ "$rc" -eq 0 ] || { echo "$file: expected exit 0, got $rc"; exit 1; }
+done
+rc=0; se lint broken.rb || rc=$?
+[ "$rc" -eq 1 ] || { echo "broken.rb: expected exit 1, got $rc"; exit 1; }
+
+pairs=$(ls *-before.md | wc -l | tr -d ' ')
+echo "user story: $pairs corpus pairs plus one comment file, all as expected"

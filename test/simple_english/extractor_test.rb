@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "minitest/autorun"
-require_relative "../../lib/simple_english/extractor"
+require_relative "../../lib/simple_english/lint/extractor"
 
 # Golden spans for the extractor. The fixtures carry the two failure
 # modes of naive regex extraction: a comment marker inside a string,

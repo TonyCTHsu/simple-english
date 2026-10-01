@@ -90,10 +90,41 @@ jobs:
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/languagetool.rb') }}
+          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
 
       - name: Set up LanguageTool
         run: bundle exec bin/se setup
 
       - name: Run the rules checks
         run: bundle exec rake check
+
+  e2e:
+    # The user story: build and install the gem, set up the
+    # environment, lint files. Everything runs off the installed gem,
+    # not the checkout's bundle. So the shipped package, the se
+    # shim, and the daemon auto-boot are what gets tested.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Build and install the gem
+        run: |
+          gem build simple_english.gemspec
+          gem install --no-document ./simple_english-*.gem
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/se
+          # Shared with the rules job. Same distro pin, same download.
+          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+
+      - name: Set up the environment
+        run: se setup
+
+      - name: Lint as a user
+        run: bin/e2e-story

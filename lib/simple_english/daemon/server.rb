@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # The se daemon: process lifecycle only. The wire protocol lives in
-# lib/simple_english/http.rb, the lint engine in lib/simple_english/engine.rb.
+# lib/simple_english/daemon/http.rb, the lint engine in
+# lib/simple_english/daemon/engine.rb.
 # Failures raise typed errors (PortInUse, SetupError, InnerDied,
 # InnerTimeout). bin/se owns turning them into warnings and exit codes.
 
@@ -11,11 +12,11 @@ require "socket"
 require "tempfile"
 require "tmpdir"
 
-require_relative "install"
-require_relative "client"
-require_relative "config"
-require_relative "fingerprint"
-require_relative "version"
+require_relative "../setup/install"
+require_relative "../client/daemon"
+require_relative "../setup/config"
+require_relative "../setup/fingerprint"
+require_relative "../version"
 
 module SimpleEnglish
   module Server

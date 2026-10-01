@@ -20,7 +20,7 @@ class ClientAnnotatedCheckTest < Minitest::Test
                 "rule" => {"id" => "SE_NO_CONTRACTIONS"},
                 "message" => "Write the words in full. No contractions.",
                 "context" => {"text" => "...", "offset" => 0, "length" => 3}}]
-    finding = SimpleEnglish::Client.parse_matches(matches, result).first
+    finding = SimpleEnglish::LanguageTool::Client.parse_matches(matches, result).first
     assert_equal [3, 14], [finding.line, finding.column]
     assert_equal [3, 20], [finding.end_line, finding.end_column]
     assert_equal "SE_NO_CONTRACTIONS", finding.rule
@@ -35,7 +35,7 @@ class ClientAnnotatedCheckTest < Minitest::Test
       captured = body
       [200, {"matches" => []}.to_json]
     end)
-    SimpleEnglish::Client.check(result, base_url: server.url,
+    SimpleEnglish::LanguageTool::Client.check(result, base_url: server.url,
       enabled_rules: SimpleEnglish::LanguageTool.rule_ids)
     server.shutdown
     assert_includes captured, "data=" # {"annotation" is URL-encoded in the body

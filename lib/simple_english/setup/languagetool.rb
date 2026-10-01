@@ -3,11 +3,11 @@
 # The pinned LanguageTool distro: its version, its rules file, and the
 # downloader. Everything that resolves "where it is on this machine and
 # which java runs it" lives in Install. The engine runs as the daemon's
-# inner HTTP server (lib/simple_english/server.rb).
+# inner HTTP server (lib/simple_english/daemon/server.rb).
 
 module SimpleEnglish
   module LanguageTool
-    RULES_FILE = File.expand_path("../../rules/simple-english.xml", __dir__)
+    RULES_FILE = File.expand_path("../../../rules/simple-english.xml", __dir__)
     # The only place a LanguageTool version number appears. `se
     # setup` downloads this version, and every jar path derives from it. No
     # env var can point at another one.
