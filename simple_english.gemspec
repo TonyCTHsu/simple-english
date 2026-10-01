@@ -26,9 +26,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "tree_sitter_language_pack", "~> 1.20"
   spec.add_runtime_dependency "thor", "~> 1.0"
-  # rubyzip unpacks the LanguageTool download, replacing the curl/unzip
-  # system dependencies.
-  spec.add_runtime_dependency "rubyzip", "~> 3.0"
   # rexml merges user rule files into the staged set at daemon boot.
   # It stopped shipping as a Ruby default gem in 4.x.
   spec.add_runtime_dependency "rexml"
@@ -36,6 +33,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 6.0"
   spec.add_development_dependency "minitest-mock", "~> 5.27"
+  # rubyzip builds the zip fixtures that exercise the stdlib Zlib
+  # extractor in the tests.
+  spec.add_development_dependency "rubyzip", "~> 3.0"
 
   # Bundled gems the suite requires under `bundle exec`: the require
   # shim refuses bundled gems that the lockfile omits.

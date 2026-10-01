@@ -95,6 +95,66 @@ class LanguageToolHelpersTest < Minitest::Test
     end
   end
 
+  def test_extract_unpacks_a_stored_entry
+    in_tmpdir do |dir|
+      zip = File.join(dir, "lt.zip")
+      src = File.join(dir, "src.txt")
+      File.write(src, "stored body")
+      Zip::File.open(zip, create: true) do |archive|
+        archive.add_stored("LanguageTool-6.6/stored.txt", src)
+      end
+      assert SimpleEnglish::LanguageTool.extract(zip, dir)
+      extracted = File.join(dir, "LanguageTool-6.6/stored.txt")
+      assert_equal "stored body", File.read(extracted)
+    end
+  end
+
+  def test_extract_warns_on_a_non_zip_file
+    in_tmpdir do |dir|
+      zip = File.join(dir, "lt.zip")
+      File.binwrite(zip, "not a zip archive")
+      _out, err = capture_io do
+        refute SimpleEnglish::LanguageTool.extract(zip, dir)
+      end
+      assert_match(/unpack failed/, err)
+    end
+  end
+
+  def test_extract_refuses_a_zip64_archive
+    in_tmpdir do |dir|
+      zip = File.join(dir, "lt.zip")
+      src = File.join(dir, "src.txt")
+      File.write(src, "payload")
+      Zip::File.open(zip, create: true) { |a| a.add("x.txt", src) }
+      bytes = File.binread(zip)
+      at = bytes.rindex("PK\x05\x06")
+      bytes[at + 16, 4] = [0xFFFFFFFF].pack("V")
+      File.binwrite(zip, bytes)
+      _out, err = capture_io do
+        refute SimpleEnglish::LanguageTool.extract(zip, dir)
+      end
+      assert_match(/unpack failed/, err)
+    end
+  end
+
+  def test_extract_rejects_an_entry_with_a_bad_crc
+    in_tmpdir do |dir|
+      zip = File.join(dir, "lt.zip")
+      src = File.join(dir, "src.txt")
+      File.write(src, "payload")
+      Zip::File.open(zip, create: true) { |a| a.add("x.txt", src) }
+      bytes = File.binread(zip)
+      at = bytes.index("PK\x01\x02")
+      bytes[at + 16, 4] = [0].pack("V")
+      File.binwrite(zip, bytes)
+      _out, err = capture_io do
+        refute SimpleEnglish::LanguageTool.extract(zip, dir)
+      end
+      assert_match(/CRC mismatch/, err)
+      refute File.exist?(File.join(dir, "x.txt"))
+    end
+  end
+
   def test_safe_entry_target_rejects_paths_outside_the_dir
     dir = "/cache"
     assert_equal "/cache/LanguageTool-6.6/x.jar",

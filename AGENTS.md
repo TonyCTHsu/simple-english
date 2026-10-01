@@ -61,11 +61,11 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   `tree_sitter_language_pack` for comment extraction and Markdown
   structure, and `thor` for the CLI. Any further runtime dependency
   needs a stated reason here first. (Thor was a
-  user-directed refactor, 2026-02-27.) `rubyzip` unpacks the
-  LanguageTool download. It replaces the curl and unzip system
-  dependencies (2026-09-28). `rexml` merges user rule files into
-  the staged set at daemon boot. It stopped shipping as a Ruby
-  default gem in 4.x (2026-09-30).
+  user-directed refactor, 2026-02-27.) The LanguageTool download
+  unpacks on stdlib `Zlib`. It replaced curl and unzip, then
+  `rubyzip`, which is now dev-only (2026-10-02). `rexml` merges
+  user rule files into the staged set at daemon boot. It stopped
+  shipping as a Ruby default gem in 4.x (2026-09-30).
 - Dev and test tools are the exception. Pick the best tool for the
   job even when it adds a dev-only dependency. Record it here with a
   one-line reason. Keep such tools out of the gemspec runtime list.
@@ -73,7 +73,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   bundled gem alone is not enough, because `bundle exec` cannot
   require a bundled gem that the lockfile omits. `minitest-mock`
   restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
-  Both are dev-only, in the gemspec. `changie` (a brew binary, not
+  Both are dev-only, in the gemspec. `rubyzip` builds the zip fixtures
+  for the stdlib Zlib extractor tests (2026-10-02). `changie` (a brew
+  binary, not
   a gem) batches change fragments into `CHANGELOG.md` at release
   time (2026-09-29). Pull requests add fragments, not changelog
   lines, so they never conflict.
