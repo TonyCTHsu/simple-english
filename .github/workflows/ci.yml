@@ -130,15 +130,17 @@ jobs:
         run: |
           story="$RUNNER_TEMP/story"
           mkdir "$story"
-          cp test/corpus/01-before.md test/corpus/01-after.md "$story/"
+          printf 'Do this; then that.\n' > "$story/broken.md"
+          printf 'Do this. Then that.\n' > "$story/clean.md"
           printf '# Read the log; then act.\n' > "$story/broken.rb"
           cd "$story"
           # A repo checkout carries .simple-english.yml. Lint runs
-          # outside it, so no config applies. The first lint boots
-          # the daemon. It takes about 15 seconds.
-          rc=0; se lint 01-before.md || rc=$?
-          [ "$rc" -eq 1 ] || { echo "01-before.md: expected exit 1, got $rc"; exit 1; }
-          rc=0; se lint 01-after.md || rc=$?
-          [ "$rc" -eq 0 ] || { echo "01-after.md: expected exit 0, got $rc"; exit 1; }
+          # outside it, so no config applies. The corpus lives in the
+          # rules job, so this job lints its own small files. The
+          # first lint boots the daemon. It takes about 15 seconds.
+          rc=0; se lint broken.md || rc=$?
+          [ "$rc" -eq 1 ] || { echo "broken.md: expected exit 1, got $rc"; exit 1; }
+          rc=0; se lint clean.md || rc=$?
+          [ "$rc" -eq 0 ] || { echo "clean.md: expected exit 0, got $rc"; exit 1; }
           rc=0; se lint broken.rb || rc=$?
           [ "$rc" -eq 1 ] || { echo "broken.rb: expected exit 1, got $rc"; exit 1; }
