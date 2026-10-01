@@ -121,9 +121,27 @@ module SimpleEnglish
       assert_port_free(port + 1)
       args = ["--port", port.to_s]
       args.concat(["--dev-log", dev_log]) if dev_log
-      Client.spawn_daemon(*args)
-      daemon = Client.wait_for { Client.info(base_url: "http://localhost:#{port}") }
-      daemon.is_a?(Hash) ? daemon : nil
+      pid = Client.spawn_daemon(*args)
+      # The child gives its inner JVM TIMEOUT_SECONDS to boot, and
+      # the handshake answers only after that: wait the child's own
+      # budget, not the default 90 s, or a slow boot reads as
+      # failure while the child is still coming up.
+      daemon = Client.wait_for(
+        seconds: SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10
+      ) { Client.info(base_url: "http://localhost:#{port}") }
+      return daemon if daemon.is_a?(Hash)
+      # Readiness failed. The child is either dead (InnerTimeout and
+      # InnerDied make it exit itself) or a straggler that later
+      # takes over the port from whatever daemon comes next.
+      # Stop it either way, and reap so nothing is left behind.
+      stop(pid)
+      begin
+        Process.wait(pid)
+      rescue SystemCallError
+        # The child already exited on its own (InnerTimeout,
+        # InnerDied): only the reap is left.
+      end
+      nil
     end
 
     def start(port: Client::DEFAULT_PORT, install: Install.from_env, log: $stderr)

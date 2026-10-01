@@ -11,7 +11,7 @@ class ServerStartDetachedTest < Minitest::Test
     spawned = nil
     SimpleEnglish::Server.stub :takeover, nil do
       SimpleEnglish::Client.stub :spawn_daemon, ->(*args) { spawned = args } do
-        SimpleEnglish::Client.stub :wait_for, ->(&block) { block.call } do
+        SimpleEnglish::Client.stub :wait_for, ->(seconds: 90, &block) { block.call } do
           SimpleEnglish::Client.stub :info, {"pid" => 4242} do
             in_tmpdir do |dir|
               daemon = SimpleEnglish::Server.start_detached(port: port,
@@ -30,7 +30,7 @@ class ServerStartDetachedTest < Minitest::Test
     spawned = nil
     SimpleEnglish::Server.stub :takeover, nil do
       SimpleEnglish::Client.stub :spawn_daemon, ->(*args) { spawned = args } do
-        SimpleEnglish::Client.stub :wait_for, ->(&block) { block.call } do
+        SimpleEnglish::Client.stub :wait_for, ->(seconds: 90, &block) { block.call } do
           SimpleEnglish::Client.stub :info, {"pid" => 4242} do
             in_tmpdir do |dir|
               SimpleEnglish::Server.start_detached(port: port,
@@ -75,6 +75,31 @@ class ServerStartDetachedTest < Minitest::Test
     end
   end
 
+  def test_terms_and_reaps_the_child_when_readiness_fails
+    # A straggler child that never answers must not survive the
+    # failure: it later takes over the port from whatever
+    # daemon comes next.
+    child = Process.spawn(RbConfig.ruby, "-e", "sleep 30")
+    budget = nil
+    SimpleEnglish::Server.stub :takeover, nil do
+      SimpleEnglish::Client.stub :spawn_daemon, child do
+        SimpleEnglish::Client.stub :wait_for, ->(seconds:, &) {
+          budget = seconds
+          false
+        } do
+          in_tmpdir do |dir|
+            assert_nil SimpleEnglish::Server.start_detached(port: free_port,
+              install: fake_install(dir))
+          end
+        end
+      end
+    end
+    # The wait matches the child's own boot budget, not the 90 s
+    # default: a slow JVM boot must not read as failure.
+    assert_equal SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10, budget
+    assert_reaped(child)
+  end
+
   private
 
   def fake_install(dir)
@@ -89,5 +114,19 @@ class ServerStartDetachedTest < Minitest::Test
     port = server.addr[1]
     server.close
     port
+  end
+
+  def assert_reaped(pid)
+    reaped = false
+    50.times do
+      reaped = !Process.wait(pid, Process::WNOHANG).nil?
+      break if reaped
+      sleep 0.1
+    rescue Errno::ECHILD
+      # No such child left: already reaped, which is the assertion.
+      reaped = true
+      break
+    end
+    assert reaped, "child still running after start_detached"
   end
 end
