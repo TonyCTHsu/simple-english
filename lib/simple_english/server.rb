@@ -73,10 +73,11 @@ module SimpleEnglish
     def port_free?(port)
       ["127.0.0.1", "::1"].each do |address|
         TCPServer.new(address, port).close
-      rescue Errno::EADDRNOTAVAIL
-        # One family may be missing on this host: skip it and probe
-        # the other. A rescue at method scope returns here and never
-        # probes the second family.
+      rescue Errno::EADDRNOTAVAIL, Errno::EAFNOSUPPORT
+        # One family may be missing on this host (EADDRNOTAVAIL, or
+        # EAFNOSUPPORT when the kernel has no IPv6 at all): skip it
+        # and probe the other. A rescue at method scope returns here
+        # and never probes the second family.
         next
       end
       true
