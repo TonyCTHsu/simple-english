@@ -1,0 +1,109 @@
+[
+{
+  "name":"com.google.common.util.concurrent.AbstractFuture",
+  "fields":[{"name":"listeners"}, {"name":"value"}, {"name":"waiters"}]
+},
+{
+  "name":"com.google.common.util.concurrent.AbstractFuture$Waiter",
+  "fields":[{"name":"next"}, {"name":"thread"}]
+},
+{
+  "name":"com.sun.org.apache.xerces.internal.impl.dv.xs.ExtendedSchemaDVFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"io.opentelemetry.api.incubator.trace.ExtendedDefaultTracerProvider"
+},
+{
+  "name":"io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk"
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicBoolean",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicReference",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"opennlp.tools.chunker.ChunkerFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"opennlp.tools.postag.POSTaggerFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"opennlp.tools.tokenize.TokenizerFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.logging.LogFactory"
+},
+{
+  "name":"org.apache.commons.logging.impl.Log4jApiLogFactory"
+},
+{
+  "name":"org.apache.commons.logging.impl.Slf4jLogFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.logging.impl.WeakHashtable",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.logging.slf4j.SLF4JProvider"
+},
+{
+  "name":"org.languagetool.PremiumOn"
+},
+{
+  "name":"org.languagetool.language.AmericanEnglish",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.language.AustralianEnglish",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.language.BritishEnglish",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.language.CanadianEnglish",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.language.English",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.language.NewZealandEnglish",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.language.SouthAfricanEnglish",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.rules.en.NoDisambiguationEnglishPartialPosTagFilter",
+  "queryAllPublicConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.languagetool.rules.patterns.PatternToken",
+  "methods":[{"name":"clone","parameterTypes":[] }]
+},
+{
+  "name":"sun.misc.Unsafe",
+  "allDeclaredFields":true
+}
+]
