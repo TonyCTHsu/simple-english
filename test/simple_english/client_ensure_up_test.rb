@@ -144,14 +144,77 @@ class ClientEnsureUpTest < Minitest::Test
     # Two lints find a cold port at once. The spawn lock serializes
     # them: the loser re-checks on wake, finds the winner's daemon
     # up, and never spawns a second child.
-    answers = [nil, true]
+    winner = {"version" => SimpleEnglish::VERSION, "pid" => Process.pid,
+              "gem_digest" => SimpleEnglish::Fingerprint.gem,
+              "rules_digest" => "rules"}
+    answers = [nil, winner]
+    with_se_server_url(nil) do
+      SimpleEnglish::Client.stub :info, -> { answers.shift } do
+        SimpleEnglish::Client.stub :expected_rules_digest, "rules" do
+          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
+            _out, err = capture_io do
+              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            end
+            assert_empty err
+          end
+        end
+      end
+    end
+  end
+
+  def test_boot_warns_when_the_winner_staged_other_rules
+    # The loser linted from another project: the daemon runs fresh
+    # code with that project's rules. The loser must get the
+    # stale-rules warning, never a silent lint against foreign rules.
+    winner = {"version" => SimpleEnglish::VERSION, "pid" => Process.pid,
+              "gem_digest" => SimpleEnglish::Fingerprint.gem,
+              "rules_digest" => "winner project's rules"}
+    answers = [nil, winner]
+    with_se_server_url(nil) do
+      SimpleEnglish::Client.stub :info, -> { answers.shift } do
+        SimpleEnglish::Client.stub :expected_rules_digest, "this project's rules" do
+          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
+            _out, err = capture_io do
+              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            end
+            assert_match(/different rules/, err)
+            assert_match(/se serve/, err)
+          end
+        end
+      end
+    end
+  end
+
+  def test_boot_warns_when_the_winner_runs_different_code
+    # The winner's `se serve` child comes from its own checkout: the
+    # loser's post-lock recheck classifies the handshake like the
+    # first probe, so the code mismatch is said out loud.
+    winner = {"version" => SimpleEnglish::VERSION, "pid" => Process.pid,
+              "gem_digest" => "winner's build", "rules_digest" => "rules"}
+    answers = [nil, winner]
     with_se_server_url(nil) do
       SimpleEnglish::Client.stub :info, -> { answers.shift } do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
           _out, err = capture_io do
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
-          assert_empty err
+          assert_match(/different code than this install/, err)
+          assert_match(/Run `se serve` to restart it/, err)
+        end
+      end
+    end
+  end
+
+  def test_boot_reports_failure_when_the_spawned_daemon_never_answers
+    with_se_server_url(nil) do
+      SimpleEnglish::Client.stub :info, nil do
+        SimpleEnglish::Client.stub :spawn_daemon, -> {} do
+          SimpleEnglish::Client.stub :wait_for, false do
+            _out, err = capture_io do
+              refute SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            end
+            assert_match(/did not come up/, err)
+          end
         end
       end
     end

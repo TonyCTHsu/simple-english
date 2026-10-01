@@ -171,6 +171,15 @@ module SimpleEnglish
     def ensure_up(install: SimpleEnglish::Install.from_env)
       daemon = info
       return boot(install) if daemon.nil?
+      check_daemon(daemon)
+    end
+
+    # An answered probe, classified and said out loud: a foreign
+    # responder, another project's staged rules, or a different
+    # build. Returns true: there is a daemon to lint against, so
+    # the lint proceeds. Every path that holds a handshake result
+    # goes through here, so no caller can lint silently.
+    def check_daemon(daemon)
       # Reachable but not handshake-capable (an older release, a
       # foreign service): lint against it, there is nothing to check
       # or replace automatically. Say so: a silent stale lint is the
@@ -210,13 +219,22 @@ module SimpleEnglish
       end
       # One boot at a time: a concurrent lint that also found the
       # port cold waits here, re-checks, and skips its own spawn.
+      # Whatever answers on wake is classified like the first probe:
+      # the loser must get the same warnings, never a silent lint
+      # against the winner's rules or build.
       with_spawn_lock(install) do
-        return true if info
-        warn "se: daemon not running; starting it (first lint takes ~15s)..."
-        spawn_daemon
-        ok = wait_for { info }
-        warn "error: se daemon did not come up. Run `se serve` and read its output." unless ok
-        ok
+        daemon = info
+        unless daemon
+          warn "se: daemon not running; starting it (first lint takes ~15s)..."
+          spawn_daemon
+          daemon = wait_for { info }
+        end
+        if daemon
+          check_daemon(daemon)
+        else
+          warn "error: se daemon did not come up. Run `se serve` and read its output."
+          false
+        end
       end
     end
 
@@ -294,8 +312,8 @@ module SimpleEnglish
       false
     end
 
-    private_class_method :boot, :warn_mismatched_code, :warn_stale_rules,
-      :expected_rules_digest, :spawn_daemon, :wait_for, :newer_daemon?,
-      :with_spawn_lock
+    private_class_method :boot, :check_daemon, :warn_mismatched_code,
+      :warn_stale_rules, :expected_rules_digest, :spawn_daemon, :wait_for,
+      :newer_daemon?, :with_spawn_lock
   end
 end
