@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'Fix `brew services start simple-english` crashing: the daemon crashed at boot and launchd kept retrying it.'
+time: 2026-10-02T00:55:36.284797+02:00

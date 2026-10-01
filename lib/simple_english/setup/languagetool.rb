@@ -218,7 +218,11 @@ module SimpleEnglish
     # and LT itself rejects duplicate ids at load, so no dedup is
     # needed here.
     def rule_ids(path = RULES_FILE)
-      File.read(path).scan(/<(?:rule|rulegroup)\b[^>]*>/).filter_map do |tag|
+      # Explicit UTF-8: the file holds non-ASCII bytes, and a bare
+      # File.read uses the process's external encoding. Under
+      # launchd that is US-ASCII, and the scan below dies on the
+      # first such byte. The daemon must boot in any locale.
+      File.read(path, encoding: "UTF-8").scan(/<(?:rule|rulegroup)\b[^>]*>/).filter_map do |tag|
         tag[/\bid="([^"]+)"/, 1]
       end
     end
