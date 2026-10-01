@@ -2,13 +2,21 @@
 <rules lang="en">
   <category id="SIMPLE_ENGLISH" name="Simple English">
 
+    <!-- LanguageTool splits "you're" into "you" + "'re", so the
+         regex matches the apostrophe-initial tokens: "'re", "'ve",
+         "'ll", "'d", "'m", and the "n't" token of "don't". The
+         apostrophe-s form stays out: it is both the contraction
+         "it is" and the possessive, and the tagger does not tell
+         them apart reliably. -->
     <rule id="SE_NO_CONTRACTIONS" name="No contractions">
       <pattern>
-        <token regexp="yes">[a-z]+['’](s|t|re|ve|ll|d|m)</token>
+        <token regexp="yes">[a-z]*['’](t|re|ve|ll|d|m)</token>
       </pattern>
       <message>Write the words in full. No contractions.</message>
       <example type="incorrect">You <marker>don't</marker> need this file.</example>
+      <example type="incorrect">If <marker>you're</marker> connecting, use TCP.</example>
       <example type="correct">You do not need this file.</example>
+      <example type="correct">sqlpipe's IP is in the config.</example>
     </rule>
 
     <rule id="SE_NO_SEMICOLON" name="No semicolons">
