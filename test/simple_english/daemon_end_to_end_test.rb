@@ -25,7 +25,7 @@ class DaemonEndToEndTest < Minitest::Test
       # that budget plus a margin, so the test never races the daemon
       # into a false failure on a slow runner.
       ((SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10) * 2).times do
-        break if SimpleEnglish::Client.up?(base_url: url)
+        break if SimpleEnglish::Client.info(base_url: url)
         if Process.wait(pid, Process::WNOHANG)
           raise "daemon exited early. Log: #{daemon_log(dir)}"
         end
@@ -74,7 +74,7 @@ class DaemonEndToEndTest < Minitest::Test
         out: File::NULL, err: File.join(dir, "daemon-stderr.log"), chdir: dir)
       url = "http://localhost:#{port}"
       ((SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10) * 2).times do
-        break if SimpleEnglish::Client.up?(base_url: url)
+        break if SimpleEnglish::Client.info(base_url: url)
         if Process.wait(pid, Process::WNOHANG)
           raise "daemon exited early. Log: #{daemon_log(dir)}"
         end

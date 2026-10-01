@@ -5,7 +5,8 @@ here. If you only want to lint prose, read the [README](../README.md).
 
 ## Layout
 
-- `lib/simple_english.rb` is the composition root: `lint_text`, `lint_file`, `corpus_test`
+- `lib/simple_english.rb` is the composition root: `lint_text`,
+  `lint_file`. `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
   and `annotated_text.rb` do text analysis: Markdown strip, sentence counts,
   process helpers, comment extraction, offset mapping

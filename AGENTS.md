@@ -33,7 +33,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 
 ## Layout
 
-- `lib/simple_english.rb` is the composition root: `lint_text`, `corpus_test`
+- `lib/simple_english.rb` is the composition root: `lint_text`,
+  `lint_file`. `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
   is the only change that belongs in it
 - `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,

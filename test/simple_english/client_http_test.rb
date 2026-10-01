@@ -66,13 +66,9 @@ class ClientHTTPTest < Minitest::Test
     end
   end
 
-  def test_up_is_false_for_dead_daemon
-    refute SimpleEnglish::Client.up?(base_url: "http://localhost:1")
-  end
-
-  def test_up_is_true_for_live_daemon
-    with_stub_server("/" => "ok") do |url|
-      assert SimpleEnglish::Client.up?(base_url: url)
+  def test_info_is_foreign_for_a_non_handshake_responder
+    with_stub_server("/" => "not a handshake") do |url|
+      assert_equal :foreign, SimpleEnglish::Client.info(base_url: url)
     end
   end
 
@@ -84,19 +80,13 @@ class ClientHTTPTest < Minitest::Test
     end
   end
 
-  def test_info_is_nil_for_a_non_handshake_responder
-    with_stub_server("/" => "not a handshake") do |url|
-      assert_nil SimpleEnglish::Client.info(base_url: url)
-    end
-  end
-
-  def test_info_is_nil_for_a_malformed_handshake
-    # Key presence alone is not a handshake: a string pid reaches
-    # the restart probe and raises TypeError mid-lint.
+  def test_info_is_foreign_for_a_malformed_handshake
+    # Key presence alone is not a handshake: a malformed daemon is
+    # not one we can reason about.
     bad = {"version" => "0.2.0", "pid" => "42",
            "gem_digest" => "a" * 64, "rules_digest" => "b" * 64}
     with_stub_server("/" => JSON.generate(bad)) do |url|
-      assert_nil SimpleEnglish::Client.info(base_url: url)
+      assert_equal :foreign, SimpleEnglish::Client.info(base_url: url)
     end
   end
 
@@ -104,13 +94,13 @@ class ClientHTTPTest < Minitest::Test
     assert_nil SimpleEnglish::Client.info(base_url: "http://localhost:1")
   end
 
-  def test_info_is_nil_when_the_connection_dies_mid_poll
-    # A daemon being TERMed resets or closes the connection: the
-    # poll must return nil, not raise into the restart loop.
+  def test_info_is_foreign_when_the_connection_dies_mid_poll
+    # A daemon being TERMed resets or closes the connection:
+    # something holds the port but answers nothing usable.
     server = TCPServer.new("127.0.0.1", 0)
     port = server.addr[1]
     closer = Thread.new { server.accept.close }
-    assert_nil SimpleEnglish::Client.info(base_url: "http://127.0.0.1:#{port}")
+    assert_equal :foreign, SimpleEnglish::Client.info(base_url: "http://127.0.0.1:#{port}")
   ensure
     closer&.join(1)
     server&.close

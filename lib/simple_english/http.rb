@@ -51,7 +51,7 @@ module SimpleEnglish
       if request.nil?
         # Malformed request or immediate hangup: nothing to answer.
       elsif request[:method] == "HEAD"
-        # Client.up? does http.head("/") and treats any response as up.
+        # Older CLIs probe with HEAD and treat any response as up.
         write_response(client, status: 200, body: "")
       elsif request[:method] == "GET" && request[:path] == "/"
         # The handshake: the daemon reports its version, pid, and the
