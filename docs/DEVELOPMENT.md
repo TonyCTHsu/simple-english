@@ -70,7 +70,7 @@ downloads to `~/.cache/se`). If `java` is not on PATH, set
 
 ## Test strategy
 
-Four tiers. The theme: keep the JVM (LanguageTool) out of every test
+Five tiers. The theme: keep the JVM (LanguageTool) out of every test
 except the tests whose job is the JVM boundary.
 
 1. **Unit tests** (`test/simple_english/*_test.rb`, minitest): one class
