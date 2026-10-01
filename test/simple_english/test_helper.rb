@@ -2,6 +2,7 @@
 
 require "tmpdir"
 require "json"
+require "stringio"
 require "fileutils"
 require "minitest/autorun"
 require "minitest/mock"
@@ -75,6 +76,16 @@ class StubHTTPServer
   ensure
     client.close
   end
+end
+
+# Replaces $stdin for the block, so CLI tests exercising the `-`
+# path read a bounded StringIO instead of the process's real stdin
+# (an interactive TTY never sends EOF, so $stdin.read hangs forever).
+def with_stdin(text)
+  real, $stdin = $stdin, StringIO.new(text)
+  yield
+ensure
+  $stdin = real
 end
 
 # Sets ENV keys for the block and restores them (or unsets them) after,
