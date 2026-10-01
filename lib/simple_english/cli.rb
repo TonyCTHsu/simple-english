@@ -107,7 +107,13 @@ module SimpleEnglish
       desc: "Install into PATH (default: the shared cache)"
     def setup
       install = SimpleEnglish::Install.from_env
-      lt = SimpleEnglish::LanguageTool.install(options[:dir] || install.cache_dir)
+      # --dir must reach the smoke test too: Install picks the jar that
+      # runs, so rebuild it around the requested dir when one is given.
+      if options[:dir]
+        install = SimpleEnglish::Install.new(cache_dir: options[:dir],
+          java: install.java, java_source: install.java_source)
+      end
+      lt = SimpleEnglish::LanguageTool.install(install.cache_dir)
       return 2 unless lt
       puts "LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION}: " \
         "#{lt["downloaded"] ? "downloaded to" : "already present at"} #{lt["dir"]}"
