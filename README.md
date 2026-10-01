@@ -41,10 +41,26 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-**Requirements:** Ruby 3.3 or newer, Java 11 or newer for
+**Requirements:** On macOS, Homebrew covers everything. On Linux,
+Windows, or CI, you need Ruby 3.3 or newer and Java 11 or newer for
 LanguageTool. The Docker image bundles both.
 
-### Ruby gem
+### Homebrew (macOS)
+
+The formula installs the gem under Homebrew's own Ruby and pulls in
+OpenJDK. Your machine needs neither Ruby nor Java. Run:
+
+```bash
+brew install TonyCTHsu/tap/simple-english
+se setup    # run once: downloads LanguageTool (about 300 MB)
+se README.md
+```
+
+To keep a warm daemon, run `brew services start simple-english`.
+It starts the daemon at login and restarts it after a crash. Run
+`brew services stop simple-english` to stop it.
+
+### Ruby gem (Linux, Windows, CI)
 
 ```bash
 gem install simple_english
