@@ -35,6 +35,16 @@ module ExampleChecks
   def check
     SimpleEnglish::Client.ensure_up
     rules = rule_examples
+    # rule_ids feeds enabledRules on every lint request. It is a regex
+    # scan; this is the real parser. If the two disagree, the daemon
+    # enables a rule set the XML does not define, or misses one it does.
+    ids = rules.keys
+    regex_ids = SimpleEnglish::LanguageTool.rule_ids
+    unless ids.sort == regex_ids.sort
+      puts "FAIL rule_ids and the rules XML disagree: " \
+        "#{(ids - regex_ids).inspect} vs #{(regex_ids - ids).inspect}"
+      return false
+    end
     fired = SimpleEnglish::Client.lint(rules.values.flat_map { |e| e[:incorrect] }.join("\n\n"))
       .map(&:rule).uniq
     silent = SimpleEnglish::Client.lint(rules.values.flat_map { |e| e[:correct] }.join("\n\n"))

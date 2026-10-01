@@ -213,10 +213,16 @@ module SimpleEnglish
     # matters. It reads the repo's own file, which the test suite
     # round-trips through LanguageTool, so malformed XML fails the
     # build, not the boot.
+    # The id list from the rules XML, in file order. The daemon's
+    # enabledRules parameter on every lint request needs it; a rule
+    # LT loads but the list omits is dead, because enabledOnly is
+    # set. examples_check asserts this list against a real XML
+    # parser, and LT itself rejects duplicate ids at load, so no
+    # dedup is needed here.
     def rule_ids(path = RULES_FILE)
       File.read(path).scan(/<(?:rule|rulegroup)\b[^>]*>/).filter_map do |tag|
         tag[/\bid="([^"]+)"/, 1]
-      end.uniq
+      end
     end
   end
 end
