@@ -1,0 +1,3 @@
+kind: Added
+body: 'A custom-rule change (BYOR edit, another project''s config) warns at lint time'
+time: 2026-09-30T13:40:02.095628+02:00

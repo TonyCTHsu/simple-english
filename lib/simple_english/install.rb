@@ -50,8 +50,11 @@ module SimpleEnglish
 
     def java!
       return java if java?
-      raise SetupError,
-        "java not found. Install a JRE (on macOS: brew install openjdk), " \
+      raise SetupError, java_message
+    end
+
+    def java_message
+      "java not found. Install a JRE (on macOS: brew install openjdk), " \
         "or set SE_JAVA to your java binary."
     end
 

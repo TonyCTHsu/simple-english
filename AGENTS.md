@@ -37,7 +37,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
   is the only change that belongs in it
 - `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
-  `annotated_text.rb`, `suppressions.rb`, `config.rb`, `client.rb`, `cli.rb` are
+  `annotated_text.rb`, `suppressions.rb`, `config.rb`, `client.rb`, `fingerprint.rb`, `cli.rb` are
   separate modules with small public interfaces
 - One object definition per file: value objects live in their own files
   (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`, `result.rb`,

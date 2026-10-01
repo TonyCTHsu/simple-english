@@ -50,8 +50,18 @@ class MonitorInnerTest < Minitest::Test
           end
         end
       end
+      # An install that passes the preflight: the cache on this runner
+      # can be empty, and the inner-death path must not care.
+      require "tmpdir"
+      require "fileutils"
+      cache = Dir.mktmpdir
+      lt = File.join(cache, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
+      FileUtils.mkdir_p(lt)
+      FileUtils.touch(File.join(lt, "languagetool-server.jar"))
       begin
-        SimpleEnglish::Server.start(port: port, log: File::NULL)
+        SimpleEnglish::Server.start(port: port,
+          install: SimpleEnglish::Install.new(cache_dir: cache, java: RbConfig.ruby),
+          log: File::NULL)
       rescue SimpleEnglish::Server::InnerDied => e
         warn "error: \#{e.message}"
         exit 2

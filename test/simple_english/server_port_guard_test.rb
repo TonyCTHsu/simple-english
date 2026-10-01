@@ -5,15 +5,34 @@ require_relative "test_helper"
 require "socket"
 
 class ServerPortGuardTest < Minitest::Test
-  def test_serve_refuses_occupied_port
-    blocker = TCPServer.new("localhost", 0)
-    port = blocker.addr[1]
-    error = assert_raises(SimpleEnglish::Server::PortInUse) do
-      SimpleEnglish::Server.start(port: port)
+  def test_port_free_reports_an_ipv6_only_listener
+    # A listener on ::1 alone must count as occupied: the guard
+    # probes both families, an IPv4-only probe misses it.
+    blocker = begin
+      TCPServer.new("::1", 0)
+    rescue Errno::EADDRNOTAVAIL, Errno::EAFNOSUPPORT, SocketError
+      skip "this host has no IPv6 loopback"
     end
-    assert_equal "port #{port} is already in use.", error.message
+    port = blocker.addr[1]
+    refute SimpleEnglish::Server.port_free?(port)
   ensure
     blocker&.close
+  end
+
+  def test_serve_refuses_occupied_port
+    # The install is faked: the preflight must pass so the guard, not
+    # the missing cache, decides the outcome on a machine without
+    # LanguageTool.
+    fake_install do |install|
+      blocker = TCPServer.new("localhost", 0)
+      port = blocker.addr[1]
+      error = assert_raises(SimpleEnglish::Server::PortInUse) do
+        SimpleEnglish::Server.start(port: port, install: install)
+      end
+      assert_equal "port #{port} is already in use.", error.message
+    ensure
+      blocker&.close
+    end
   end
 
   def test_serve_refuses_occupied_inner_port
@@ -30,10 +49,12 @@ class ServerPortGuardTest < Minitest::Test
       end
       outer.close
       blocker = TCPServer.new("localhost", port)
-      error = assert_raises(SimpleEnglish::Server::PortInUse) do
-        SimpleEnglish::Server.start(port: port - 1)
+      fake_install do |install|
+        error = assert_raises(SimpleEnglish::Server::PortInUse) do
+          SimpleEnglish::Server.start(port: port - 1, install: install)
+        end
+        assert_equal "port #{port} is already in use.", error.message
       end
-      assert_equal "port #{port} is already in use.", error.message
       return
     ensure
       blocker&.close
