@@ -142,30 +142,9 @@ ignore:
   - vendor/**
 disabled-rules:
   - SE_NO_EMDASH
-rules:
-  - team-style.xml
 ```
 
 `ignore` globs: `**` crosses directories, `*` stays in one segment.
-
-### Bring your own rules
-
-`rules` names LanguageTool XML rule files, in the same format as the
-[built-in set](rules/simple-english.xml). The rules merge into the
-built-in set, so your rules lint beside the standard ones. The daemon
-reads the rule files once, when it starts, from the directory it
-starts in. When you change your rules, run `se serve` again: it
-stops the old daemon and reloads. The CLI also warns at lint time
-when the daemon staged different rules than your project.
-
-Suppression and config work on your rules too:
-
-- `se: ignore=YOUR_RULE` on a line
-- `disabled-rules:` in `.simple-english.yml`
-
-To replace a built-in rule, disable its ID and add your own under a
-new ID. Counting rules (the sentence and paragraph limits) are Ruby
-code, not XML, and stay fixed.
 
 ### Inline suppressions
 
@@ -192,9 +171,8 @@ The CLI runs a small background server on your machine. The first
 lint starts it, which takes about 15 seconds. Later lints take
 milliseconds.
 
-The first lint after a gem update or after a change to your `rules:`
-files prints a warning. Run `se serve` then. It stops the old daemon
-and reloads it. You never talk to the daemon directly. Its HTTP
+The first lint after a gem update prints a warning. Run `se serve`
+then. It stops the old daemon and reloads it. You never talk to the daemon directly. Its HTTP
 interface is internal and can change in any release.
 
 ## Scope

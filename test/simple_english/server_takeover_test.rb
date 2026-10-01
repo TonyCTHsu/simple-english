@@ -19,27 +19,6 @@ class ServerTakeoverTest < Minitest::Test
     end
   end
 
-  def test_serve_leaves_the_old_daemon_alive_when_the_replacement_cannot_stage
-    # A reload with a broken rule file must not stop the healthy
-    # daemon first: staging and the install preflight run before the
-    # takeover, so a failed reload leaves the old daemon linting.
-    in_tmpdir(chdir: true) do |_dir|
-      File.write("broken.xml", "<rules lang=\"en\"><rule id=\"X\">")
-      File.write(".simple-english.yml", "rules: [broken.xml]\n")
-      child = Process.spawn(RbConfig.ruby, "-e", "sleep 30")
-      SimpleEnglish::Client.stub :info, ->(base_url:) { {"pid" => child, "gem_digest" => "old"} } do
-        error = assert_raises(SimpleEnglish::Server::ServerError) do
-          SimpleEnglish::Server.start(port: 28295)
-        end
-        assert_match(/broken\.xml/, error.message)
-      end
-      assert_nil Process.wait(child, Process::WNOHANG),
-        "the old daemon must survive a failed reload"
-      Process.kill("TERM", child)
-      Process.wait(child)
-    end
-  end
-
   def test_takeover_refuses_a_pid_off_the_wire_that_is_not_a_positive_integer
     # The handshake is unauthenticated: a foreign responder can name
     # pid 0 (the caller's process group) or anything else. Only a

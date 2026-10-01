@@ -49,9 +49,8 @@ GET / answers the handshake:
 {"version": "0.2.0", "pid": 123, "gem_digest": "…", "rules_digest": "…"}
 ```
 
-`gem_digest` covers the gem code and the built-in rules.
-`rules_digest` covers the staged rule set with any custom rule
-files. The CLI compares both at every lint.
+`gem_digest` covers the gem code and the built-in rules. The CLI
+compares it at every lint.
 
 A `gem_digest` mismatch means the daemon runs different code than
 the caller. The CLI never replaces a running daemon: `se serve`
@@ -61,12 +60,13 @@ and lints against the old code meanwhile. The warning names
 says `Update this gem` instead: `se serve` from an older CLI
 boots an older daemon in its place.
 
-A `rules_digest` mismatch means the daemon staged different rules
-than the caller's config, so the CLI warns and `se serve` reloads.
+`rules_digest` covers the staged rule set. Every daemon stages the
+same built-in rules, so a mismatch now only means a different gem
+version, which the `gem_digest` mismatch already reports. The field
+stays in the handshake for older clients.
 
 The daemon is machine-global: one per port, shared by every
-project. The project that runs `se serve` last owns its staged
-rules, and every other project is warned at lint time.
+project. Every project lints with the same built-in rules.
 
 ## No Java? Run the CLI in a container
 

@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-# .simple-english.yml: ignore (path globs, matched against the paths given
-# on the command line), disabled-rules, and rules (LanguageTool XML
-# files merged into the built-in rule set). Loaded from the CWD.
+# .simple-english.yml: ignore (path globs, matched against the paths
+# given on the command line) and disabled-rules (rule IDs dropped
+# from every file). Loaded from the CWD.
 
 module SimpleEnglish
   module Config
     ConfigError = Class.new(StandardError)
-    DEFAULT = {ignore: [], disabled_rules: [], rules: []}.freeze
+    DEFAULT = {ignore: [], disabled_rules: []}.freeze
 
     module_function
 
@@ -16,19 +16,8 @@ module SimpleEnglish
       return DEFAULT unless File.exist?(file)
       require "yaml"
       data = YAML.safe_load_file(file) || {}
-      rules = Array(data["rules"]).map do |path|
-        unless path.is_a?(String) && !path.strip.empty?
-          raise ConfigError, ".simple-english.yml: rules entries must be file paths"
-        end
-        expanded = File.expand_path(path, dir)
-        unless File.file?(expanded)
-          raise ConfigError, ".simple-english.yml: rules file not found: #{expanded}"
-        end
-        expanded
-      end
       {ignore: Array(data["ignore"]),
-       disabled_rules: Array(data["disabled-rules"]),
-       rules: rules}
+       disabled_rules: Array(data["disabled-rules"])}
     rescue Psych::SyntaxError => e
       raise ConfigError, ".simple-english.yml: #{e.message}"
     end

@@ -1,3 +1,0 @@
-kind: Added
-body: 'BYOR (bring your own rules): a `rules:` key in `.simple-english.yml` names extra LanguageTool XML rule files. They merge into the built-in set'
-time: 2026-09-30T12:48:34.494114+02:00

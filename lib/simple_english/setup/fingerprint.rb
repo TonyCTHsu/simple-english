@@ -2,8 +2,8 @@
 
 # Fingerprints for the daemon handshake. `gem` identifies the code and
 # built-in rules a daemon runs: any release that changes lint behavior
-# changes it, and nothing else does. `sha` covers the merged rule
-# content (built-in plus BYOR files) wherever the caller resolved it.
+# changes it, and nothing else does. `sha` covers the staged rule
+# content wherever the caller resolved it.
 
 require_relative "languagetool"
 

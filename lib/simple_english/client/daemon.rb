@@ -97,10 +97,10 @@ module SimpleEnglish
     end
 
     # An answered probe, classified and said out loud: a foreign
-    # responder, another project's staged rules, or a different
-    # build. Returns true: there is a daemon to lint against, so
-    # the lint proceeds. Every path that holds a handshake result
-    # goes through here, so no caller can lint silently.
+    # responder or a different build. Returns true: there is a daemon
+    # to lint against, so the lint proceeds. Every path that holds a
+    # handshake result goes through here, so no caller can lint
+    # silently.
     def check_daemon(daemon)
       # Reachable but not handshake-capable (an older release, a
       # foreign service): lint against it, there is nothing to check
@@ -117,10 +117,7 @@ module SimpleEnglish
         end
         return true
       end
-      if daemon["gem_digest"] == Fingerprint.gem
-        warn_stale_rules(daemon)
-        return true
-      end
+      return true if daemon["gem_digest"] == Fingerprint.gem
       warn_mismatched_code(daemon)
       true
     end
@@ -194,26 +191,6 @@ module SimpleEnglish
       end
     end
 
-    # BYOR froze the daemon's rule set at boot. Different merged rules
-    # (an edited file, or a daemon booted in another project) lint
-    # wrong for the rules the user owns: say so, restart stays
-    # explicit.
-    def warn_stale_rules(daemon)
-      expected = expected_rules_digest
-      return if expected.nil? || expected == daemon["rules_digest"]
-      warn "se: daemon loaded different rules than this project's config. Run `se serve` to reload."
-    end
-
-    # The digest this CWD's config stages. nil when the config or
-    # a rules file is broken: warn the cause, then lint against the
-    # daemon's rules rather than say nothing at all.
-    def expected_rules_digest
-      Fingerprint.sha(SimpleEnglish::Server.merged_rules(Config.load[:rules]))
-    rescue SimpleEnglish::Config::ConfigError, SimpleEnglish::Server::ServerError => e
-      warn "se: could not compare the daemon's rules with this project's config: #{e.message}"
-      nil
-    end
-
     def spawn_daemon
       bin = File.expand_path("../../../bin/se", __dir__)
       Process.spawn(RbConfig.ruby, bin, "serve", out: File::NULL, err: File::NULL)
@@ -239,7 +216,7 @@ module SimpleEnglish
     end
 
     private_class_method :boot, :check_daemon, :warn_mismatched_code,
-      :warn_stale_rules, :expected_rules_digest, :spawn_daemon, :wait_for,
+      :spawn_daemon, :wait_for,
       :newer_daemon?, :with_spawn_lock
   end
 end

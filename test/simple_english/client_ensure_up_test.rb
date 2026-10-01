@@ -150,36 +150,11 @@ class ClientEnsureUpTest < Minitest::Test
     answers = [nil, winner]
     with_se_server_url(nil) do
       SimpleEnglish::Client.stub :info, -> { answers.shift } do
-        SimpleEnglish::Client.stub :expected_rules_digest, "rules" do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_empty err
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
-        end
-      end
-    end
-  end
-
-  def test_boot_warns_when_the_winner_staged_other_rules
-    # The loser linted from another project: the daemon runs fresh
-    # code with that project's rules. The loser must get the
-    # stale-rules warning, never a silent lint against foreign rules.
-    winner = {"version" => SimpleEnglish::VERSION, "pid" => Process.pid,
-              "gem_digest" => SimpleEnglish::Fingerprint.gem,
-              "rules_digest" => "winner project's rules"}
-    answers = [nil, winner]
-    with_se_server_url(nil) do
-      SimpleEnglish::Client.stub :info, -> { answers.shift } do
-        SimpleEnglish::Client.stub :expected_rules_digest, "this project's rules" do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/different rules/, err)
-            assert_match(/se serve/, err)
-          end
+          assert_empty err
         end
       end
     end
@@ -220,27 +195,6 @@ class ClientEnsureUpTest < Minitest::Test
     end
   end
 
-  def test_ensure_up_warns_when_the_callers_rules_cannot_be_computed
-    # A broken rule file in the lint caller's CWD must not lint
-    # silently against the daemon's old rules.
-    daemon = {"version" => SimpleEnglish::VERSION, "pid" => 4242,
-              "gem_digest" => SimpleEnglish::Fingerprint.gem,
-              "rules_digest" => "rules"}
-    in_tmpdir(chdir: true) do |_dir|
-      File.write("broken.xml", "<rules lang=\"en\">")
-      File.write(".simple-english.yml", "rules: [broken.xml]\n")
-      with_se_server_url(nil) do
-        SimpleEnglish::Client.stub :info, daemon do
-          _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-          end
-          assert_match(/could not compare the daemon's rules/, err)
-          assert_match(/broken\.xml/, err)
-        end
-      end
-    end
-  end
-
   def test_ensure_up_never_spawns_against_a_daemon_behind_se_server_url
     stale = {"version" => "0.1.0", "pid" => 4242,
              "gem_digest" => "old", "rules_digest" => "rules"}
@@ -256,33 +210,15 @@ class ClientEnsureUpTest < Minitest::Test
     end
   end
 
-  def test_ensure_up_warns_when_rules_differ_but_gem_matches
-    daemon = {"version" => SimpleEnglish::VERSION, "pid" => 4242,
-              "gem_digest" => SimpleEnglish::Fingerprint.gem,
-              "rules_digest" => "boot-time rules"}
-    SimpleEnglish::Client.stub :info, daemon do
-      SimpleEnglish::Client.stub :expected_rules_digest, "this project's rules" do
-        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "restart stays explicit" } do
-          _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-          end
-          assert_match(/Run `se serve` to reload/, err)
-        end
-      end
-    end
-  end
-
   def test_ensure_up_is_quiet_when_everything_matches
     daemon = {"version" => SimpleEnglish::VERSION, "pid" => 4242,
               "gem_digest" => SimpleEnglish::Fingerprint.gem,
               "rules_digest" => "rules"}
     SimpleEnglish::Client.stub :info, daemon do
-      SimpleEnglish::Client.stub :expected_rules_digest, "rules" do
-        _out, err = capture_io do
-          assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-        end
-        assert_empty err
+      _out, err = capture_io do
+        assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
       end
+      assert_empty err
     end
   end
 

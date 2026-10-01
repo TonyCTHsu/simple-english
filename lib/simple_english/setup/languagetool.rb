@@ -206,20 +206,15 @@ module SimpleEnglish
       end
     end
 
-    # All rule IDs in RULES_FILE plus any extra rule files, in
-    # document order, duplicates dropped. REXML reads the ids wherever
-    # they sit in the tag: a regex tied to attribute order or spacing
-    # silently drops user-written rules. Called at daemon boot on the
-    # staged file, so a malformed file never reaches here.
-    def rule_ids(paths = [RULES_FILE])
-      require "rexml/document"
-      Array(paths).flat_map do |path|
-        doc = REXML::Document.new(File.read(path))
-        ids = []
-        REXML::XPath.each(doc, "//rule | //rulegroup") do |element|
-          ids << element.attributes["id"] if element.attributes["id"]
-        end
-        ids
+    # All rule IDs in RULES_FILE, in document order, duplicates
+    # dropped. The tag scan pairs each opening rule or rulegroup
+    # tag with the id attribute inside it, so attribute order never
+    # matters. It reads the repo's own file, which the test suite
+    # round-trips through LanguageTool, so malformed XML fails the
+    # build, not the boot.
+    def rule_ids(path = RULES_FILE)
+      File.read(path).scan(/<(?:rule|rulegroup)\b[^>]*>/).filter_map do |tag|
+        tag[/\bid="([^"]+)"/, 1]
       end.uniq
     end
   end
