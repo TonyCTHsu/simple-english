@@ -7,12 +7,6 @@ require "json"
 require "tmpdir"
 
 class ClientEnsureUpTest < Minitest::Test
-  def test_up_is_true_when_daemon_answers
-    server = StubHTTPServer.new("/v2/check" => lambda { |_body| [200, {matches: []}.to_json] })
-    assert_equal true, SimpleEnglish::Client.up?(base_url: server.url)
-    server.shutdown
-  end
-
   def test_lint_text_returns_nil_when_custom_url_is_dead
     with_env("SE_SERVER_URL" => "http://localhost:1") do
       _out, err = capture_io do
@@ -27,7 +21,7 @@ class ClientEnsureUpTest < Minitest::Test
       # java is present so the jar is the named blocker, and the
       # jar matters only when the daemon is down and we must spawn it.
       install = SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
-      SimpleEnglish::Client.stub :up?, false do
+      SimpleEnglish::Client.stub :info, nil do
         _out, err = capture_io do
           refute SimpleEnglish::Client.ensure_up(install: install)
         end
@@ -45,7 +39,7 @@ class ClientEnsureUpTest < Minitest::Test
       FileUtils.touch(File.join(lt, "languagetool-server.jar"))
       install = SimpleEnglish::Install.new(cache_dir: dir)
       with_se_server_url(nil) do
-        SimpleEnglish::Client.stub :up?, false do
+        SimpleEnglish::Client.stub :info, nil do
           SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
             _out, err = capture_io do
               refute SimpleEnglish::Client.ensure_up(install: install)
@@ -58,16 +52,15 @@ class ClientEnsureUpTest < Minitest::Test
   end
 
   def test_ensure_up_lints_against_a_daemon_without_a_handshake
-    # A pre-handshake daemon answers HEAD but not GET /: lint against
-    # it, no spawn - but say so, a stale lint must not be silent.
-    SimpleEnglish::Client.stub :up?, true do
-      SimpleEnglish::Client.stub :info, nil do
-        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
-          _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-          end
-          assert_match(/not a handshake-capable se daemon/, err)
+    # A pre-handshake daemon answers but not with the handshake: lint
+    # against it, no spawn - but say so, a stale lint must not be
+    # silent.
+    SimpleEnglish::Client.stub :info, :foreign do
+      SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
+        _out, err = capture_io do
+          assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
         end
+        assert_match(/not a handshake-capable se daemon/, err)
       end
     end
   end
@@ -76,14 +69,12 @@ class ClientEnsureUpTest < Minitest::Test
     # A pre-handshake daemon behind SE_SERVER_URL (a container image):
     # the fix is updating the image, not a local `se serve`.
     with_se_server_url("http://localhost:1") do
-      SimpleEnglish::Client.stub :up?, true do
-        SimpleEnglish::Client.stub :info, nil do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/pull a newer image or rebuild/, err)
+      SimpleEnglish::Client.stub :info, :foreign do
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/pull a newer image or rebuild/, err)
         end
       end
     end
@@ -96,16 +87,14 @@ class ClientEnsureUpTest < Minitest::Test
     stale = {"version" => "0.1.0", "pid" => Process.pid,
              "gem_digest" => "old", "rules_digest" => "rules"}
     with_se_server_url(nil) do
-      SimpleEnglish::Client.stub :up?, true do
-        SimpleEnglish::Client.stub :info, stale do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "lints never replace a daemon" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/runs se 0\.1\.0, different code than this install/, err)
-            assert_match(/Run `se serve` to restart it/, err)
-            assert_match(/Linting against it meanwhile/, err)
+      SimpleEnglish::Client.stub :info, stale do
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "lints never replace a daemon" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/runs se 0\.1\.0, different code than this install/, err)
+          assert_match(/Run `se serve` to restart it/, err)
+          assert_match(/Linting against it meanwhile/, err)
         end
       end
     end
@@ -119,15 +108,13 @@ class ClientEnsureUpTest < Minitest::Test
     newer = {"version" => "9.9.9", "pid" => 4242,
              "gem_digest" => "other", "rules_digest" => "rules"}
     with_se_server_url(nil) do
-      SimpleEnglish::Client.stub :up?, true do
-        SimpleEnglish::Client.stub :info, newer do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/newer than this install/, err)
-            assert_match(/Update this gem/, err)
+      SimpleEnglish::Client.stub :info, newer do
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/newer than this install/, err)
+          assert_match(/Update this gem/, err)
         end
       end
     end
@@ -141,15 +128,13 @@ class ClientEnsureUpTest < Minitest::Test
     twin = {"version" => SimpleEnglish::VERSION, "pid" => Process.pid,
             "gem_digest" => "other", "rules_digest" => "rules"}
     with_se_server_url(nil) do
-      SimpleEnglish::Client.stub :up?, true do
-        SimpleEnglish::Client.stub :info, twin do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "lints never replace a daemon" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/different code than this install/, err)
-            assert_match(/Run `se serve` to restart it/, err)
+      SimpleEnglish::Client.stub :info, twin do
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "lints never replace a daemon" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/different code than this install/, err)
+          assert_match(/Run `se serve` to restart it/, err)
         end
       end
     end
@@ -159,9 +144,9 @@ class ClientEnsureUpTest < Minitest::Test
     # Two lints find a cold port at once. The spawn lock serializes
     # them: the loser re-checks on wake, finds the winner's daemon
     # up, and never spawns a second child.
-    answers = [false, true]
+    answers = [nil, true]
     with_se_server_url(nil) do
-      SimpleEnglish::Client.stub :up?, -> { answers.shift } do
+      SimpleEnglish::Client.stub :info, -> { answers.shift } do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
           _out, err = capture_io do
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
@@ -182,14 +167,12 @@ class ClientEnsureUpTest < Minitest::Test
       File.write("broken.xml", "<rules lang=\"en\">")
       File.write(".simple-english.yml", "rules: [broken.xml]\n")
       with_se_server_url(nil) do
-        SimpleEnglish::Client.stub :up?, true do
-          SimpleEnglish::Client.stub :info, daemon do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/could not compare the daemon's rules/, err)
-            assert_match(/broken\.xml/, err)
+        SimpleEnglish::Client.stub :info, daemon do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/could not compare the daemon's rules/, err)
+          assert_match(/broken\.xml/, err)
         end
       end
     end
@@ -199,14 +182,12 @@ class ClientEnsureUpTest < Minitest::Test
     stale = {"version" => "0.1.0", "pid" => 4242,
              "gem_digest" => "old", "rules_digest" => "rules"}
     with_se_server_url("http://localhost:1") do
-      SimpleEnglish::Client.stub :up?, true do
-        SimpleEnglish::Client.stub :info, stale do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/not restarted automatically/, err)
+      SimpleEnglish::Client.stub :info, stale do
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/not restarted automatically/, err)
         end
       end
     end
@@ -216,15 +197,13 @@ class ClientEnsureUpTest < Minitest::Test
     daemon = {"version" => SimpleEnglish::VERSION, "pid" => 4242,
               "gem_digest" => SimpleEnglish::Fingerprint.gem,
               "rules_digest" => "boot-time rules"}
-    SimpleEnglish::Client.stub :up?, true do
-      SimpleEnglish::Client.stub :info, daemon do
-        SimpleEnglish::Client.stub :expected_rules_digest, "this project's rules" do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "restart stays explicit" } do
-            _out, err = capture_io do
-              assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-            end
-            assert_match(/Run `se serve` to reload/, err)
+    SimpleEnglish::Client.stub :info, daemon do
+      SimpleEnglish::Client.stub :expected_rules_digest, "this project's rules" do
+        SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "restart stays explicit" } do
+          _out, err = capture_io do
+            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
+          assert_match(/Run `se serve` to reload/, err)
         end
       end
     end
@@ -234,14 +213,12 @@ class ClientEnsureUpTest < Minitest::Test
     daemon = {"version" => SimpleEnglish::VERSION, "pid" => 4242,
               "gem_digest" => SimpleEnglish::Fingerprint.gem,
               "rules_digest" => "rules"}
-    SimpleEnglish::Client.stub :up?, true do
-      SimpleEnglish::Client.stub :info, daemon do
-        SimpleEnglish::Client.stub :expected_rules_digest, "rules" do
-          _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
-          end
-          assert_empty err
+    SimpleEnglish::Client.stub :info, daemon do
+      SimpleEnglish::Client.stub :expected_rules_digest, "rules" do
+        _out, err = capture_io do
+          assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
         end
+        assert_empty err
       end
     end
   end

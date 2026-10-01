@@ -133,34 +133,31 @@ module SimpleEnglish
       nil
     end
 
-    def up?(base_url: url)
-      uri = URI(base_url)
-      Net::HTTP.start(uri.host, uri.port, open_timeout: 1,
-        read_timeout: 2) { |http| http.head("/") }
-      true
-    rescue Errno::ECONNREFUSED, SocketError, Timeout::Error
-      false
-    end
-
     # The daemon handshake: GET / answers {version, pid, gem_digest,
-    # rules_digest}. nil when unreachable, or when the responder is
-    # not a handshake-capable se daemon (an older release, a foreign
-    # service) - those still lint, the caller cannot check them.
+    # rules_digest}. Returns the handshake Hash for an se daemon,
+    # :foreign for a reachable responder that is not one (an older
+    # release, a foreign service) - those still lint, the caller
+    # cannot check them - or nil when nothing answers. Unreachable
+    # means boot. Foreign means lint but say so.
     def info(base_url: url)
       uri = URI(base_url)
       response = Net::HTTP.start(uri.host, uri.port, open_timeout: 1,
         read_timeout: 2) { |http| http.get("/") }
-      return nil unless response.is_a?(Net::HTTPSuccess)
+      return :foreign unless response.is_a?(Net::HTTPSuccess)
       data = JSON.parse(response.body)
       # The whole contract or nothing: a responder with a string pid
       # or a missing field is not a daemon we can reason about.
-      return nil unless data.is_a?(Hash) &&
+      return :foreign unless data.is_a?(Hash) &&
         data["version"].is_a?(String) && data["pid"].is_a?(Integer) &&
         data["pid"].positive? && data["gem_digest"].is_a?(String) &&
         data["rules_digest"].is_a?(String)
       data
-    rescue Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EPIPE,
-      SocketError, Timeout::Error, EOFError, JSON::ParserError, TypeError
+    rescue Errno::ECONNRESET, Errno::EPIPE, EOFError, Net::ReadTimeout,
+      JSON::ParserError, TypeError
+      # Something holds the port but answers nothing usable. A read
+      # timeout is that too: the request went out, nothing came back.
+      :foreign
+    rescue Errno::ECONNREFUSED, SocketError, Timeout::Error
       nil
     end
 
@@ -172,13 +169,13 @@ module SimpleEnglish
     # status. Diagnostics go to stderr here, where the cause is
     # known.
     def ensure_up(install: SimpleEnglish::Install.from_env)
-      return boot(install) unless up?
       daemon = info
+      return boot(install) if daemon.nil?
       # Reachable but not handshake-capable (an older release, a
       # foreign service): lint against it, there is nothing to check
       # or replace automatically. Say so: a silent stale lint is the
       # bug the handshake exists to catch.
-      if daemon.nil?
+      if daemon == :foreign
         if ENV["SE_SERVER_URL"]
           warn "se: daemon at #{url} is not a handshake-capable se daemon. " \
             "Update it (pull a newer image or rebuild). " \
@@ -214,10 +211,10 @@ module SimpleEnglish
       # One boot at a time: a concurrent lint that also found the
       # port cold waits here, re-checks, and skips its own spawn.
       with_spawn_lock(install) do
-        return true if up?
+        return true if info
         warn "se: daemon not running; starting it (first lint takes ~15s)..."
         spawn_daemon
-        ok = wait_for { up? }
+        ok = wait_for { info }
         warn "error: se daemon did not come up. Run `se serve` and read its output." unless ok
         ok
       end

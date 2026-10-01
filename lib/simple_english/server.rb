@@ -94,15 +94,15 @@ module SimpleEnglish
     # keeps the PortInUse error: those need a manual look.
     def takeover(port)
       daemon = Client.info(base_url: "http://localhost:#{port}")
-      return if daemon.nil?
+      return unless daemon.is_a?(Hash)
       stop(daemon["pid"])
       # The outer listener closes first. The inner JVM takes seconds
       # longer. Both ports must free, or the next boot hits the inner
       # port and dies.
       deadline = Time.now + 10
       sleep 0.2 until Time.now > deadline ||
-          (Client.info(base_url: "http://localhost:#{port}").nil? &&
-          port_free?(port + 1))
+          !Client.info(base_url: "http://localhost:#{port}").is_a?(Hash) &&
+              port_free?(port + 1)
     end
 
     # Graceful only. SIGKILL skips the TERM trap and the inner JVM
