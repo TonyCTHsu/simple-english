@@ -12,6 +12,7 @@ end
 desc "Lint prose and code comments with se"
 task :lint do
   sh "bin/se ."
+  sh "bin/lint-fragments"
 end
 
 namespace :release do

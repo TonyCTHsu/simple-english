@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Lint the body of every unreleased changie fragment. The release
+# PR runs no CI, so this is the only gate on fragment prose before
+# changie folds it into CHANGELOG.md. rake lint runs this after the
+# repo self-lint. Each body goes through bin/se on stdin, so the
+# daemon boot, the findings, and the exit codes stay the CLI's.
+
+require "yaml"
+require "open3"
+
+se = File.expand_path("se", __dir__)
+failed = false
+Dir[".changes/unreleased/*.yaml"].sort.each do |path|
+  body = YAML.safe_load_file(path, permitted_classes: [Time])["body"]
+  next unless body.is_a?(String) && !body.empty?
+  out, err, status = Open3.capture3(se, "-", stdin_data: body)
+  warn(err) unless err.empty?
+  # 2 or higher means setup or daemon trouble. The stderr above
+  # names the cause, so stop the whole run there.
+  exit 2 if status.exitstatus >= 2
+  next unless status.exitstatus == 1
+  # Findings arrive as "-:1:...". Show them under the fragment's
+  # own name.
+  out.each_line { |line| puts(line.sub(/\A-:/, "#{path}:")) }
+  failed = true
+end
+exit 1 if failed

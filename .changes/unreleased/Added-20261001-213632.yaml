@@ -1,3 +1,3 @@
 kind: Added
-body: '`se serve --detached` replaces a running daemon and runs the new one in the background, like the auto-started daemon'
+body: '`se serve --detached` replaces a running daemon and runs the new one in the background.'
 time: 2026-10-01T21:36:32.550761+02:00
