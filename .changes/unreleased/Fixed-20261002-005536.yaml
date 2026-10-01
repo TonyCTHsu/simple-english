@@ -1,3 +1,3 @@
 kind: Fixed
-body: The daemon now starts under launchd and systemd without a UTF-8 locale. It used to crash there reading the rules file. The read now names UTF-8.
+body: 'Fix `brew services start simple-english` crashing: the daemon crashed at boot and launchd kept retrying it.'
 time: 2026-10-02T00:55:36.284797+02:00
