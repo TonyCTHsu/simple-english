@@ -1,0 +1,7 @@
+extends: existence
+message: "Write the words in full. No contractions."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    (?:[a-z]*['’](t|re|ve|ll|d|m))

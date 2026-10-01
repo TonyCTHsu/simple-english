@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it. It carries no fact."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:simply|seamlessly|effortlessly|easily)\b

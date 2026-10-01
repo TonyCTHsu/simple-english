@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:when)\b\s+\b(?:it)\b\s+\b(?:comes)\b\s+\b(?:to)\b

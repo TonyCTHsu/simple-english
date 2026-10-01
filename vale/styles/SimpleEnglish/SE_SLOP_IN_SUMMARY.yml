@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it. State the fact."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:in)\b\s+\b(?:summary)\b

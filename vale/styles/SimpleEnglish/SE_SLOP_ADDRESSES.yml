@@ -1,0 +1,7 @@
+extends: existence
+message: "Write  or ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:address(?:s|es|ed|d|ing)?|tackle(?:s|es|ed|d|ing)?)\b\s+\b(?:the)\b\s+\b(?:issue)\b

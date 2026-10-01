@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:enable(?:s|es|ed|d|ing)?|allow(?:s|es|ed|d|ing)?)\b\s+\b(?:you)\b\s+\b(?:to)\b

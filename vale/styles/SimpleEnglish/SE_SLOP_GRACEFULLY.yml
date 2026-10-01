@@ -1,0 +1,7 @@
+extends: existence
+message: "Say what the tool does: \"retries three times, then stops\"."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:gracefully)\b

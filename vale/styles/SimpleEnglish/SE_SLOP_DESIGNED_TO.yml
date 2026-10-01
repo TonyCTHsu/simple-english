@@ -1,0 +1,7 @@
+extends: existence
+message: "Say what the tool does."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:is|was)\b\s+\b(?:design(?:s|es|ed|d|ing)?)\b\s+\b(?:to)\b

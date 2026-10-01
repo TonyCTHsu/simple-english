@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:let)\b\s*(?:'s|’s)\b\s+\b(?:dive)\b\s+\b(?:in)\b

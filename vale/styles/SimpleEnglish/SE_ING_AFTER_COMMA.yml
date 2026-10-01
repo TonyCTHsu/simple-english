@@ -1,0 +1,10 @@
+# Hand-written: the postag VBG token needs Vale's sequence check.
+# LT also refuses the comma when the next token is ",", ")", "and",
+# or "or". Vale has no equivalent exception, so this check is
+# slightly wider.
+extends: sequence
+message: "Start a new sentence instead of the -ing phrase."
+level: error
+tokens:
+  - pattern: ','
+  - tag: VBG

@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:in)\b\s+\b(?:order)\b\s+\b(?:to)\b

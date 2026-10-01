@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it. State the fact."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:it)\b\s+\b(?:is)\b\s+\b(?:worth)\b\s+\b(?:noting)\b\s+\b(?:that)\b

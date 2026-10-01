@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:I)\b\s+\b(?:hope)\b\s+\b(?:this)\b\s+\b(?:helps)\b

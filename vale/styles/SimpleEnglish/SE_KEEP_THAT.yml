@@ -1,0 +1,11 @@
+# Hand-written: LT's negated third token becomes a negated pattern
+# token here. Vale has no regex lookahead (RE2), so an existence
+# check cannot express the negation.
+extends: sequence
+message: 'Write "make sure that".'
+level: error
+tokens:
+  - pattern: 'make|makes|made'
+  - pattern: 'sure|certain'
+  - pattern: 'that'
+    negate: true

@@ -35,6 +35,9 @@ client/daemon seam visible in `client/` and `daemon/`.
   Failures raise typed errors (`PortInUse`, `InnerDied`,
   `InnerTimeout`). `cli.rb` at the top maps them to warnings and
   exit codes
+- `vale/` holds the Vale edition. `bin/render-vale` generates
+  `vale/styles` from the rule XML. Hand-written checks for the rules
+  the generator cannot translate live in `vale/overrides`
 
 All modules keep internals `private_class_method`.
 
@@ -62,10 +65,12 @@ rake check                  # self-lint, unit tests, rule examples
 rake test                   # unit tests only, no LanguageTool needed
 ruby test/examples_check.rb   # every rule against its own examples
 ruby test/corpus_check.rb   # corpus pairs
+ruby test/vale_corpus_check.rb  # corpus pairs through the Vale edition
 ```
 
-The last two need LanguageTool (run `bin/se setup` first, it
-downloads to `~/.cache/se`). If `java` is not on PATH, set
+The last three need a binary set up first. LanguageTool comes from
+`bin/se setup` (it downloads to `~/.cache/se`), the Vale edition
+needs the `vale` binary on PATH. If `java` is not on PATH, set
 `SE_JAVA`. The unit tests need the bundle's gems but no JVM.
 
 ## Test strategy

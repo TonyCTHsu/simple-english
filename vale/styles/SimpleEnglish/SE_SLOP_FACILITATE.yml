@@ -1,0 +1,7 @@
+extends: existence
+message: "Write  or ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:facilitate(?:s|es|ed|d|ing)?)\b

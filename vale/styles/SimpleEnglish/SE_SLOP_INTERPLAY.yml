@@ -1,0 +1,7 @@
+extends: existence
+message: "Write , or delete it."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:interplay(?:s|es|ed|d|ing)?)\b

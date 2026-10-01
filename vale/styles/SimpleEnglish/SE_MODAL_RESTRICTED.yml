@@ -1,0 +1,7 @@
+extends: existence
+message: "Use can, will, or must. State the requirement exactly."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:should|would|might|could)\b

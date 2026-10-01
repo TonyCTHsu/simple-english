@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:due)\b\s+\b(?:to)\b\s+\b(?:the)\b\s+\b(?:fact)\b\s+\b(?:that)\b

@@ -1,0 +1,7 @@
+extends: existence
+message: "Write  or ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:delve(?:s|es|ed|d|ing)?|dive(?:s|es|ed|d|ing)?)\b\s+\b(?:into)\b

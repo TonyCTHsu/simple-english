@@ -1,0 +1,7 @@
+extends: existence
+message: "Write , , or ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:foster(?:s|es|ed|d|ing)?|empower(?:s|es|ed|d|ing)?|bolster(?:s|es|ed|d|ing)?)\b

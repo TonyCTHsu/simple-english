@@ -1,0 +1,7 @@
+extends: existence
+message: "Give the location."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:nestle(?:s|es|ed|d|ing)?)\b

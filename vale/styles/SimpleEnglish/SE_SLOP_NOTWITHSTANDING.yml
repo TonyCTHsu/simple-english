@@ -1,0 +1,7 @@
+extends: existence
+message: "Write ."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:that)\b\s+\b(?:being)\b\s+\b(?:said)\b

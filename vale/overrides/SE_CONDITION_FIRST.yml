@@ -1,0 +1,10 @@
+# Hand-written: the postag VB token needs Vale's sequence check.
+# Degraded: Vale's perceptron tagger does not mark imperative verbs
+# reliably, so true cases can escape and other tags can slip in.
+extends: sequence
+message: 'Put the condition first: "If the build fails, read the log."'
+level: error
+tokens:
+  - tag: VB
+  - pattern: 'if'
+    skip: 8

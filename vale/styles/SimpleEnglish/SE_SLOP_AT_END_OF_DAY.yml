@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it. State the fact."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:at)\b\s+\b(?:the)\b\s+\b(?:end)\b\s+\b(?:of)\b\s+\b(?:the)\b\s+\b(?:day)\b

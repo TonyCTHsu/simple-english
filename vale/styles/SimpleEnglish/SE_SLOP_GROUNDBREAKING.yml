@@ -1,0 +1,7 @@
+extends: existence
+message: "Write , or delete it."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:groundbreaking|cutting-edge|state-of-the-art|state of the art|innovative|unprecedented)\b

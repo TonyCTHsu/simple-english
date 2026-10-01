@@ -98,6 +98,24 @@ jobs:
       - name: Run the rules checks
         run: bundle exec rake check
 
+  vale:
+    # The generated Vale edition must enforce the corpus the same
+    # way the CLI does: before files flag, after files stay clean.
+    # The unit suite covers staleness without the binary.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install vale
+        run: |
+          curl -sSfL https://github.com/errata-ai/vale/releases/download/v3.20.0/vale_3.20.0_Linux_64-bit.tar.gz \
+            | tar xz -C /usr/local/bin
+
+      - name: Run the corpus through the Vale edition
+        run: ruby test/vale_corpus_check.rb
+
+
   e2e:
     # The user story: build and install the gem, set up the
     # environment, lint files. Everything runs off the installed gem,

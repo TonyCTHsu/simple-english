@@ -1,0 +1,7 @@
+extends: existence
+message: "Delete it. State the fact."
+level: error
+ignorecase: false
+tokens:
+  - |-
+    \b(?:tapestry(?:s|es|ed|d|ing)?|testament(?:s|es|ed|d|ing)?|synergy(?:s|es|ed|d|ing)?)\b

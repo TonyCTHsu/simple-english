@@ -1,0 +1,8 @@
+# Hand-written: the postag VBN token needs Vale's sequence check.
+# Case-sensitive: a perfect verb at a sentence start escapes.
+extends: sequence
+message: "Use the simple past. Say when it happened."
+level: error
+tokens:
+  - pattern: 'have|has|had'
+  - tag: VBN
