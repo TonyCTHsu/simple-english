@@ -49,7 +49,7 @@ module SimpleEnglish
         return nil unless Client.ensure_up(install: Install.from_env)
         result = Client.lint(text, language: language)
         if result.nil?
-          warn "error: se daemon did not answer. Run `se serve` and read its output."
+          warn "error: se daemon did not answer. Run `#{Client.runner} serve` and read its output."
         end
         result
       end

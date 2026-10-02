@@ -19,6 +19,15 @@ module SimpleEnglish
     DEFAULT_PORT = 8181
     REQUEST_TIMEOUT = 30
 
+    # The executable that daemon advice tells you to run. Resolved
+    # from this file, so it names the code that is actually loaded:
+    # a checkout names its bin/se, a gem install names its bundled
+    # bin/se. $PROGRAM_NAME is wrong for library callers: their host
+    # script is not se.
+    def runner
+      File.expand_path("../../../bin/se", __dir__)
+    end
+
     def url
       ENV.fetch("SE_SERVER_URL") { "http://localhost:#{DEFAULT_PORT}" }
     end
@@ -113,7 +122,7 @@ module SimpleEnglish
             "It is not restarted automatically."
         else
           warn "se: daemon at #{url} is not a handshake-capable se daemon. " \
-            "Run `#{$PROGRAM_NAME} serve` to replace it."
+            "Run `#{runner} serve` to replace it."
         end
         return true
       end
@@ -151,7 +160,7 @@ module SimpleEnglish
         if daemon
           check_daemon(daemon)
         else
-          warn "error: se daemon did not come up. Run `#{$PROGRAM_NAME} serve` and read its output."
+          warn "error: se daemon did not come up. Run `#{runner} serve` and read its output."
           false
         end
       end
@@ -171,7 +180,7 @@ module SimpleEnglish
         return
       end
       fix = ENV["SE_SERVER_URL"] ? "It is not restarted automatically." :
-        "Run `#{$PROGRAM_NAME} serve --detached` to restart it."
+        "Run `#{runner} serve --detached` to restart it."
       warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install " \
         "(#{VERSION}). #{fix} Linting against it meanwhile."
     end

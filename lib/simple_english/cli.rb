@@ -93,7 +93,7 @@ module SimpleEnglish
           return 0
         end
         warn "error: detached daemon did not come up. " \
-          "Run `se serve` and read its output."
+          "Run `#{Client.runner} serve` and read its output."
         return 2
       end
       log = options[:"dev-log"] ? File.open(options[:"dev-log"], "w") : $stderr

@@ -56,7 +56,7 @@ class CLIServeTest < Minitest::Test
         assert_equal 2,
           SimpleEnglish::CLI.run(["serve", "--detached", "--port", "28291"])
       end
-      assert_match(/Run `se serve` and read its output/, err)
+      assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve` and read its output/, err)
     end
   end
 end
