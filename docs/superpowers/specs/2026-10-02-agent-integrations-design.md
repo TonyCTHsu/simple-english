@@ -14,13 +14,18 @@ returns findings into the agent's context. The agent rewrites until the
 linter reports clean. The agent decides only how findings reach the
 context.
 
+This plan delivers three plugins, `se mcp`, and a test framework that
+proves all of them work. Release is out of scope. The release path gets
+a decision after this plan is done.
+
 ## Non-goals
 
 - No fourth adapter. A new MCP-capable client gets lint through `se mcp`
   with no new code.
 - No engine logic in any adapter. Filtering, formatting, and fallbacks
   belong in the CLI or in `se mcp`.
-- No separate release cycle for adapters until real use asks for one.
+- No release from this repo. Version stamping, marketplace publishing,
+  and any repo split are decisions for later.
 
 ## Architecture
 
@@ -112,21 +117,18 @@ publish time.
 A change to any contract is a `Breaking` changie entry. Everything else
 is free to change.
 
-## Versioning and release
+## Versioning
 
-All artifacts version together. The tag `vX.Y.Z` matches the gem version
-and the adapter content. A gem-only release may bump the tag with no
-adapter change. We accept that noise because adapters rarely need a
-release of their own.
+All artifacts version together as the working assumption. The tag
+`vX.Y.Z` matches the gem version and the adapter content. No release
+machinery is built now. When the release decision comes, `rake
+release:prepare` stamps manifests from one list of files and fields, and
+a CI check reports drift.
 
-`rake release:prepare` stamps the version into every manifest, from one
-list of files and fields. A CI check reports drift and greps for stale
-version strings.
+## Release readiness
 
-## Publish gate
-
-The gem is reliable but young, and the daemon is its newest part. Three
-conditions must hold before the plugins go public.
+Nothing ships from this plan. Record three readiness criteria for the
+later release decision.
 
 1. Contract tests cover the frozen `se --json` schema.
 2. The daemon runs for a few weeks with no daemon-class fix.
@@ -147,10 +149,13 @@ has a wire input that a fixture replays.
 4. pi: assert the extension handles clean output, findings, and a
    missing binary.
 
-Layer 2 is manual and runs before each release. One scripted scenario
-per agent: seed three violations, ask the agent to write the file,
-pass when the agent fixes the findings on its own. Credentials for the
-agents stay out of CI.
+Layer 2 is automated and spends tokens. A separate workflow runs it on
+demand, not on every push. It drives a live agent through one scripted
+scenario per adapter. Seed three violations, ask the agent to write the
+file, and pass when the agent fixes the findings on its own. Model variance
+makes these runs flaky, so the workflow retries once and reports details
+on failure. The secrets for the three providers live in GitHub encrypted
+variables that only this workflow can use.
 
 ## Verification items
 
@@ -165,7 +170,10 @@ before implementation.
 
 ## Deferred decisions
 
-1. The pi home at publish time: this repo or the current packaging
-   repo. Decide when the adapters work.
-2. A repo split with a release cycle per adapter. Revisit only when a
+All of these wait until the plan is done.
+
+1. How and when to release, and from which repo.
+2. The pi home at publish time: this repo or the current packaging
+   repo.
+3. A repo split with a release cycle per adapter. Revisit only when a
    cadence demands it.
