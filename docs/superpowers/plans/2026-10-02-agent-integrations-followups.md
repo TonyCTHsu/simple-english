@@ -8,7 +8,7 @@ its trigger and its fix. Fix an item when its trigger arrives.
    `./` onto `-*` paths in `integrations/claude-code/hooks/lint.sh`.
    The repo's path expansion strips `./` back off, so findings stay
    identical.
-2. The `skills` symlink dangles if a marketplace install copies the
+2. The `skills` symlink dangles when a marketplace install copies the
    plugin dir alone. Trigger: the release decision, or one real
    `claude plugin marketplace add` install. Fix: run that install and
    watch the skill. If it dangles, copy the skill into each plugin dir
@@ -18,7 +18,7 @@ its trigger and its fix. Fix an item when its trigger arrives.
    with real credentials, at the latest. Fix: drop one retry layer,
    either the workflow attempt or the script's `with_retry`.
 4. The hook test's `stub_se` breaks on apostrophes in a fixture
-   message. Trigger: a future fixture with a quote, like `Don't do
+   message. Trigger: a future fixture with a quote, such as `Do not do
    this.`. Fix: write the canned body to a file and let the stub `cat`
    it.
 
