@@ -7,12 +7,13 @@ on:
 
 jobs:
   unit:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
         ruby: ["3.3", "3.4", "4.0"]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -131,3 +132,7 @@ jobs:
 
       - name: Lint as a user
         run: bin/e2e-story
+
+      - name: Boot the daemon in an empty environment
+        # See the script header for why this exists.
+        run: .github/scripts/daemon-empty-env.sh
