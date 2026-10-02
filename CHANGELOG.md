@@ -5,7 +5,6 @@
 ### Fixed
 
 - Fix `se tree` exiting with a `TypeError`.
-
 - Fix daemon restart advice pointing at the wrong `se` when the linting code and the PATH `se` are different installs. The warning now prints the full path of the executable that matches the running code.
 
 
