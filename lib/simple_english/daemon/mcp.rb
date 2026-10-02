@@ -33,11 +33,14 @@ module SimpleEnglish
     def respond(request, linter:)
       return nil unless request.key?("id")
       id = request.fetch("id")
-      method = request.fetch("method")
+      method = request["method"]
+      return error(id, -32600, "Invalid Request") unless method.is_a?(String)
+      params = request["params"]
+      params = {} unless params.is_a?(Hash)
       case method
-      when "initialize" then ok(id, initialize_result(request.dig("params", "protocolVersion")))
+      when "initialize" then ok(id, initialize_result(params["protocolVersion"]))
       when "tools/list" then ok(id, {"tools" => [lint_tool]})
-      when "tools/call" then tools_call(id, request.fetch("params", {}), linter)
+      when "tools/call" then tools_call(id, params, linter)
       else error(id, -32601, "Method not found: #{method}")
       end
     end
@@ -68,9 +71,11 @@ module SimpleEnglish
     end
 
     def tools_call(id, params, linter)
-      tool = params.fetch("name", "")
+      tool = params["name"]
       return error(id, -32602, "Unknown tool: #{tool}") unless tool == "lint"
-      path = params.dig("arguments", "path")
+      arguments = params["arguments"]
+      arguments = {} unless arguments.is_a?(Hash)
+      path = arguments["path"]
       return ok(id, tool_error("the path argument is required.")) if path.nil? || path.to_s.empty?
       return ok(id, tool_error("#{path} is a directory. Give one file.")) if File.directory?(path)
       return ok(id, tool_error("file not found: #{path}")) unless File.exist?(path)

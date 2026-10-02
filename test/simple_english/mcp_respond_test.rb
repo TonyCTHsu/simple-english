@@ -133,6 +133,38 @@ module SimpleEnglish
       assert_equal 10, response.fetch("id")
     end
 
+    def test_request_without_method_answers_invalid_request
+      response = MCP.respond({"jsonrpc" => "2.0", "id" => 11}, linter: linter_returning([]))
+      assert_equal(-32600, response.dig("error", "code"))
+      assert_equal 11, response.fetch("id")
+    end
+
+    def test_array_params_are_treated_as_absent
+      response = MCP.respond(
+        request(12, "initialize", ["bad"]),
+        linter: linter_returning([])
+      )
+      assert_equal "2025-06-18", response.dig("result", "protocolVersion")
+    end
+
+    def test_null_params_on_tools_call_answer_unknown_tool
+      response = MCP.respond(
+        {"jsonrpc" => "2.0", "id" => 13, "method" => "tools/call", "params" => nil},
+        linter: linter_returning([])
+      )
+      assert_equal(-32602, response.dig("error", "code"))
+    end
+
+    def test_array_arguments_are_treated_as_absent
+      response = MCP.respond(
+        request(14, "tools/call", {"name" => "lint", "arguments" => ["bad"]}),
+        linter: linter_returning([])
+      )
+      result = response.fetch("result")
+      assert result.fetch("isError")
+      assert_includes result.fetch("content").first.fetch("text"), "path"
+    end
+
     def test_notification_without_id_returns_nil
       notification = {"jsonrpc" => "2.0", "method" => "notifications/initialized"}
       assert_nil MCP.respond(notification, linter: linter_returning([]))
