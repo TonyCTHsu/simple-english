@@ -12,9 +12,12 @@
 
 ## Global Constraints
 
-- Zero new runtime dependencies. The MCP server hand-rolls JSON-RPC framing, in the style of `daemon/http.rb`.
+- Runtime dependencies stay minimal. A new runtime dependency needs a stated
+  reason in AGENTS.md first. Dev and test tools pick the best tool for the
+  job, dev-only. The MCP server hand-rolls JSON-RPC framing by default, in
+  the style of `daemon/http.rb`.
 - Unit tests run without LanguageTool. Stub the lint path where a test needs the daemon.
-- Internals are `private_class_method`. One object definition per file.
+- Keep the public surface minimal. One object definition per file.
 - Never commit on the default branch. Branch names start with `tonyc.t.hsu/`.
 - New GitHub Actions steps pin to the release SHA and comment the release, per the repo pin rule.
 - Every new `.md` file passes `rake lint`. Prose follows the plain-English rules.
@@ -108,8 +111,8 @@ Run: `bundle exec ruby test/run.rb`. Expected: load error, no such file
 
 - [ ] **Step 3: Implement `MCP.respond` in `lib/simple_english/daemon/mcp.rb`**
 
-Module with `module_function` and `private_class_method` for helpers, per the
-repo pattern. Findings render through the existing CLI report path so MCP text
+Module with `module_function`, per the `daemon/http.rb` pattern. Keep the
+public surface minimal. Findings render through the existing CLI report path so MCP text
 matches `se lint` output. Every method returns the response Hash or nil. No
 IO in this file.
 
