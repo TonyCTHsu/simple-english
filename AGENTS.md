@@ -99,6 +99,11 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - Ruby 3.3 minimum. CI enforces it. The
   gemspec declares no floor.
 
+## Changes
+
+Follow the write-comment skill when a comment earns its place. Default to
+no comment otherwise.
+
 ## Adding a rule
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and correct
