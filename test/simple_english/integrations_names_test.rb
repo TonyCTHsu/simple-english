@@ -26,9 +26,7 @@ class IntegrationsNamesTest < Minitest::Test
     # The MCP subcommand wiring.
     "se mcp" => [
       "docs/superpowers/plans/2026-10-02-agent-integrations.md",
-      "docs/superpowers/specs/2026-10-02-agent-integrations-design.md",
-      "integrations/codex/.mcp.json",
-      "integrations/verification.md"
+      "docs/superpowers/specs/2026-10-02-agent-integrations-design.md"
     ]
   }.freeze
 
