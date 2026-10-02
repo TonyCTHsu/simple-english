@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
-# MCP JSON-RPC responder for the lint engine. Pure: request Hash in,
-# response Hash or nil (notifications) out. The stdio loop and the CLI
-# wiring live elsewhere. Protocol facts: integrations/verification.md.
+require "json"
+
+# MCP JSON-RPC server for the lint engine. `respond` is pure: request
+# Hash in, response Hash or nil (notifications) out. `run` drives it
+# over stdio, one JSON-RPC message per line. Protocol facts:
+# integrations/verification.md.
 
 module SimpleEnglish
   module MCP
@@ -11,6 +14,21 @@ module SimpleEnglish
     SERVER_NAME = "simple-english"
 
     module_function
+
+    def run(io: $stdin, out: $stdout, linter: ->(path) { SimpleEnglish.lint_file(path) })
+      while (line = io.gets)
+        line = line.strip
+        next if line.empty?
+        begin
+          request = JSON.parse(line)
+        rescue JSON::ParserError
+          next
+        end
+        next unless request.is_a?(Hash)
+        response = respond(request, linter: linter)
+        out.puts JSON.generate(response) if response
+      end
+    end
 
     def respond(request, linter:)
       return nil unless request.key?("id")

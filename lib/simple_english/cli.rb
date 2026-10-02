@@ -76,6 +76,12 @@ module SimpleEnglish
       0
     end
 
+    desc "mcp", "Run the MCP stdio server (one JSON-RPC message per line)"
+    def mcp
+      SimpleEnglish::MCP.run
+      0
+    end
+
     desc "serve", "Run the lint daemon in the foreground"
     method_option :port, type: :numeric, default: SimpleEnglish::Client::DEFAULT_PORT,
       desc: "Port to listen on"
