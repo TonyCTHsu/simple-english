@@ -1,0 +1,133 @@
+#!/usr/bin/env ruby
+# Drive one live agent per harness through a lint scenario. The agent
+# gets a note.md with seeded violations and a prompt that never names
+# the linter. Pass when the agent fixes the prose on its own.
+#
+# Usage: bin/e2e-agents <pi|claude|codex|all>
+# SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
+# credentials.
+
+require "json"
+require "open3"
+require "tmpdir"
+require "fileutils"
+
+REPO = File.expand_path("..", __dir__)
+CORPUS = File.join(REPO, "test", "corpus")
+PROMPT = "note.md in this directory holds dense prose. " \
+          "Rewrite it so it reads cleanly and plainly. " \
+          "Save your changes into note.md."
+
+def scenario(name)
+  Dir.mktmpdir("se_e2e_#{name}") do |dir|
+    FileUtils.cp(File.join(CORPUS, "01-before.md"), File.join(dir, "note.md"))
+    Dir.chdir(dir) do
+      system("git init -q 2>/dev/null")
+      system("git add -A 2>/dev/null")
+      system("git -c user.email=e2e@se -c user.name=e2e commit -qm e2e 2>/dev/null")
+      yield dir
+    end
+  end
+end
+
+def clean?(note)
+  _out, status = Open3.capture2e("se", "lint", note)
+  status.exitstatus.zero?
+end
+
+def binary?(name)
+  ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).any? do |dir|
+    File.executable?(File.join(dir, name))
+  end
+end
+
+def with_retry(agent)
+  2.times do |attempt|
+    ok = yield
+    puts "#{agent}: #{ok ? "PASS" : "FAIL"} (attempt #{attempt + 1})"
+    return true if ok
+  end
+  false
+end
+
+def run_claude
+  with_retry("claude") do
+    scenario("claude") do |dir|
+      ok = system("claude", "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
+        "-p", "--permission-mode", "acceptEdits", PROMPT)
+      ok && clean?(File.join(dir, "note.md"))
+    end
+  end
+end
+
+def run_pi
+  with_retry("pi") do
+    scenario("pi") do |dir|
+      # A scratch agent dir: a user-level se_lint copy would collide
+      # with the package's tool of the same name. Credentials come from
+      # the environment (GOOGLE_API_KEY, or SE_E2E_PI_PROVIDER for a
+      # different provider).
+      home = File.join(dir, "pi-home")
+      FileUtils.mkdir_p(home)
+      env = {"PI_CODING_AGENT_DIR" => home}
+      provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
+      system(env, "pi", "install", File.join(REPO, "integrations", "pi"), "-l") &&
+        system(env, "pi", "-a", "-p", "--provider", provider, PROMPT) &&
+        clean?(File.join(dir, "note.md"))
+    end
+  end
+end
+
+def run_codex
+  with_retry("codex") do
+    scenario("codex") do |dir|
+      marketplace = File.join(dir, "local-marketplace")
+      FileUtils.mkdir_p(File.join(marketplace, "plugins"))
+      FileUtils.cp_r(File.join(REPO, "integrations", "codex"),
+        File.join(marketplace, "plugins", "simple-english"))
+      FileUtils.mkdir_p(File.join(marketplace, ".agents", "plugins"))
+      File.write(File.join(marketplace, ".agents", "plugins", "marketplace.json"),
+        JSON.pretty_generate({
+          "name" => "local-dev",
+          "plugins" => [
+            {"name" => "simple-english",
+             "source" => {"source" => "local", "path" => "./plugins/simple-english"}}
+          ]
+        }))
+      FileUtils.mkdir_p(".codex")
+      File.write(".codex/config.toml",
+        "[plugins.\"simple-english@local-dev\"]\nenabled = true\n")
+      system("codex", "plugin", "marketplace", "add", marketplace) &&
+        system("codex", "plugin", "add", "simple-english@local-dev") &&
+        system("codex", "exec", "--sandbox", "workspace-write", PROMPT) &&
+        clean?(File.join(dir, "note.md"))
+    end
+  end
+end
+
+AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freeze
+
+if ENV["SE_E2E_SKIP"] == "1"
+  puts "SE_E2E_SKIP=1: print and exit."
+  AGENTS.each_key { |agent| puts "#{agent}: copy corpus 01-before.md, prompt, expect clean note.md" }
+  exit 0
+end
+
+target = ARGV[0] || "all"
+agents = (target == "all") ? AGENTS.keys : [target]
+abort "usage: bin/e2e-agents <pi|claude|codex|all>" unless (agents - AGENTS.keys).empty?
+
+ran = 0
+failed = 0
+agents.each do |agent|
+  unless binary?(agent)
+    puts "#{agent}: skipped (not installed)"
+    next
+  end
+  ran += 1
+  failed += 1 unless send(AGENTS.fetch(agent))
+end
+
+abort "agent e2e failed" if failed.positive?
+puts "agent e2e passed (#{ran} agent#{"s" unless ran == 1} ran)" if ran.positive?
+exit 0
