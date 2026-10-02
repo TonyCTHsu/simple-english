@@ -1,0 +1,12 @@
+{
+  "name": "simple-english",
+  "version": "0.4.2",
+  "description": "Lint prose and code comments with the simple_english plain-English rules.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["pi-package", "lint", "prose", "plain-english"],
+  "pi": {
+    "extensions": ["./extensions/se-lint.ts"],
+    "skills": ["./../shared/skills"]
+  }
+}
