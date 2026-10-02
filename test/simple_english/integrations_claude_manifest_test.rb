@@ -28,7 +28,7 @@ class IntegrationsClaudeManifestTest < Minitest::Test
     plugin = manifest.fetch("plugins").first
     assert_equal "simple-english", plugin.fetch("name")
     source = plugin.fetch("source")
-    repo_root = File.expand_path("../..", File.dirname(MARKETPLACE))
+    repo_root = File.expand_path("..", File.dirname(MARKETPLACE))
     assert File.exist?(File.expand_path(source, repo_root))
     assert File.exist?(File.join(PLUGIN, ".claude-plugin", "plugin.json"))
   end
