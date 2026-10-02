@@ -13,6 +13,7 @@ class IntegrationsNamesTest < Minitest::Test
   NAMES = {
     # The pi tool name.
     "se_lint" => [
+      "README.md",
       "docs/superpowers/plans/2026-10-02-agent-integrations.md",
       "docs/superpowers/specs/2026-10-02-agent-integrations-design.md",
       "integrations/pi/extensions/se-lint.ts",
@@ -25,6 +26,8 @@ class IntegrationsNamesTest < Minitest::Test
     ],
     # The MCP subcommand wiring.
     "se mcp" => [
+      "README.md",
+      "docs/DEVELOPMENT.md",
       "docs/superpowers/plans/2026-10-02-agent-integrations.md",
       "docs/superpowers/specs/2026-10-02-agent-integrations-design.md"
     ]

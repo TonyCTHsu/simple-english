@@ -119,7 +119,7 @@ unit suite that runs in one second.
 `integrations/` holds one adapter per agent: `pi/` (a native
 extension), `claude-code/` (a hook plugin), and `codex/` (an MCP
 plugin). `integrations/shared/skills/lint/SKILL.md` holds the skill all
-three share. `integrations/verification.md` records the harness facts
+three share. `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo
 root lists the Claude Code plugin. The adapters ship nothing. Try them
 from local paths:

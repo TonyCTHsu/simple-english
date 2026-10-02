@@ -63,10 +63,10 @@ end
 def run_pi
   with_retry("pi") do
     scenario("pi") do |dir|
-      # A scratch agent dir: a user-level se_lint copy would collide
-      # with the package's tool of the same name. Credentials come from
-      # the environment (GOOGLE_API_KEY, or SE_E2E_PI_PROVIDER for a
-      # different provider).
+      # A scratch agent dir: a user-level copy of the same tool would
+      # collide with the package's tool of the same name. Credentials
+      # come from the environment (GOOGLE_API_KEY, or
+      # SE_E2E_PI_PROVIDER for a different provider).
       home = File.join(dir, "pi-home")
       FileUtils.mkdir_p(home)
       env = {"PI_CODING_AGENT_DIR" => home}
