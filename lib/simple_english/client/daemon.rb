@@ -113,7 +113,7 @@ module SimpleEnglish
             "It is not restarted automatically."
         else
           warn "se: daemon at #{url} is not a handshake-capable se daemon. " \
-            "Run `se serve` to replace it."
+            "Run `#{$PROGRAM_NAME} serve` to replace it."
         end
         return true
       end
@@ -151,7 +151,7 @@ module SimpleEnglish
         if daemon
           check_daemon(daemon)
         else
-          warn "error: se daemon did not come up. Run `se serve` and read its output."
+          warn "error: se daemon did not come up. Run `#{$PROGRAM_NAME} serve` and read its output."
           false
         end
       end
@@ -171,7 +171,7 @@ module SimpleEnglish
         return
       end
       fix = ENV["SE_SERVER_URL"] ? "It is not restarted automatically." :
-        "Run `se serve --detached` to restart it."
+        "Run `#{$PROGRAM_NAME} serve --detached` to restart it."
       warn "se: daemon at #{url} runs se #{daemon["version"]}, different code than this install " \
         "(#{VERSION}). #{fix} Linting against it meanwhile."
     end

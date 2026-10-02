@@ -93,7 +93,7 @@ class ClientEnsureUpTest < Minitest::Test
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
           assert_match(/runs se 0\.1\.0, different code than this install/, err)
-          assert_match(/Run `se serve --detached` to restart it/, err)
+          assert_match(/Run `#{Regexp.escape($PROGRAM_NAME)} serve --detached` to restart it/, err)
           assert_match(/Linting against it meanwhile/, err)
         end
       end
@@ -134,7 +134,7 @@ class ClientEnsureUpTest < Minitest::Test
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
           assert_match(/different code than this install/, err)
-          assert_match(/Run `se serve --detached` to restart it/, err)
+          assert_match(/Run `#{Regexp.escape($PROGRAM_NAME)} serve --detached` to restart it/, err)
         end
       end
     end
@@ -174,7 +174,7 @@ class ClientEnsureUpTest < Minitest::Test
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
           assert_match(/different code than this install/, err)
-          assert_match(/Run `se serve --detached` to restart it/, err)
+          assert_match(/Run `#{Regexp.escape($PROGRAM_NAME)} serve --detached` to restart it/, err)
         end
       end
     end
