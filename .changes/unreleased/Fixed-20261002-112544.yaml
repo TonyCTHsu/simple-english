@@ -1,3 +1,4 @@
 kind: Fixed
-body: Name the executable that matches the loaded code in daemon advice
+body: |
+  Fix daemon restart advice pointing at the wrong `se`. The warning now names the executable that matches the running code. Following it restarts the right daemon.
 time: 2026-10-02T11:25:44.642053+02:00
