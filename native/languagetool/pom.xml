@@ -11,7 +11,6 @@
   <properties>
     <native.build.directory>${project.basedir}/target</native.build.directory>
     <maven.compiler.release>17</maven.compiler.release>
-    <project.build.outputTimestamp>2025-03-27T00:00:00Z</project.build.outputTimestamp>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -20,6 +19,64 @@
       <groupId>org.languagetool</groupId>
       <artifactId>language-en</artifactId>
       <version>6.6</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.optimaize.languagedetector</groupId>
+          <artifactId>language-detector</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-validator</groupId>
+          <artifactId>commons-validator</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.github.resilience4j</groupId>
+          <artifactId>resilience4j-circuitbreaker</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.github.resilience4j</groupId>
+          <artifactId>resilience4j-micrometer</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.opentelemetry</groupId>
+          <artifactId>opentelemetry-semconv</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.micrometer</groupId>
+          <artifactId>micrometer-registry-prometheus</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.prometheus</groupId>
+          <artifactId>simpleclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.prometheus</groupId>
+          <artifactId>simpleclient_guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-pool2</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-backward-codecs</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>tech.units</groupId>
+          <artifactId>indriya</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.github.java-diff-utils</groupId>
+          <artifactId>java-diff-utils</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -30,12 +87,16 @@
 
   <build>
     <directory>${native.build.directory}</directory>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/../../rules</directory>
+        <includes>
+          <include>simple-english.xml</include>
+        </includes>
+        <targetPath>org/simpleenglish</targetPath>
+      </resource>
+    </resources>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.1</version>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -43,61 +104,9 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.4</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.5.0</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.6.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.simpleenglish.NativeLanguageTool</mainClass>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.7.0</version>
       </plugin>
     </plugins>
   </build>
-
-  <repositories>
-    <repository>
-      <id>central</id>
-      <url>https://repo.maven.apache.org/maven2</url>
-      <releases>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>central</id>
-      <url>https://repo.maven.apache.org/maven2</url>
-      <releases>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
 </project>

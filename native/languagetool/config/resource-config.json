@@ -1,85 +1,36 @@
 {
-  "resources":{
-  "includes":[{
-    "pattern":"\\QMETA-INF/org/languagetool/language-module.properties\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/io.opentelemetry.context.ContextStorageProvider\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/java.util.spi.ResourceBundleControlProvider\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/javax.xml.validation.SchemaFactory\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.apache.commons.logging.LogFactory\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.xml.sax.XMLReader\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.xml.sax.driver\\E"
-  }, {
-    "pattern":"\\Qcommons-logging.properties\\E"
-  }, {
-    "pattern":"\\Qen-chunker.bin\\E"
-  }, {
-    "pattern":"\\Qen-pos-maxent.bin\\E"
-  }, {
-    "pattern":"\\Qen-token.bin\\E"
-  }, {
-    "pattern":"\\Qgit-premium.properties\\E"
-  }, {
-    "pattern":"\\Qgit.properties\\E"
-  }, {
-    "pattern":"\\Qnet/loomchild/segment/res/xml/srx20.xsd\\E"
-  }, {
-    "pattern":"\\Qopennlp/tools/util/opennlp.version\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/Roman.sor\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/disambiguation-global.xml\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/added.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/added_custom.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/disambiguation.xml\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/do-not-synthesize.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/en.sor\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/english.dict\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/english_synth.dict\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/multiwords.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/removed.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/removed_custom.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/en/word_definitions.txt\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/org/languagetool/tokenizers/segment-simple.srx\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/segment.srx\\E"
-  }, {
-    "pattern":"\\Qorg/languagetool/resource/spelling_global.txt\\E"
-  }, {
-    "pattern":"java.xml:\\Qjdk/xml/internal/META-INF/services/org.xml.sax.driver\\E"
-  }, {
-    "pattern":"org/languagetool/resource/en/.*"
-  }]},
-  "bundles":[{
-    "name":"com.sun.org.apache.xerces.internal.impl.xpath.regex.message",
-    "locales":["", "und"]
-  }, {
-    "name":"org.languagetool.MessagesBundle",
-    "locales":["", "en", "und"]
-  }]
+  "resources": {
+    "includes": [
+      {"pattern":"\\QMETA-INF/org/languagetool/language-module.properties\\E"},
+      {"pattern":"\\QMETA-INF/services/io.opentelemetry.context.ContextStorageProvider\\E"},
+      {"pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"},
+      {"pattern":"\\QMETA-INF/services/javax.xml.validation.SchemaFactory\\E"},
+      {"pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"},
+      {"pattern":"\\QMETA-INF/services/org.xml.sax.XMLReader\\E"},
+      {"pattern":"\\QMETA-INF/services/org.xml.sax.driver\\E"},
+      {"pattern":"\\Qen-chunker.bin\\E"},
+      {"pattern":"\\Qen-pos-maxent.bin\\E"},
+      {"pattern":"\\Qen-token.bin\\E"},
+      {"pattern":"\\Qnet/loomchild/segment/res/xml/srx20.xsd\\E"},
+      {"pattern":"\\Qopennlp/tools/util/opennlp.version\\E"},
+      {"pattern":"\\Qorg/languagetool/resource/Roman.sor\\E"},
+      {"pattern":"\\Qorg/languagetool/resource/disambiguation-global.xml\\E"},
+      {"pattern":"\\Qorg/languagetool/resource/org/languagetool/tokenizers/segment-simple.srx\\E"},
+      {"pattern":"\\Qorg/languagetool/resource/segment.srx\\E"},
+      {"pattern":"\\Qorg/languagetool/resource/spelling_global.txt\\E"},
+      {"pattern":"java.xml:\\Qjdk/xml/internal/META-INF/services/org.xml.sax.driver\\E"},
+      {"pattern":"org/languagetool/resource/en/.*"},
+      {"pattern":"\\Qorg/simpleenglish/simple-english.xml\\E"}
+    ]
+  },
+  "bundles": [
+    {
+      "name":"com.sun.org.apache.xerces.internal.impl.xpath.regex.message",
+      "locales":["", "und"]
+    },
+    {
+      "name":"org.languagetool.MessagesBundle",
+      "locales":["", "en", "und"]
+    }
+  ]
 }

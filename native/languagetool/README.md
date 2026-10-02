@@ -1,85 +1,114 @@
-# Native LanguageTool proof build
+# Native LanguageTool helper
 
-This module compiles the subset of LanguageTool 6.6 used by `simple_english` into a host-native executable. It is a feasibility build, not release packaging.
+This module compiles the LanguageTool 6.6 subset used by `simple_english` into a persistent native helper. Gem users do not need a JVM. The helper embeds `rules/simple-english.xml`, disables LanguageTool's built-in rules, and retains the English tokenizer, tagger, disambiguator, synthesizer, dictionaries, and OpenNLP models required by the custom rules.
 
-The program loads `rules/simple-english.xml`. It retains English tokenizer, tagger, disambiguator, and synthesizer behavior but omits LanguageTool's built-in rules. It accepts plain text or the same `AnnotatedText` JSON produced by the Ruby gem. It returns LanguageTool's JSON match format with context and UTF-16 offsets. Daemon integration remains incomplete.
+Ruby daemon integration and gem packaging remain incomplete.
 
-## Targets
+## Release targets
 
-The build script detects the host operating system and CPU architecture. It supports these targets:
+Initial release artifacts target:
 
 - macOS arm64
 - Linux x86-64 with glibc
-- Linux arm64 with glibc
 
-Native Image does not cross-compile. Run the build on the target platform. Each target uses a separate directory under `tmp/native-languagetool/`, so builds for different targets do not overwrite each other.
+Native Image does not cross-compile. Build each executable on its target platform. Linux arm64 is deferred until user demand justifies its CI and packaging cost. macOS x86-64, Windows, and musl Linux are also deferred.
 
-All three targets pass the rule-example and JVM/native parity checks. The Linux targets were tested in Ubuntu 24.04 containers. The x86-64 container ran under CPU emulation. The arm64 container ran natively.
+Linux executables dynamically link glibc and zlib. Release Linux artifacts must be built in a pinned image using the oldest glibc version supported by the gem. Use `-march=compatibility`, as the build script does, to avoid requiring the build machine's CPU features.
 
-## Prerequisites
+## Protocol
 
-macOS requires the Xcode command-line tools. The proof build currently requires Apple Clang 17.0.0 (`clang-1700.6.4.2`), linker `ld-1230.1`, and macOS SDK 26.2.
+The helper starts once and reads one JSON request per line from standard input. It writes one JSON response per line to standard output. Embedded newlines are JSON escapes, so each physical line is one complete frame.
 
-Ubuntu requires:
+Plain text request:
 
-```sh
-sudo apt-get update
-sudo apt-get install -y build-essential zlib1g-dev ruby
+```json
+{"text":"The worker didn't write the file."}
 ```
 
-Linux executables dynamically link glibc and zlib. Build release artifacts on the oldest glibc version that the gem supports. The current Ubuntu 24.04 proof uses GCC 13.3, GNU ld 2.42, and glibc 2.39. This glibc version is not a suitable compatibility baseline for a broad Linux release.
+Annotated text request:
+
+```json
+{"annotation":[{"markup":"#","interpretAs":" "},{"text":" The worker didn't write the file."}]}
+```
+
+Successful response:
+
+```json
+{"matches":[{"message":"Write the words in full. No contractions.","offset":14,"length":3,"context":{"text":"n't","offset":0,"length":3},"rule":{"id":"SE_NO_CONTRACTIONS"}}]}
+```
+
+Offsets and lengths are UTF-16 code units. Context contains only the matched source text because this is all the Ruby client consumes. A malformed request returns `{"error":"..."}` without stopping the process.
 
 ## Build
 
-From the repository root, run:
+Prerequisites:
+
+- Maven 3.9.16
+- Oracle GraalVM JDK 21.0.12+7.1 with Native Image
+- A native C compiler, linker, and zlib development files
+- About 5 GB of available memory
+
+Set `JAVA_HOME` to GraalVM and place its `bin` directory, Maven, and native build tools on `PATH`. From the repository root, run:
 
 ```sh
 ruby native/languagetool/build.rb
 ```
 
-The command downloads verified Maven and GraalVM archives for the detected target. It resolves the pinned Maven dependency graph. It verifies every downloaded POM and JAR against `dependencies.sha256`. It builds with Native Image's `compatibility` machine target. It then compares native and JVM output for every rule example and an annotated code-comment fixture.
+CI, not this script, must provision and pin the toolchain. The script compiles Java classes and asks Maven for their runtime classpath. It runs Native Image, then sends two requests through one native process as a smoke test.
 
-Output is:
+Output:
 
 ```text
-tmp/native-languagetool/<platform>/languagetool-native
+tmp/native-languagetool/languagetool-native
 ```
 
-Set `SE_NATIVE_BUILD_DIR` to move downloads, Maven state, and target output to another filesystem:
+The build uses:
+
+```text
+--no-fallback
+-march=compatibility
+--initialize-at-build-time=org.slf4j
+--enable-url-protocols=https
+```
+
+HTTPS support remains necessary because LanguageTool resolves English synthesis metadata through a URL. Reachability and resource metadata live under `config/`.
+
+## Full verification
+
+The full verifier sends all requests through one JVM process and one native process. It checks every custom rule, every correct and incorrect example, annotated input, UTF-16 locations, successive requests, and byte-identical JSON responses between the two implementations.
+
+After building, run:
 
 ```sh
-SE_NATIVE_BUILD_DIR=/var/tmp/simple-english-native ruby native/languagetool/build.rb
+ruby native/languagetool/verify.rb \
+  "$(cat tmp/native-languagetool/classpath)" \
+  tmp/native-languagetool/languagetool-native
 ```
 
-The cache filesystem must support symbolic links because GraalVM archives contain them.
+`JAVA_HOME` must still identify GraalVM. Release CI must also run the repository corpus and Ruby daemon tests, inspect native runtime dependencies, and test each release artifact on its target platform.
 
-Pinned build inputs include:
+## Release reproducibility
 
-- Apache Maven 3.9.16, verified by SHA-512.
-- Oracle GraalVM JDK 21.0.12+7.1 for each target, verified by SHA-256.
-- LanguageTool `language-en` 6.6 and explicit Maven plugin versions.
-- Every resolved Maven POM and JAR, verified by `dependencies.sha256`.
-- Native Image reachability and resource metadata under `config/`.
-- Native Image flags. These include `-march=compatibility`.
+Release jobs will pin:
 
-The macOS build verifies exact compiler, linker, and SDK versions. Linux builds verify that `cc`, `ld`, and `ldd` are available but do not pin their versions. Release jobs need a tracked Linux build image. The image must pin its digest, package versions, and glibc compatibility floor.
+- LanguageTool 6.6
+- Oracle GraalVM JDK 21.0.12+7.1 and its archive checksum
+- Maven 3.9.16
+- Build image or runner definition
+- Compiler and linker environment
+- Linux glibc compatibility floor
+- Resolved Maven dependency graph
 
-The first build downloads about 340 MB. Native Image requires about 5 GB of memory.
+Retain each verified executable with its checksum and build provenance. Functional reproducibility is required. Oracle GraalVM does not guarantee byte-identical native executables from repeated builds.
 
-Two builds from the same inputs produce functionally equivalent executables, but not necessarily byte-identical files. Oracle GraalVM 21.0.12 does not provide a deterministic-output guarantee. Repeated macOS proof builds had different Mach-O content and `LC_UUID` values even with Apple's `-reproducible` linker option. Release packaging must retain each verified artifact rather than expect a later rebuild to reproduce its checksum.
+## Updating reachability metadata
 
-## Updating dependencies
+Remove unused dependencies before pruning metadata. After any dependency, Java, rules, or metadata change:
 
-Change explicit versions first. Then regenerate and review the dependency lock:
+1. Build the native executable.
+2. Run the full verifier.
+3. Run all corpus checks.
+4. Exercise two or more requests in one process.
+5. Inspect runtime dynamic-library dependencies.
 
-```sh
-UPDATE_DEPENDENCY_LOCK=1 ruby native/languagetool/build.rb
-```
-
-Never update `dependencies.sha256` without reviewing coordinate and checksum changes. Normal builds fail when resolved artifacts differ from the lock.
-
-## Reachability metadata
-
-Files under `config/` came from the Native Image tracing agent exercised against every rule example. `resource-config.json` also includes all English resources because some LanguageTool resource loads are indirect and invisible to the agent.
-
-Regenerate metadata only after changing Java or LanguageTool behavior. Validate regenerated files, retain the explicit `org/languagetool/resource/en/.*` inclusion, then run the normal build again.
+Do not remove an English resource, synthesis resource, model, reflection entry, or service registration until this sequence passes.

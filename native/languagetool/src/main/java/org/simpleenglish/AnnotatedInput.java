@@ -1,39 +1,40 @@
 package org.simpleenglish;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import org.languagetool.markup.AnnotatedText;
 import org.languagetool.markup.AnnotatedTextBuilder;
 
 final class AnnotatedInput {
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-
   private AnnotatedInput() {}
 
-  static AnnotatedText parse(String json) throws IOException {
-    JsonNode annotation = MAPPER.readTree(json).get("annotation");
+  static AnnotatedText parse(JsonNode request) {
+    JsonNode plainText = request.get("text");
+    if (plainText != null && plainText.isTextual()) {
+      return new AnnotatedTextBuilder().addText(plainText.asText()).build();
+    }
+
+    JsonNode annotation = request.get("annotation");
     if (annotation == null || !annotation.isArray()) {
-      throw new IllegalArgumentException("data must contain an annotation array");
+      throw new IllegalArgumentException("request must contain text or annotation");
     }
 
     var builder = new AnnotatedTextBuilder();
     for (JsonNode segment : annotation) {
       JsonNode text = segment.get("text");
-      JsonNode markup = segment.get("markup");
-      if (text != null && text.isTextual() && markup == null) {
+      if (text != null) {
         builder.addText(text.asText());
-      } else if (markup != null && markup.isTextual() && text == null) {
-        JsonNode interpretAs = segment.get("interpretAs");
-        if (interpretAs == null) {
-          builder.addMarkup(markup.asText());
-        } else if (interpretAs.isTextual()) {
-          builder.addMarkup(markup.asText(), interpretAs.asText());
-        } else {
-          throw new IllegalArgumentException("interpretAs must be a string");
-        }
+        continue;
+      }
+
+      JsonNode markup = segment.get("markup");
+      if (markup == null) {
+        throw new IllegalArgumentException("annotation segment must contain text or markup");
+      }
+      JsonNode interpretAs = segment.get("interpretAs");
+      if (interpretAs == null) {
+        builder.addMarkup(markup.asText());
       } else {
-        throw new IllegalArgumentException("annotation entry must contain exactly one text or markup string");
+        builder.addMarkup(markup.asText(), interpretAs.asText());
       }
     }
     return builder.build();

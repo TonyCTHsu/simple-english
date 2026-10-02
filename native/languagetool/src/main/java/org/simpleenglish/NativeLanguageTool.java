@@ -1,48 +1,97 @@
 package org.simpleenglish;
 
-import java.io.FileInputStream;
-import java.util.Collections;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.languagetool.DetectedLanguage;
 import org.languagetool.JLanguageTool;
 import org.languagetool.markup.AnnotatedText;
-import org.languagetool.markup.AnnotatedTextBuilder;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.patterns.AbstractPatternRule;
 import org.languagetool.rules.patterns.PatternRuleLoader;
-import org.languagetool.tools.RuleMatchesAsJsonSerializer;
 
 public final class NativeLanguageTool {
-  private NativeLanguageTool() {}
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private final RestrictedEnglish language;
+  private final JLanguageTool tool;
 
-  public static void main(String[] args) throws Exception {
-    if (args.length != 3 || !(args[1].equals("--text") || args[1].equals("--data"))) {
-      System.err.println("usage: languagetool-native RULES_XML (--text TEXT | --data ANNOTATION_JSON)");
-      System.exit(2);
-    }
-
-    var language = new RestrictedEnglish();
-    var tool = new JLanguageTool(language);
+  private NativeLanguageTool() throws IOException {
+    language = new RestrictedEnglish();
+    tool = new JLanguageTool(language);
     for (Rule rule : tool.getAllRules()) {
       tool.disableRule(rule.getFullId());
     }
 
-    List<AbstractPatternRule> customRules;
-    try (var input = new FileInputStream(args[0])) {
-      customRules = new PatternRuleLoader().getRules(input, args[0], language);
+    try (InputStream input = NativeLanguageTool.class.getResourceAsStream("/org/simpleenglish/simple-english.xml")) {
+      if (input == null) {
+        throw new IOException("embedded simple-english.xml is missing");
+      }
+      List<AbstractPatternRule> customRules =
+          new PatternRuleLoader().getRules(input, "simple-english.xml", language);
+      for (AbstractPatternRule rule : customRules) {
+        tool.addRule(rule);
+      }
     }
-    for (AbstractPatternRule rule : customRules) {
-      tool.addRule(rule);
-    }
+  }
 
-    AnnotatedText text = args[1].equals("--text")
-        ? new AnnotatedTextBuilder().addText(args[2]).build()
-        : AnnotatedInput.parse(args[2]);
-    List<RuleMatch> matches = tool.check(text);
-    var serializer = new RuleMatchesAsJsonSerializer(0, language);
-    System.out.println(serializer.ruleMatchesToJson(
-        matches, Collections.emptyList(), text, 40,
-        new DetectedLanguage(language, language), null, false));
+  public static void main(String[] args) throws Exception {
+    var application = new NativeLanguageTool();
+    var input = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+    var output = new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
+
+    String line;
+    while ((line = input.readLine()) != null) {
+      ObjectNode response;
+      try {
+        response = application.check(MAPPER.readTree(line));
+      } catch (Exception error) {
+        response = MAPPER.createObjectNode();
+        response.put("error", error.getMessage());
+      }
+      output.write(MAPPER.writeValueAsString(response));
+      output.newLine();
+      output.flush();
+    }
+  }
+
+  private ObjectNode check(JsonNode request) throws IOException {
+    AnnotatedText text = AnnotatedInput.parse(request);
+    ArrayNode matches = MAPPER.createArrayNode();
+    for (RuleMatch match : tool.check(text)) {
+      matches.add(serialize(match, text));
+    }
+    ObjectNode response = MAPPER.createObjectNode();
+    response.set("matches", matches);
+    return response;
+  }
+
+  private ObjectNode serialize(RuleMatch match, AnnotatedText text) {
+    int offset = match.getFromPos();
+    int length = match.getToPos() - offset;
+
+    ObjectNode context = MAPPER.createObjectNode();
+    context.put("text", text.getTextWithMarkup().substring(offset, offset + length));
+    context.put("offset", 0);
+    context.put("length", length);
+
+    ObjectNode rule = MAPPER.createObjectNode();
+    rule.put("id", match.getSpecificRuleId());
+
+    ObjectNode serialized = MAPPER.createObjectNode();
+    serialized.put("message", language.toAdvancedTypography(match.getMessage()));
+    serialized.put("offset", offset);
+    serialized.put("length", length);
+    serialized.set("context", context);
+    serialized.set("rule", rule);
+    return serialized;
   }
 }
