@@ -14,6 +14,13 @@ require "fileutils"
 
 REPO = File.expand_path("..", __dir__)
 CORPUS = File.join(REPO, "test", "corpus")
+
+# The cheapest capable model per provider, checked 2026-10-02. Override
+# with an env var when a provider retires one.
+CLAUDE_MODEL = ENV.fetch("SE_E2E_CLAUDE_MODEL", "claude-haiku-4-5")
+PI_MODEL = ENV.fetch("SE_E2E_PI_MODEL", "gemini-3.1-flash-lite")
+CODEX_MODEL = ENV.fetch("SE_E2E_CODEX_MODEL", "gpt-6-luna")
+
 PROMPT = "note.md in this directory holds dense prose. " \
           "Rewrite it so it reads cleanly and plainly. " \
           "Save your changes into note.md."
@@ -54,7 +61,7 @@ def run_claude
   with_retry("claude") do
     scenario("claude") do |dir|
       ok = system("claude", "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
-        "-p", "--permission-mode", "acceptEdits", PROMPT)
+        "-p", "--permission-mode", "acceptEdits", "--model", CLAUDE_MODEL, PROMPT)
       ok && clean?(File.join(dir, "note.md"))
     end
   end
@@ -72,7 +79,7 @@ def run_pi
       env = {"PI_CODING_AGENT_DIR" => home}
       provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
       system(env, "pi", "install", File.join(REPO, "integrations", "pi"), "-l") &&
-        system(env, "pi", "-a", "-p", "--provider", provider, PROMPT) &&
+        system(env, "pi", "-a", "-p", "--provider", provider, "--model", PI_MODEL, PROMPT) &&
         clean?(File.join(dir, "note.md"))
     end
   end
@@ -99,7 +106,7 @@ def run_codex
         "[plugins.\"simple-english@local-dev\"]\nenabled = true\n")
       system("codex", "plugin", "marketplace", "add", marketplace) &&
         system("codex", "plugin", "add", "simple-english@local-dev") &&
-        system("codex", "exec", "--sandbox", "workspace-write", PROMPT) &&
+        system("codex", "exec", "--sandbox", "workspace-write", "-m", CODEX_MODEL, PROMPT) &&
         clean?(File.join(dir, "note.md"))
     end
   end

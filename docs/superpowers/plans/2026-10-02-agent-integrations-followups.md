@@ -24,9 +24,6 @@ its trigger and its fix. Fix an item when its trigger arrives.
 
 ## Open questions
 
-1. Pin the agent e2e to each provider's cheapest model. Today the
-   runs use each CLI's default model, which is the most expensive
-   path. Candidates, checked 2026-10-02: `claude-haiku-4-5` for
-   Claude Code, `gpt-6-luna` for Codex, `gemini-3.1-flash-lite` for
-   pi on Google. Verify the Codex candidate inside `codex exec`
-   before trusting it.
+None. The runs pin each provider's cheapest model, overridable with
+`SE_E2E_CLAUDE_MODEL`, `SE_E2E_PI_MODEL`, and `SE_E2E_CODEX_MODEL`.
+Verify `gpt-6-luna` inside `codex exec` at the first dispatch.
