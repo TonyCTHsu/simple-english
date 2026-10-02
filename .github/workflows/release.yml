@@ -58,20 +58,6 @@ jobs:
           bundler-cache: true
       - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
-  tap:
-    # The gem is out. Ask the Homebrew tap to open its bump pull
-    # request. GITHUB_TOKEN cannot cross repositories, so this needs
-    # TAP_DISPATCH_TOKEN: a fine-grained PAT with Actions: write on
-    # TonyCTHsu/homebrew-tap, stored as a repository secret here.
-    needs: gem
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Ask the tap to open the bump pull request
-        env:
-          GH_TOKEN: ${{ secrets.TAP_DISPATCH_TOKEN }}
-        run: gh workflow run bump.yml --repo TonyCTHsu/homebrew-tap --ref main
-
   image:
     needs: [release, gem]
     runs-on: ubuntu-24.04
