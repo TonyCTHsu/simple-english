@@ -1,0 +1,4 @@
+kind: Fixed
+body: |
+  Fix `se tree` exiting with a `TypeError`.
+time: 2026-10-02T10:00:51.389269+02:00

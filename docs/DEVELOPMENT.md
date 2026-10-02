@@ -68,6 +68,20 @@ The last two need LanguageTool (run `bin/se setup` first, it
 downloads to `~/.cache/se`). If `java` is not on PATH, set
 `SE_JAVA`. The unit tests need the bundle's gems but no JVM.
 
+The self-lint lints through a daemon on port 8181. On macOS, a
+brew-installed se can run as a brew service. Its `KeepAlive` restarts
+it whenever it dies, and a respawn stops any daemon holding the port
+and takes it. While that service runs, `bin/se serve --detached`
+cannot hold the port, and every checkout lint warns about stale
+code. Stop the service once per machine:
+
+```
+brew services stop simple-english
+```
+
+Then `bin/se serve --detached` starts the checkout daemon, and the
+warning stops.
+
 ## Test strategy
 
 Five tiers. The theme: keep the JVM (LanguageTool) out of every test

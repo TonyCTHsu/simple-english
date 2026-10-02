@@ -30,6 +30,10 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
   a major bump in `changie next auto`. Breaking means the change breaks
   the CLI, the config, or an output format.
+  Write the body as one line. `changeFormat` prefixes `- ` once, so a
+  multi-line body falls out of the list. Preview the entry with
+  `changie batch <kind> --dry-run` before the pull request. `rake lint`
+  lints the fragment bodies.
 
 ## Layout
 

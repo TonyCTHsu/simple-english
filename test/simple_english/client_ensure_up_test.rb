@@ -6,6 +6,14 @@ require "fileutils"
 require "json"
 require "tmpdir"
 
+class ClientRunnerTest < Minitest::Test
+  def test_runner_is_a_runnable_se_executable
+    runner = SimpleEnglish::Client.runner
+    assert_equal "se", File.basename(runner)
+    assert File.executable?(runner), "#{runner} is not executable"
+  end
+end
+
 class ClientEnsureUpTest < Minitest::Test
   def test_lint_text_returns_nil_when_custom_url_is_dead
     with_env("SE_SERVER_URL" => "http://localhost:1") do
@@ -93,7 +101,7 @@ class ClientEnsureUpTest < Minitest::Test
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
           assert_match(/runs se 0\.1\.0, different code than this install/, err)
-          assert_match(/Run `se serve --detached` to restart it/, err)
+          assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve --detached` to restart it/, err)
           assert_match(/Linting against it meanwhile/, err)
         end
       end
@@ -134,7 +142,7 @@ class ClientEnsureUpTest < Minitest::Test
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
           assert_match(/different code than this install/, err)
-          assert_match(/Run `se serve --detached` to restart it/, err)
+          assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve --detached` to restart it/, err)
         end
       end
     end
@@ -174,7 +182,7 @@ class ClientEnsureUpTest < Minitest::Test
             assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
           end
           assert_match(/different code than this install/, err)
-          assert_match(/Run `se serve --detached` to restart it/, err)
+          assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve --detached` to restart it/, err)
         end
       end
     end

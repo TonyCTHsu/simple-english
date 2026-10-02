@@ -32,6 +32,10 @@ class CLIDispatchTest < Minitest::Test
     out, = capture_io { assert_equal 2, SimpleEnglish::CLI.run([]) }
     assert_match(/lint/, out)
   end
+
+  def test_thor_builtin_tree_returns_an_exit_status
+    capture_io { assert_equal 0, SimpleEnglish::CLI.run(["tree"]) }
+  end
 end
 
 class CLIServeTest < Minitest::Test
@@ -52,7 +56,7 @@ class CLIServeTest < Minitest::Test
         assert_equal 2,
           SimpleEnglish::CLI.run(["serve", "--detached", "--port", "28291"])
       end
-      assert_match(/Run `se serve` and read its output/, err)
+      assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve` and read its output/, err)
     end
   end
 end
