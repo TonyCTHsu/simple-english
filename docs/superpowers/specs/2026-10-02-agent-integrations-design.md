@@ -99,6 +99,29 @@ it.
 plugin and points at `./integrations/claude-code`. It is the only root
 footprint.
 
+## Names
+
+A name is cheap to change only while nothing outside this repo uses it.
+Keep every exposed name reversible until the release decision.
+
+The exposed names:
+
+1. The plugin name in each manifest.
+2. The marketplace name in `.claude-plugin/marketplace.json`.
+3. The tool names: `se_lint` for pi, `lint` for MCP.
+4. The subcommands: `lint`, `mcp`, `serve`.
+5. The skill name and the adapter directory names.
+
+Three rules keep names reversible:
+
+1. Development installs come from local paths only. No registry or
+   marketplace sees a name before the release decision. A name that
+   never leaves this repo is free to change.
+2. Each name lives in few places, and the list above records them all.
+   The CI audit greps the repo for a name that appears somewhere else.
+3. A rename during development is not a `Breaking` entry. No external
+   user pins the name yet. The `Breaking` rule starts at release.
+
 ## Contracts
 
 These five surfaces are the compatibility budget. Freeze them at
