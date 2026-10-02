@@ -1,4 +1,4 @@
 kind: Fixed
 body: |
-  Fix daemon restart advice pointing at the wrong `se`. The warning now prints the full path of the executable that matches the running code. Following it restarts the right daemon.
+  Fix daemon restart advice pointing at the wrong `se`. The warning now prints the full path of the executable that matches the running code.
 time: 2026-10-02T11:25:44.642053+02:00
