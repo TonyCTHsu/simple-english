@@ -8,14 +8,12 @@ require_relative "test_helper"
 class IntegrationsNamesTest < Minitest::Test
   SELF = "test/simple_english/integrations_names_test.rb"
 
-  EXCLUDED_DIRS = [".git", ".superpowers", "node_modules", "tmp", ".changes"].freeze
+  EXCLUDED_DIRS = [".git", ".superpowers", "node_modules", "tmp", ".changes", "docs/superpowers"].freeze
 
   NAMES = {
     # The pi tool name.
     "se_lint" => [
       "README.md",
-      "docs/superpowers/plans/2026-10-02-agent-integrations.md",
-      "docs/superpowers/specs/2026-10-02-agent-integrations-design.md",
       "integrations/pi/extensions/se-lint.ts",
       "integrations/shared/skills/lint/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
@@ -27,9 +25,7 @@ class IntegrationsNamesTest < Minitest::Test
     # The MCP subcommand wiring.
     "se mcp" => [
       "README.md",
-      "docs/DEVELOPMENT.md",
-      "docs/superpowers/plans/2026-10-02-agent-integrations.md",
-      "docs/superpowers/specs/2026-10-02-agent-integrations-design.md"
+      "docs/DEVELOPMENT.md"
     ]
   }.freeze
 
