@@ -24,37 +24,14 @@ class ClientEnsureUpTest < Minitest::Test
     end
   end
 
-  def test_ensure_up_fails_fast_with_setup_message_when_jar_is_missing
-    in_tmpdir do |dir|
-      # java is present so the jar is the named blocker, and the
-      # jar matters only when the daemon is down and we must spawn it.
-      install = SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
-      SimpleEnglish::Client.stub :info, nil do
+  def test_ensure_up_fails_fast_when_native_server_is_missing
+    install = SimpleEnglish::Install.new(executable: "/nonexistent/server")
+    SimpleEnglish::Client.stub :info, nil do
+      SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
         _out, err = capture_io do
           refute SimpleEnglish::Client.ensure_up(install: install)
         end
-        assert_match(/Run `se setup`\./, err)
-      end
-    end
-  end
-
-  def test_ensure_up_fails_fast_naming_java_when_java_is_missing
-    # Jar cached but java gone: fail fast instead of spawning a
-    # doomed child and waiting out the full 90 s.
-    in_tmpdir do |dir|
-      lt = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
-      FileUtils.mkdir_p(lt)
-      FileUtils.touch(File.join(lt, "languagetool-server.jar"))
-      install = SimpleEnglish::Install.new(cache_dir: dir)
-      with_se_server_url(nil) do
-        SimpleEnglish::Client.stub :info, nil do
-          SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
-            _out, err = capture_io do
-              refute SimpleEnglish::Client.ensure_up(install: install)
-            end
-            assert_match(/java not found/, err)
-          end
-        end
+        assert_match(/native LanguageTool server not found/, err)
       end
     end
   end
@@ -66,7 +43,7 @@ class ClientEnsureUpTest < Minitest::Test
     SimpleEnglish::Client.stub :info, :foreign do
       SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
         _out, err = capture_io do
-          assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+          assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
         end
         assert_match(/not a handshake-capable se daemon/, err)
       end
@@ -80,7 +57,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, :foreign do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "no spawn expected" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_match(/pull a newer image or rebuild/, err)
         end
@@ -98,7 +75,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, stale do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "lints never replace a daemon" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_match(/runs se 0\.1\.0, different code than this install/, err)
           assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve --detached` to restart it/, err)
@@ -119,7 +96,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, newer do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_match(/newer than this install/, err)
           assert_match(/Update this gem/, err)
@@ -139,7 +116,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, twin do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "lints never replace a daemon" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_match(/different code than this install/, err)
           assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve --detached` to restart it/, err)
@@ -160,7 +137,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, -> { answers.shift } do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_empty err
         end
@@ -179,7 +156,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, -> { answers.shift } do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "the winner's daemon is up" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_match(/different code than this install/, err)
           assert_match(/Run `#{Regexp.escape(SimpleEnglish::Client.runner)} serve --detached` to restart it/, err)
@@ -194,7 +171,7 @@ class ClientEnsureUpTest < Minitest::Test
         SimpleEnglish::Client.stub :spawn_daemon, -> {} do
           SimpleEnglish::Client.stub :wait_for, false do
             _out, err = capture_io do
-              refute SimpleEnglish::Client.ensure_up(install: install_with_jar)
+              refute SimpleEnglish::Client.ensure_up(install: install_with_executable)
             end
             assert_match(/did not come up/, err)
           end
@@ -210,7 +187,7 @@ class ClientEnsureUpTest < Minitest::Test
       SimpleEnglish::Client.stub :info, stale do
         SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
           _out, err = capture_io do
-            assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+            assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
           end
           assert_match(/not restarted automatically/, err)
         end
@@ -224,16 +201,15 @@ class ClientEnsureUpTest < Minitest::Test
               "rules_digest" => "rules"}
     SimpleEnglish::Client.stub :info, daemon do
       _out, err = capture_io do
-        assert SimpleEnglish::Client.ensure_up(install: install_with_jar)
+        assert SimpleEnglish::Client.ensure_up(install: install_with_executable)
       end
       assert_empty err
     end
   end
 
-  def test_the_spawn_lock_is_keyed_by_port_not_the_cache_dir
-    # Daemon ownership is scoped to the port, not the cache: two
-    # lints with different SE_CACHE_DIR values still take the same
-    # lock, because it lives under HOME, keyed by the port.
+  def test_the_spawn_lock_is_keyed_by_port
+    # Daemon ownership is scoped to the port, so concurrent lints
+    # take the same lock under HOME.
     home = Dir.mktmpdir
     (@tmpdirs ||= []) << home
     with_env("HOME" => home) do
@@ -242,7 +218,7 @@ class ClientEnsureUpTest < Minitest::Test
           SimpleEnglish::Client.stub :spawn_daemon, -> {} do
             SimpleEnglish::Client.stub :wait_for, false do
               _out, _err = capture_io do
-                refute SimpleEnglish::Client.ensure_up(install: install_with_jar)
+                refute SimpleEnglish::Client.ensure_up(install: install_with_executable)
               end
             end
           end
@@ -250,7 +226,6 @@ class ClientEnsureUpTest < Minitest::Test
       end
     end
     assert File.exist?(File.join(home, ".cache", "simple_english", "spawn-8181.lock"))
-    refute File.exist?(File.join(install_with_jar.cache_dir, "spawn.lock"))
   end
 
   private
@@ -267,15 +242,8 @@ class ClientEnsureUpTest < Minitest::Test
     end
   end
 
-  def install_with_jar
-    dir = Dir.mktmpdir
-    (@tmpdirs ||= []) << dir
-    lt = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
-    FileUtils.mkdir_p(lt)
-    FileUtils.touch(File.join(lt, "languagetool-server.jar"))
-    # Any real binary stands in for java: the boot path only
-    # checks that one exists, and the spawn is stubbed in these tests.
-    SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
+  def install_with_executable
+    SimpleEnglish::Install.new(executable: RbConfig.ruby)
   end
 
   def teardown

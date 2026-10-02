@@ -1,8 +1,8 @@
-# Native LanguageTool helper
+# Native LanguageTool server
 
-This module compiles the LanguageTool 6.6 subset used by `simple_english` into a persistent native helper. Gem users do not need a JVM. The helper embeds `rules/simple-english.xml`, disables LanguageTool's built-in rules, and retains the English tokenizer, tagger, disambiguator, synthesizer, dictionaries, and OpenNLP models required by the custom rules.
+This module compiles LanguageTool 6.6's stock HTTP server as a native executable. Gem users do not need Java. The executable embeds `rules/simple-english.xml` at LanguageTool's custom English rule path.
 
-Ruby daemon integration and gem packaging remain incomplete.
+Ruby keeps ownership of the public `se` daemon, Markdown processing, and code-comment extraction. It also owns counting rules, configuration, suppressions, locations, and output. The native process provides LanguageTool's internal `/v2/check` API.
 
 ## Release targets
 
@@ -11,73 +11,38 @@ Initial release artifacts target:
 - macOS arm64
 - Linux x86-64 with glibc
 
-Native Image does not cross-compile. Build each executable on its target platform. Linux arm64 is deferred until user demand justifies its CI and packaging cost. macOS x86-64, Windows, and musl Linux are also deferred.
-
-Linux executables dynamically link glibc and zlib. Release Linux artifacts must be built in a pinned image using the oldest glibc version supported by the gem. Use `-march=compatibility`, as the build script does, to avoid requiring the build machine's CPU features.
-
-## Protocol
-
-The helper starts once and reads one JSON request per line from standard input. It writes one JSON response per line to standard output. Embedded newlines are JSON escapes, so each physical line is one complete frame.
-
-Plain text request:
-
-```json
-{"text":"The worker didn't write the file."}
-```
-
-Annotated text request:
-
-```json
-{"annotation":[{"markup":"#","interpretAs":" "},{"text":" The worker didn't write the file."}]}
-```
-
-Successful response:
-
-```json
-{"matches":[{"message":"Write the words in full. No contractions.","offset":14,"length":3,"context":{"text":"n't","offset":0,"length":3},"rule":{"id":"SE_NO_CONTRACTIONS"}}]}
-```
-
-Offsets and lengths are UTF-16 code units. Context contains only the matched source text because this is all the Ruby client consumes. A malformed request returns `{"error":"..."}` without stopping the process.
+Native Image does not cross-compile. Build each executable on its target platform. Linux releases use Ubuntu 22.04 and require glibc 2.35 or newer. GraalVM emits Linux AWT support libraries beside the stock server. An isolated Ubuntu test proves that the executable does not load them, so release packages exclude them. Linux arm64, macOS x86-64, Windows, and musl Linux are deferred.
 
 ## Build
 
 Prerequisites:
 
 - Maven 3.9.16
-- Oracle GraalVM JDK 21.0.12+7.1 with Native Image
+- Oracle GraalVM 25.0.4.1.1 with Native Image
 - A native C compiler, linker, and zlib development files
-- About 5 GB of available memory
+- At least 10 GB of available memory
 
-Set `JAVA_HOME` to GraalVM and place its `bin` directory, Maven, and native build tools on `PATH`. From the repository root, run:
+The repository `.mise.toml` pins GraalVM. `mise.lock` pins target archive URLs and SHA-256 checksums. From the repository root, run:
 
 ```sh
 ruby native/languagetool/build.rb
 ```
 
-CI, not this script, must provision and pin the toolchain. The script compiles Java classes and asks Maven for their runtime classpath. It runs Native Image, then sends two requests through one native process as a smoke test.
-
-Output:
+The script resolves the Maven runtime classpath and stages the custom rules. It builds the stock `org.languagetool.server.HTTPServer`, then sends two `/v2/check` requests through one process. Output:
 
 ```text
 tmp/native-languagetool/languagetool-native
+tmp/native-languagetool/languagetool-native.sbom.json
+tmp/native-languagetool/lib*.so # Linux only
 ```
 
-The build uses:
+The build embeds and exports a CycloneDX SBOM. It uses `-march=compatibility` and disables fallback images. It initializes logging and telemetry packages at run time. It also enables the HTTP and HTTPS URL handlers required by LanguageTool. Reachability metadata lives under `config/`.
 
-```text
---no-fallback
--march=compatibility
---initialize-at-build-time=org.slf4j
---enable-url-protocols=https
-```
-
-HTTPS support remains necessary because LanguageTool resolves English synthesis metadata through a URL. Reachability and resource metadata live under `config/`.
+The stock server binds to loopback unless started with `--public`. The Ruby daemon never passes `--public`.
 
 ## Full verification
 
-The full verifier sends all requests through one JVM process and one native process. It checks every custom rule, every correct and incorrect example, annotated input, UTF-16 locations, successive requests, and byte-identical JSON responses between the two implementations.
-
-After building, run:
+The verifier starts one JVM server and one native server. It compares HTTP status codes and JSON responses for every rule example, annotated text, UTF-16 offsets, malformed-request recovery, repeated requests, and all corpus pairs:
 
 ```sh
 ruby native/languagetool/verify.rb \
@@ -85,30 +50,30 @@ ruby native/languagetool/verify.rb \
   tmp/native-languagetool/languagetool-native
 ```
 
-`JAVA_HOME` must still identify GraalVM. Release CI must also run the repository corpus and Ruby daemon tests, inspect native runtime dependencies, and test each release artifact on its target platform.
+Release CI must also run `rake check`, inspect dynamic-library dependencies, and test each packaged artifact on its target platform.
 
-## Release reproducibility
+## Runtime integration
 
-Release jobs will pin:
+Released platform gems place the executable at:
 
-- LanguageTool 6.6
-- Oracle GraalVM JDK 21.0.12+7.1 and its archive checksum
-- Maven 3.9.16
-- Build image or runner definition
-- Compiler and linker environment
-- Linux glibc compatibility floor
-- Resolved Maven dependency graph
+```text
+libexec/simple_english/languagetool-server
+```
 
-Retain each verified executable with its checksum and build provenance. Functional reproducibility is required. Oracle GraalVM does not guarantee byte-identical native executables from repeated builds.
+Source builds can test the executable without copying it:
 
-## Updating reachability metadata
+```sh
+SE_LANGUAGETOOL_EXECUTABLE="$PWD/tmp/native-languagetool/languagetool-native" bin/se README.md
+```
 
-Remove unused dependencies before pruning metadata. After any dependency, Java, rules, or metadata change:
+The Ruby daemon starts the executable once on its internal loopback port and monitors it. No rules file or runtime LanguageTool installation is needed.
 
-1. Build the native executable.
-2. Run the full verifier.
-3. Run all corpus checks.
-4. Exercise two or more requests in one process.
-5. Inspect runtime dynamic-library dependencies.
+## Reachability metadata
 
-Do not remove an English resource, synthesis resource, model, reflection entry, or service registration until this sequence passes.
+`config/reachability-metadata.json` was collected with GraalVM 25's tracing agent while the full verifier exercised the JVM server. Regenerate it after any LanguageTool, JDK, dependency, server, or rules change. Then rebuild and run the full verifier before removing old metadata.
+
+The build currently inherits two metadata warnings from Micrometer dependencies: one experimental reflection configuration and one deprecated proxy configuration. They come from dependency JARs rather than this repository's metadata.
+
+## Reproducibility
+
+Release jobs must pin GraalVM, Maven, target OS, compiler, linker, SDK, glibc baseline, and resolved Maven dependencies. Retain checksums, the embedded Native Image SBOM, and build provenance for every artifact. Verification requires equivalent behavior, not byte-identical executables.

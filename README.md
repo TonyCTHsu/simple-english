@@ -41,9 +41,9 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-**Requirements:** On macOS, Homebrew covers everything. On Linux,
-Windows, or CI, you need Ruby 3.3 or newer and Java 11 or newer for
-LanguageTool. The Docker image bundles both.
+**Requirement:** Ruby 3.3 or newer on macOS arm64 or Linux x86-64 with
+glibc 2.35 or newer. Platform gems bundle the native LanguageTool server,
+so Java and a separate setup step are not required.
 
 ### Homebrew (macOS)
 
@@ -61,15 +61,15 @@ milliseconds. Run `brew services stop simple-english` to stop it.
 
 ```bash
 gem install simple_english
-se setup    # run once: downloads LanguageTool, locates Java, verifies both
 se README.md
 ```
 
-If `java` is not on PATH, set `SE_JAVA` to your java binary.
+`se setup` is optional. It verifies that the bundled native server is
+present and executable.
 
 ### Container
 
-The image holds Ruby, Java, and LanguageTool, so it needs no setup:
+The image holds Ruby and the native LanguageTool server, so it needs no setup:
 
 ```bash
 docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
@@ -132,7 +132,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
       - run: gem install simple_english
-      - run: se setup
       - run: se --format sarif . > lint.sarif
       - run: se .
       - uses: github/codeql-action/upload-sarif@v3
@@ -177,9 +176,9 @@ In a code comment:
 
 ## The background daemon
 
-The CLI runs a small background server on your machine. The first
-lint starts it, which takes about 15 seconds. Later lints take
-milliseconds.
+The first lint starts the daemon and its bundled native LanguageTool
+server automatically. Later lints use the running daemon. To start it
+ahead of time:
 
 The first lint after a gem update prints a warning. Run `se serve --detached` then.
 It stops the old daemon and starts the new one in the

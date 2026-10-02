@@ -10,8 +10,7 @@ require "timeout"
 class DaemonEndToEndTest < Minitest::Test
   def test_serve_detached_boots_a_daemon_that_outlives_the_parent
     install = SimpleEnglish::Install.from_env
-    skip "needs java and the LanguageTool cache" unless install.java? &&
-      File.exist?(install.commandline_jar)
+    skip "needs native LanguageTool executable" unless install.executable?
 
     in_tmpdir do |dir|
       port = 8282
@@ -39,7 +38,7 @@ class DaemonEndToEndTest < Minitest::Test
       if daemon.is_a?(Hash)
         begin
           Process.kill("TERM", daemon["pid"])
-          # The inner JVM takes seconds longer than the outer
+          # The inner server takes longer than the outer
           # listener: wait the takeover window or the next run on this
           # port races the shutdown.
           deadline = Time.now + 10
@@ -53,8 +52,7 @@ class DaemonEndToEndTest < Minitest::Test
 
   def test_serve_daemon_lints_bad_markdown
     install = SimpleEnglish::Install.from_env
-    skip "needs java and the LanguageTool cache" unless install.java? &&
-      File.exist?(install.commandline_jar)
+    skip "needs native LanguageTool executable" unless install.executable?
 
     in_tmpdir do |dir|
       port = 8281
@@ -64,7 +62,7 @@ class DaemonEndToEndTest < Minitest::Test
         out: File::NULL, err: File.join(dir, "daemon-stderr.log"),
         chdir: root)
       url = "http://localhost:#{port}"
-      # The daemon gives its JVM TIMEOUT_SECONDS to boot. Poll for
+      # The daemon gives its inner server TIMEOUT_SECONDS to boot. Poll for
       # that budget plus a margin, so the test never races the daemon
       # into a false failure on a slow runner.
       ((SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10) * 2).times do

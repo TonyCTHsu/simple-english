@@ -13,10 +13,9 @@ automatically. Later lints take milliseconds.
 
 ## Start
 
-The first lint starts the daemon automatically (about 15 seconds
-once, then you need Java and one run of `se setup`). Later lints hit
-the running daemon and take milliseconds. To start it ahead of time,
-or to replace one after a gem update:
+The first lint starts the daemon and its bundled native LanguageTool
+server automatically. Later lints use the running daemon. To start it
+ahead of time:
 
 ```bash
 se serve --detached
@@ -44,10 +43,13 @@ curl -d "text=x = 1 # Don't do this." -d "language=python" http://localhost:8181
 # code-comment linting uses positions in the source file
 ```
 
-GET / answers the handshake:
+## Run the daemon in a container
 
-```json
-{"version": "0.2.0", "pid": 123, "gem_digest": "…", "rules_digest": "…"}
+You need no Ruby on your machine. Pull the image and run
+the daemon in it:
+
+```bash
+docker run -d --name se-daemon -p 8181:8181 ghcr.io/tonycthsu/simple-english:latest serve
 ```
 
 `gem_digest` covers the gem code and the built-in rules. The CLI
@@ -78,11 +80,11 @@ shot when the machine has no Java:
 docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
 ```
 
-The daemon also runs in a container, with `serve` as the image
-entrypoint. A user who needs that knows why. The CLI reaches a
-remote daemon through `SE_SERVER_URL`. Both stay undocumented on
-purpose: the wire is internal, and a remote daemon is never
-restarted for you.
+The CLI sends text over HTTP and never starts a
+daemon of its own. Pin the image tag to your gem version, because
+different versions carry different rules. If port 8181 is busy on
+your machine, map another port on both sides, for example
+`-p 8281:8181` and `SE_SERVER_URL=http://localhost:8281`.
 
 ## Lifecycle
 

@@ -32,10 +32,6 @@ module SimpleEnglish
       start(argv)
     end
 
-    # How each Install.java_source found its java, for `se setup`'s
-    # report line.
-    JAVA_SOURCES = {env: "SE_JAVA", path: "PATH", homebrew: "Homebrew fallback"}.freeze
-
     default_task :lint
     desc "lint FILE_OR_DIR...", "Lint Markdown prose and code comments (- reads stdin)"
     method_option :format, type: :string, default: "text", enum: %w[text json sarif],
@@ -106,26 +102,14 @@ module SimpleEnglish
       2
     end
 
-    desc "setup", "Download LanguageTool and locate Java. Idempotent."
+    desc "setup", "Verify the bundled native LanguageTool server"
     def setup
       install = SimpleEnglish::Install.from_env
-      lt = SimpleEnglish::LanguageTool.install(install.cache_dir)
-      return 2 unless lt
-      puts "LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION}: " \
-        "#{lt["downloaded"] ? "downloaded to" : "already present at"} #{lt["dir"]}"
-      unless install.java?
-        warn "error: #{install.java_message}"
+      unless install.executable?
+        warn "error: #{install.setup_error}"
         return 2
       end
-      puts "Java: #{install.java} (#{JAVA_SOURCES[install.java_source]})"
-      unless SimpleEnglish::LanguageTool.smoke(install)
-        warn "error: LanguageTool smoke test failed. The download may be corrupt. " \
-          "Delete #{lt["dir"]} and rerun `se setup`."
-        return 2
-      end
-      puts "Smoke test: passed"
-      puts
-      puts "se finds them automatically. Nothing to export."
+      puts "LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION} is bundled and ready."
       0
     end
 

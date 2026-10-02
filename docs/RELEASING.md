@@ -30,4 +30,8 @@ repository.
    gh workflow run release.yml --ref master
    ```
 
-Do not push tags by hand. The workflow tags the release commit.
+Do not push tags by hand. The workflow tags the release commit. It builds
+and verifies native servers on Ubuntu 22.04 x86-64 and macOS arm64. It then
+publishes one platform gem for each target. Each native executable also has a
+SHA-256 checksum and signed build-provenance attestation on the GitHub release.
+The container image uses the Linux x86-64 gem.

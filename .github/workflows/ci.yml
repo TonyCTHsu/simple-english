@@ -79,60 +79,32 @@ jobs:
 
   rules:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@9149ea85001c7435d5a66bb127d6a1b6227cb0a5 # v5.0.0
+        with:
+          version: 2026.9.12
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: "3.3"
           bundler-cache: true
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+      - name: Build native LanguageTool server
+        run: ruby native/languagetool/build.rb
+        env:
+          NATIVE_IMAGE_PARALLELISM: "4"
 
-      - name: Set up LanguageTool
-        run: bundle exec bin/se setup
-
-      - name: Run the self-lint
-        run: bundle exec rake lint
-
-      - name: Run the rule examples
-        run: bundle exec ruby test/examples_check.rb
-
-  e2e:
-    # The user story: build and install the gem, set up the
-    # environment, lint files. Everything runs off the installed gem,
-    # not the checkout's bundle. So the shipped package, the se
-    # shim, and the daemon auto-boot are what gets tested.
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
-        with:
-          ruby-version: "3.3"
-
-      - name: Build and install the gem
+      - name: Verify native LanguageTool parity
         run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
+          ruby native/languagetool/verify.rb \
+            "$(cat tmp/native-languagetool/classpath)" \
+            tmp/native-languagetool/languagetool-native
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/se
-          # Shared with the rules job. Same distro pin, same download.
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
-
-      - name: Set up the environment
-        run: se setup
-
-      - name: Lint as a user
-        run: bin/e2e-story
-
-      - name: Boot the daemon in an empty environment
-        # See the script header for why this exists.
-        run: .github/scripts/daemon-empty-env.sh
+      - name: Run the rules checks
+        run: bundle exec rake check
+        env:
+          SE_LANGUAGETOOL_EXECUTABLE: ${{ github.workspace }}/tmp/native-languagetool/languagetool-native

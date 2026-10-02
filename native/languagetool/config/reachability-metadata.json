@@ -1,0 +1,842 @@
+{
+  "reflection": [
+    {
+      "type": "ch.qos.logback.classic.encoder.PatternLayoutEncoder",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.classic.joran.SerializedModelConfigurator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.classic.spi.LogbackServiceProvider"
+    },
+    {
+      "type": "ch.qos.logback.classic.util.DefaultJoranConfigurator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.ConsoleAppender",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.OutputStreamAppender",
+      "methods": [
+        {
+          "name": "setEncoder",
+          "parameterTypes": [
+            "ch.qos.logback.core.encoder.Encoder"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.encoder.Encoder"
+    },
+    {
+      "type": "ch.qos.logback.core.encoder.LayoutWrappingEncoder",
+      "methods": [
+        {
+          "name": "setParent",
+          "parameterTypes": [
+            "ch.qos.logback.core.spi.ContextAware"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.pattern.PatternLayoutEncoderBase",
+      "methods": [
+        {
+          "name": "setPattern",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.spi.ContextAware"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.ext.Java7SupportImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.google.common.cache.Striped64",
+      "fields": [
+        {
+          "name": "base"
+        },
+        {
+          "name": "busy"
+        }
+      ]
+    },
+    {
+      "type": "com.google.common.util.concurrent.AbstractFuture",
+      "fields": [
+        {
+          "name": "listeners"
+        },
+        {
+          "name": "value"
+        },
+        {
+          "name": "waiters"
+        }
+      ]
+    },
+    {
+      "type": "com.google.common.util.concurrent.AbstractFuture$Waiter",
+      "fields": [
+        {
+          "name": "next"
+        },
+        {
+          "name": "thread"
+        }
+      ]
+    },
+    {
+      "type": "com.sun.org.apache.xerces.internal.impl.dv.xs.ExtendedSchemaDVFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.opentelemetry.api.incubator.trace.ExtendedDefaultTracerProvider"
+    },
+    {
+      "type": "io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk"
+    },
+    {
+      "type": "io.prometheus.client.Striped64"
+    },
+    {
+      "type": "java.lang.Boolean",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.util.ArrayList",
+      "methods": [
+        {
+          "name": "clone",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "opennlp.tools.chunker.ChunkerFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "opennlp.tools.postag.POSTaggerFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "opennlp.tools.tokenize.TokenizerFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apache.commons.logging.LogFactory"
+    },
+    {
+      "type": "org.apache.commons.logging.impl.SLF4JLogFactory"
+    },
+    {
+      "type": "org.apache.commons.logging.impl.WeakHashtable",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.PremiumOn"
+    },
+    {
+      "type": "org.languagetool.language.AmericanEnglish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.AngolaPortuguese",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.AustralianEnglish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.BalearicCatalan",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.BrazilianPortuguese",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.BritishEnglish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.CanadianEnglish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.Catalan",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.English",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.MozambiquePortuguese",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.NewZealandEnglish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.PortugalPortuguese",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.Portuguese",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.SouthAfricanEnglish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.Spanish",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.SpanishVoseo",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.language.ValencianCatalan",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.DateRangeChecker",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.UnderlineSpacesFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.AdverbFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.DateCheckFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.EnglishNumberInWordFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.EnglishSuppressMisspelledSuggestionsFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.FindSuggestionsFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.FutureDateFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.NewYearDateFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.NoDisambiguationEnglishPartialPosTagFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.OrdinalSuffixFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.en.YMDNewYearDateFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.patterns.ApostropheTypeFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.patterns.PatternToken",
+      "methods": [
+        {
+          "name": "clone",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.patterns.RegexAntiPatternFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.rules.spelling.multitoken.MultitokenSpellerFilter",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.server.DatabaseAccessOpenSource",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.languagetool.server.HTTPServerConfig"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.server.InstrumentedAppender",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.languagetool.server.PremiumAbTestService"
+    },
+    {
+      "type": "sun.misc.Unsafe",
+      "fields": [
+        {
+          "name": "theUnsafe"
+        }
+      ]
+    },
+    {
+      "type": "sun.text.resources.FormatData"
+    },
+    {
+      "type": "sun.text.resources.FormatData_en"
+    },
+    {
+      "type": "sun.text.resources.FormatData_en_US"
+    },
+    {
+      "type": "sun.text.resources.JavaTimeSupplementary"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en_US"
+    },
+    {
+      "type": "sun.util.resources.cldr.CalendarData"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames_en"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames_en_US"
+    }
+  ],
+  "resources": [
+    {
+      "glob": "META-INF/org/languagetool/language-module.properties"
+    },
+    {
+      "glob": "META-INF/services/ch.qos.logback.classic.spi.Configurator"
+    },
+    {
+      "glob": "META-INF/services/com.sun.net.httpserver.spi.HttpServerProvider"
+    },
+    {
+      "glob": "META-INF/services/io.opentelemetry.context.ContextStorageProvider"
+    },
+    {
+      "glob": "META-INF/services/java.net.spi.InetAddressResolverProvider"
+    },
+    {
+      "glob": "META-INF/services/java.net.spi.URLStreamHandlerProvider"
+    },
+    {
+      "glob": "META-INF/services/java.nio.channels.spi.SelectorProvider"
+    },
+    {
+      "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
+    },
+    {
+      "glob": "META-INF/services/java.util.spi.ResourceBundleControlProvider"
+    },
+    {
+      "glob": "META-INF/services/javax.xml.parsers.SAXParserFactory"
+    },
+    {
+      "glob": "META-INF/services/javax.xml.validation.SchemaFactory"
+    },
+    {
+      "glob": "META-INF/services/org.apache.commons.logging.LogFactory"
+    },
+    {
+      "glob": "META-INF/services/org.slf4j.spi.SLF4JServiceProvider"
+    },
+    {
+      "glob": "META-INF/services/org.xml.sax.XMLReader"
+    },
+    {
+      "glob": "META-INF/services/org.xml.sax.driver"
+    },
+    {
+      "glob": "com/optimaize/langdetect/cybozu/util/messages.properties"
+    },
+    {
+      "glob": "com/optimaize/langdetect/cybozu/util/messages_en.properties"
+    },
+    {
+      "glob": "com/optimaize/langdetect/cybozu/util/messages_en_CA.properties"
+    },
+    {
+      "glob": "commons-logging.properties"
+    },
+    {
+      "glob": "en-chunker.bin"
+    },
+    {
+      "glob": "en-pos-maxent.bin"
+    },
+    {
+      "glob": "en-token.bin"
+    },
+    {
+      "glob": "git-premium.properties"
+    },
+    {
+      "glob": "git.properties"
+    },
+    {
+      "glob": "languages/ca"
+    },
+    {
+      "glob": "languages/en"
+    },
+    {
+      "glob": "languages/es"
+    },
+    {
+      "glob": "languages/pt"
+    },
+    {
+      "glob": "logback-test.scmo"
+    },
+    {
+      "glob": "logback-test.xml"
+    },
+    {
+      "glob": "logback.scmo"
+    },
+    {
+      "glob": "logback.xml"
+    },
+    {
+      "glob": "net/loomchild/segment/res/xml/srx20.xsd"
+    },
+    {
+      "glob": "opennlp/tools/util/opennlp.version"
+    },
+    {
+      "glob": "org/languagetool/MessagesBundle.properties"
+    },
+    {
+      "glob": "org/languagetool/MessagesBundle_en.properties"
+    },
+    {
+      "glob": "org/languagetool/resource/Roman.sor"
+    },
+    {
+      "glob": "org/languagetool/resource/ca/common_words.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/crh/crh.profile"
+    },
+    {
+      "glob": "org/languagetool/resource/disambiguation-global.xml"
+    },
+    {
+      "glob": "org/languagetool/resource/en/added.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/added_custom.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/common_words.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/disambiguation.xml"
+    },
+    {
+      "glob": "org/languagetool/resource/en/do-not-synthesize.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/en-US-GB.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/en.sor"
+    },
+    {
+      "glob": "org/languagetool/resource/en/english.dict"
+    },
+    {
+      "glob": "org/languagetool/resource/en/english.info"
+    },
+    {
+      "glob": "org/languagetool/resource/en/english_synth.dict"
+    },
+    {
+      "glob": "org/languagetool/resource/en/english_synth.info"
+    },
+    {
+      "glob": "org/languagetool/resource/en/hunspell/ignore.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/hunspell/prohibit.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/hunspell/prohibit_custom.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/hunspell/spelling.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/hunspell/spelling_custom.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/hunspell/spelling_en-US.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/multiwords.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/removed.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/removed_custom.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/specific_case.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/en/word_definitions.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/eo/eo.profile"
+    },
+    {
+      "glob": "org/languagetool/resource/es/common_words.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/org/languagetool/tokenizers/segment-simple.srx"
+    },
+    {
+      "glob": "org/languagetool/resource/pt/common_words.txt"
+    },
+    {
+      "glob": "org/languagetool/resource/segment.srx"
+    },
+    {
+      "glob": "org/languagetool/resource/spelling_global.txt"
+    },
+    {
+      "glob": "org/languagetool/rules/en/coherency.txt"
+    },
+    {
+      "glob": "org/languagetool/rules/en/contractions.txt"
+    },
+    {
+      "glob": "org/languagetool/rules/en/grammar.xml"
+    },
+    {
+      "glob": "org/languagetool/rules/en/grammar_custom.xml"
+    },
+    {
+      "glob": "org/languagetool/rules/en/style.xml"
+    },
+    {
+      "glob": "org/languagetool/rules/en/synonyms.txt"
+    },
+    {
+      "glob": "org/languagetool/rules/en/wrongWordInContext.txt"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en_CA.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "jdk/xml/internal/META-INF/services/org.xml.sax.driver"
+    },
+    {
+      "bundle": "com.optimaize.langdetect.cybozu.util.messages"
+    },
+    {
+      "bundle": "com.sun.org.apache.xerces.internal.impl.xpath.regex.message"
+    },
+    {
+      "bundle": "org.languagetool.MessagesBundle"
+    }
+  ]
+}

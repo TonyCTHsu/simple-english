@@ -1,0 +1,3 @@
+kind: Breaking
+body: Platform gems now bundle the native LanguageTool server. Java downloads, SE_JAVA, SE_CACHE_DIR, and the se setup --dir option are no longer supported. Builds target macOS arm64 and Linux x86-64 with glibc 2.35 or newer.
+time: 2026-10-01T19:39:30.502609-07:00

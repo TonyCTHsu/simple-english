@@ -141,8 +141,8 @@ module SimpleEnglish
       # Preflight everything the spawn needs: a missing prerequisite
       # must fail fast with the real blocker named, not spawn a
       # doomed child and wait out 90 s.
-      unless File.exist?(install.server_jar) && install.java?
-        warn(install.java? ? install.setup_error : install.java_message)
+      unless install.executable?
+        warn install.setup_error
         return false
       end
       # One boot at a time: a concurrent lint that also found the
@@ -153,7 +153,7 @@ module SimpleEnglish
       with_spawn_lock do
         daemon = info
         unless daemon
-          warn "se: daemon not running; starting it (first lint takes ~15s)..."
+          warn "se: daemon not running; starting it (first lint may take a few seconds)..."
           spawn_daemon
           daemon = wait_for { info }
         end
@@ -185,10 +185,9 @@ module SimpleEnglish
         "(#{VERSION}). #{fix} Linting against it meanwhile."
     end
 
-    # A per-user lock keyed by the port, independent of the
-    # installation cache: daemon ownership is scoped to the port,
-    # so two lints with different SE_CACHE_DIR values still
-    # coordinate. flock releases when the block ends, even on
+    # A per-user lock keyed by the port: daemon ownership is scoped
+    # to the port, so concurrent lints coordinate across installs.
+    # flock releases when the block ends, even on
     # failure.
     def with_spawn_lock
       dir = File.join(Dir.home, ".cache", "simple_english")

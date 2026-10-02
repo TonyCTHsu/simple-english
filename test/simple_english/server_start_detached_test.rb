@@ -63,15 +63,13 @@ class ServerStartDetachedTest < Minitest::Test
     holder&.close
   end
 
-  def test_fails_fast_with_setup_message_when_the_jar_is_missing
-    in_tmpdir do |dir|
-      install = SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
-      SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
-        error = assert_raises(SimpleEnglish::Install::SetupError) do
-          SimpleEnglish::Server.start_detached(port: 28291, install: install)
-        end
-        assert_match(/Run `se setup`/, error.message)
+  def test_fails_fast_with_setup_message_when_the_executable_is_missing
+    install = SimpleEnglish::Install.new(executable: "/nonexistent/server")
+    SimpleEnglish::Client.stub :spawn_daemon, -> { flunk "must not spawn" } do
+      error = assert_raises(SimpleEnglish::Install::SetupError) do
+        SimpleEnglish::Server.start_detached(port: 28291, install: install)
       end
+      assert_match(/supported platform build/, error.message)
     end
   end
 
@@ -95,18 +93,15 @@ class ServerStartDetachedTest < Minitest::Test
       end
     end
     # The wait matches the child's own boot budget, not the 90 s
-    # default: a slow JVM boot must not read as failure.
+    # default: a slow native server boot must not read as failure.
     assert_equal SimpleEnglish::LanguageTool::TIMEOUT_SECONDS + 10, budget
     assert_reaped(child)
   end
 
   private
 
-  def fake_install(dir)
-    lt = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
-    FileUtils.mkdir_p(lt)
-    FileUtils.touch(File.join(lt, "languagetool-server.jar"))
-    SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
+  def fake_install(_dir)
+    SimpleEnglish::Install.new(executable: RbConfig.ruby)
   end
 
   def free_port

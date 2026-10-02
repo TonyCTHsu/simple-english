@@ -10,98 +10,46 @@
 
   <properties>
     <native.build.directory>${project.basedir}/target</native.build.directory>
-    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.languagetool</groupId>
-      <artifactId>language-en</artifactId>
+      <artifactId>languagetool-server</artifactId>
       <version>6.6</version>
       <exclusions>
         <exclusion>
-          <groupId>com.optimaize.languagedetector</groupId>
-          <artifactId>language-detector</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-validator</groupId>
-          <artifactId>commons-validator</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.github.resilience4j</groupId>
-          <artifactId>resilience4j-circuitbreaker</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.github.resilience4j</groupId>
-          <artifactId>resilience4j-micrometer</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.opentelemetry</groupId>
-          <artifactId>opentelemetry-semconv</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.micrometer</groupId>
-          <artifactId>micrometer-registry-prometheus</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.prometheus</groupId>
-          <artifactId>simpleclient</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.prometheus</groupId>
-          <artifactId>simpleclient_guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-pool2</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-backward-codecs</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.json</groupId>
-          <artifactId>json</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>tech.units</groupId>
-          <artifactId>indriya</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.github.java-diff-utils</groupId>
-          <artifactId>java-diff-utils</artifactId>
+          <groupId>org.languagetool</groupId>
+          <artifactId>language-all</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-nop</artifactId>
-      <version>2.0.16</version>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-en</artifactId>
+      <version>6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-ca</artifactId>
+      <version>6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-es</artifactId>
+      <version>6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-pt</artifactId>
+      <version>6.6</version>
     </dependency>
   </dependencies>
 
   <build>
     <directory>${native.build.directory}</directory>
-    <resources>
-      <resource>
-        <directory>${project.basedir}/../../rules</directory>
-        <includes>
-          <include>simple-english.xml</include>
-        </includes>
-        <targetPath>org/simpleenglish</targetPath>
-      </resource>
-    </resources>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.1</version>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>

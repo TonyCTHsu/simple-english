@@ -7,37 +7,30 @@ Gem::Specification.new do |spec|
   spec.version = SimpleEnglish::VERSION
   spec.authors = ["TonyCTHsu"]
   spec.summary = "Lint Markdown prose with the SimpleEnglish Plain-mode rules"
-  spec.description = "Pattern rules run on LanguageTool, counting rules in " \
-    "Ruby. Lints Markdown and code comments."
+  spec.description = "Lints Markdown prose and code comments with pattern " \
+    "and counting rules."
   spec.homepage = "https://github.com/TonyCTHsu/simple-english"
   spec.license = "MIT"
-  spec.requirements = ["Java 11 or newer (`se setup` locates it)"]
-
+  spec.platform = ENV.fetch("SIMPLE_ENGLISH_GEM_PLATFORM", Gem::Platform::RUBY)
   spec.metadata = {
     "homepage_uri" => spec.homepage,
     "source_code_uri" => spec.homepage,
     "changelog_uri" => "#{spec.homepage}/blob/v#{spec.version}/CHANGELOG.md"
   }
 
-  spec.files = Dir["lib/**/*.rb"] + Dir["rules/*.xml"] +
+  spec.files = Dir["lib/**/*.rb"] + Dir["libexec/**/*"] + Dir["rules/*.xml"] +
     ["bin/se", "LICENSE", "README.md", "docs/RULES.md"]
   spec.bindir = "bin"
   spec.executables = ["se"]
 
   spec.add_runtime_dependency "tree_sitter_language_pack", "~> 1.20"
   spec.add_runtime_dependency "thor", "~> 1.0"
-
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 6.0"
   spec.add_development_dependency "minitest-mock", "~> 5.27"
-  # rubyzip builds the zip fixtures that exercise the stdlib Zlib
-  # extractor in the tests.
-  spec.add_development_dependency "rubyzip", "~> 3.0"
-  # rexml parses the rule XML in bin/render-rules. It stopped
-  # shipping as a Ruby default gem in 4.x.
-  spec.add_development_dependency "rexml"
 
   # Bundled gems the suite requires under `bundle exec`: the require
   # shim refuses bundled gems that the lockfile omits.
   spec.add_development_dependency "json"
+  spec.add_development_dependency "rexml"
 end

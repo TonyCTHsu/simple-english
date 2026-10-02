@@ -20,6 +20,6 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, Ruby version, Java version, and how you installed the tool (gem or Docker image).
+      description: OS, CPU architecture, Ruby version, and how you installed the tool (gem or Docker image).
     validations:
       required: true

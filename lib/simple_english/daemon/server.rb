@@ -6,11 +6,9 @@
 # Failures raise typed errors (PortInUse, SetupError, InnerDied,
 # InnerTimeout). bin/se owns turning them into warnings and exit codes.
 
-require "fileutils"
 require "net/http"
 require "socket"
 require "tempfile"
-require "tmpdir"
 
 require_relative "../setup/install"
 require_relative "../client/daemon"
@@ -28,18 +26,10 @@ module SimpleEnglish
     end
 
     class InnerDied < ServerError; end
+
     class InnerTimeout < ServerError; end
 
     module_function
-
-    # LanguageTool's HTTP server has no --rulefile flag. Custom rules
-    # load from the classpath at this exact path.
-    def stage_rules(dir)
-      target = File.join(dir, "org/languagetool/rules/en/grammar_custom.xml")
-      FileUtils.mkdir_p(File.dirname(target))
-      FileUtils.cp(SimpleEnglish::LanguageTool::RULES_FILE, target)
-      target
-    end
 
     # Probes both loopback families: on IPv6-first resolvers a "localhost"
     # probe falls back to IPv4 and misses an IPv6 listener.
@@ -73,7 +63,7 @@ module SimpleEnglish
       daemon = Client.info(base_url: "http://localhost:#{port}")
       return unless daemon.is_a?(Hash)
       stop(daemon["pid"])
-      # The outer listener closes first. The inner JVM takes seconds
+      # The outer listener closes first. The inner server takes longer
       # longer. Both ports must free, or the next boot hits the inner
       # port and dies.
       deadline = Time.now + 10
@@ -98,9 +88,7 @@ module SimpleEnglish
     # takeover stops the old daemon: a reload that cannot boot must
     # leave the running daemon alive.
     def preflight_install(install)
-      return if File.exist?(install.server_jar) && install.java?
-      raise Install::SetupError,
-        install.java? ? install.setup_error : install.java_message
+      install.executable!
     end
     private_class_method :preflight_install
 
@@ -122,7 +110,7 @@ module SimpleEnglish
       args = ["--port", port.to_s]
       args.concat(["--dev-log", dev_log]) if dev_log
       pid = Client.spawn_daemon(*args)
-      # The child gives its inner JVM TIMEOUT_SECONDS to boot, and
+      # The child gives its inner server TIMEOUT_SECONDS to boot, and
       # the handshake answers only after that: wait the child's own
       # budget, not the default 90 s, or a slow boot reads as
       # failure while the child is still coming up.
@@ -145,23 +133,19 @@ module SimpleEnglish
     end
 
     def start(port: Client::DEFAULT_PORT, install: Install.from_env, log: $stderr)
-      rules_dir = Dir.mktmpdir("se-rules")
-      # The enabled IDs come from the staged file, so what LT loads
-      # and what each request enables can never diverge.
-      staged = stage_rules(rules_dir)
       enabled_rules = SimpleEnglish::LanguageTool.rule_ids
       daemon_info = {"version" => VERSION, "pid" => Process.pid,
                      "gem_digest" => Fingerprint.gem,
-                     "rules_digest" => Fingerprint.sha(File.read(staged))}
+                     "rules_digest" => Fingerprint.sha(File.read(LanguageTool::RULES_FILE))}
       # Preflight everything the replacement needs before the
       # takeover stops the old daemon.
       preflight_install(install)
       takeover(port)
       assert_port_free(port)
-      # The inner JVM lives on port + 1. Guard it too so an occupied
+      # The inner LanguageTool server lives on port + 1. Guard it too so an occupied
       # inner port raises in milliseconds instead of timing out later.
       assert_port_free(port + 1)
-      # The inner JVM's stderr goes to a file so failure messages can quote
+      # The inner native server's stderr goes to a file so failure messages can quote
       # its first line. Only an explicitly opened dev log (a File) is reused
       # for that. $stderr reports path "<STDERR>", so it creates a file
       # by that name in the CWD. Anything else falls back to a temp file
@@ -174,7 +158,7 @@ module SimpleEnglish
           inner_log.close
           inner_log.path
         end
-      inner = spawn_inner(install: install, port: port + 1, rules_dir: rules_dir,
+      inner = spawn_inner(install: install, port: port + 1,
         log_path: inner_log_path)
       # TCPServer.new binds synchronously: construction means ready, so
       # callers need no readiness polling. Closing the socket makes the
@@ -216,7 +200,7 @@ module SimpleEnglish
         break
       end
       monitor.kill if monitor.alive?
-      raise InnerDied, "inner LanguageTool server died. Rerun se serve." if inner_died
+      raise InnerDied, "inner native LanguageTool server died. Rerun se serve." if inner_died
     ensure
       if inner
         begin
@@ -227,7 +211,6 @@ module SimpleEnglish
         end
       end
       monitor&.kill if monitor&.alive?
-      FileUtils.remove_entry(rules_dir) if rules_dir
     end
 
     # Reaps the inner process and runs on_death (which stops the outer
@@ -243,32 +226,30 @@ module SimpleEnglish
     # Boots the inner LanguageTool server and blocks until it answers
     # /v2/check. Raises InnerDied when it dies during startup, and
     # InnerTimeout when it never becomes ready (the child is killed and
-    # reaped first, so a failed boot leaks no JVM). Both messages quote
+    # reaped first, so a failed boot leaks no process). Both messages quote
     # the inner log's first line.
-    def spawn_inner(install:, port:, rules_dir:, log_path:)
-      raise Install::SetupError, install.setup_error unless File.exist?(install.server_jar)
-      java = install.java!
+    def spawn_inner(install:, port:, log_path:)
+      executable = install.executable!
       begin
-        pid = Process.spawn(java,
-          "-cp", [install.server_jar, rules_dir].join(File::PATH_SEPARATOR),
-          "org.languagetool.server.HTTPServer", "--port", port.to_s,
+        pid = Process.spawn(executable, "--port", port.to_s,
           out: File::NULL, err: log_path)
       rescue Errno::ENOENT
-        # The java lookup can resolve to a path that no longer exists.
-        # Quote what was resolved so the crash names its cause.
-        raise ServerError, "cannot exec #{java.inspect}."
+        raise ServerError, "cannot exec #{executable.inspect}."
       end
       ready = false
       died = false
       deadline = Time.now + SimpleEnglish::LanguageTool::TIMEOUT_SECONDS
       until ready || died || Time.now > deadline
-        # A JVM that dies instantly must not be polled for the full timeout.
+        # A process that dies instantly must not be polled for the full timeout.
         # WNOHANG reaps it here, so nothing else may wait on this pid after.
         died = !!Process.wait(pid, Process::WNOHANG)
         break if died
         begin
           Net::HTTP.post_form(URI("http://localhost:#{port}/v2/check"),
-            {"language" => "en", "text" => "a"})
+            {"language" => "en",
+             "enabledRules" => SimpleEnglish::LanguageTool.rule_ids.first,
+             "enabledOnly" => "true",
+             "text" => "a"})
           ready = true
         rescue SystemCallError
           sleep 0.5
@@ -276,13 +257,13 @@ module SimpleEnglish
       end
       if died
         raise InnerDied,
-          "inner LanguageTool server exited during startup. " \
+          "inner native LanguageTool server exited during startup. " \
           "First log line: #{first_log_line(log_path)}"
       end
       unless ready
         kill_and_reap(pid)
         raise InnerTimeout,
-          "inner LanguageTool server did not start " \
+          "inner native LanguageTool server did not start " \
           "within #{SimpleEnglish::LanguageTool::TIMEOUT_SECONDS} seconds. " \
           "First log line: #{first_log_line(log_path)}"
       end

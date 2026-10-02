@@ -5,36 +5,26 @@ here. If you only want to lint prose, read the [README](../README.md).
 
 ## Layout
 
-The tree mirrors the architecture: one directory per domain, the
-client/daemon seam visible in `client/` and `daemon/`.
-
-- `lib/simple_english.rb` is the composition root: `lint_text`,
-  `lint_file`. `test/corpus_check.rb` runs the corpus pairs
-- `lib/simple_english/setup/` resolves the environment, once, at
-  the process edge. `languagetool.rb` holds the pinned-distro
-  facts: version, rules file, download. `install.rb` resolves the
-  on-machine installation (cache dir, jar paths, java). Build it
-  with `Install.from_env`. Tests construct installs directly, so no
-  test mutates ENV. `config.rb` reads `.simple-english.yml`, and
-  `fingerprint.rb` computes the identity digests for the handshake
-- `lib/simple_english/lint/` is the pipeline domain. `lint_plan.rb`
-  picks prose, code, or skip. `markdown.rb` strips Markdown.
-  `extractor.rb` and `annotated_text.rb` extract code comments and
-  map offsets back. `counts.rb` holds the counting rules, and
-  `suppressions.rb` applies `se: ignore`
-- Value objects live one per file: `finding.rb`, `paragraph.rb`,
-  `span.rb`, `segment.rb`, `result.rb`, `plain_text.rb`
-- `lib/simple_english/client/` is the client tier. `language_tool.rb`
-  speaks the LanguageTool wire protocol. The daemon's engine calls
-  it against the inner JVM. `daemon.rb` is the se daemon client:
-  probe, handshake, boot, lint
-- `lib/simple_english/daemon/` is the server tier. `engine.rb` runs
-  the daemon-side lint pipeline (Markdown and code-comment paths).
-  `http.rb` holds the HTTP/1.1 wire framing. `server.rb` holds the
-  lifecycle: staging, port guards, spawn/monitor, signals, cleanup.
-  Failures raise typed errors (`PortInUse`, `InnerDied`,
-  `InnerTimeout`). `cli.rb` at the top maps them to warnings and
-  exit codes
+- `lib/simple_english.rb` is the composition root: `lint_text`, `lint_file`, `corpus_test`
+- `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
+  and `annotated_text.rb` do text analysis: Markdown strip, sentence counts,
+  process helpers, comment extraction, offset mapping
+- Value objects live one per file: `finding.rb`, `paragraph.rb`, `span.rb`,
+  `segment.rb`, `result.rb`, `plain_text.rb`
+- `lib/simple_english/languagetool.rb` holds the pinned LanguageTool version,
+  rules file, and bundled executable path
+- `lib/simple_english/install.rb` resolves the native executable once at the
+  process edge. `SE_LANGUAGETOOL_EXECUTABLE` overrides the bundled path for
+  source builds and tests
+- `lib/simple_english/engine.rb` holds the daemon-side lint pipeline (Markdown
+  and code-comment paths)
+- `lib/simple_english/http.rb` holds the daemon's HTTP/1.1 wire framing
+- `lib/simple_english/server.rb` holds the daemon lifecycle: port guards,
+  native server spawn and monitoring, signals, and cleanup. Failures raise typed errors
+  (`PortInUse`, `InnerDied`, `InnerTimeout`). `cli.rb` maps them to
+  warnings and exit codes
+- `lib/simple_english/client.rb`, `config.rb`, and `suppressions.rb` hold the
+  daemon client, `.simple-english.yml`, and `se: ignore` directives
 
 All modules keep internals `private_class_method`.
 
@@ -64,9 +54,10 @@ ruby test/examples_check.rb   # every rule against its own examples
 ruby test/corpus_check.rb   # corpus pairs
 ```
 
-The last two need LanguageTool (run `bin/se setup` first, it
-downloads to `~/.cache/se`). If `java` is not on PATH, set
-`SE_JAVA`. The unit tests need the bundle's gems but no JVM.
+The last two need the native LanguageTool server. Build it with
+`ruby native/languagetool/build.rb`, then set
+`SE_LANGUAGETOOL_EXECUTABLE=tmp/native-languagetool/languagetool-native`.
+The unit tests do not need the native server.
 
 The self-lint lints through a daemon on port 8181. On macOS, a
 brew-installed se can run as a brew service. Its `KeepAlive` restarts
@@ -84,15 +75,15 @@ warning stops.
 
 ## Test strategy
 
-Five tiers. The theme: keep the JVM (LanguageTool) out of every test
-except the tests whose job is the JVM boundary.
+Four tiers. Most tests do not start the native LanguageTool server.
+Only boundary tests exercise the real executable.
 
 1. **Unit tests** (`test/simple_english/*_test.rb`, minitest): one class
    per file. `StubHTTPServer` in `test_helper.rb` fakes the LanguageTool
    and daemon endpoints. It reuses the daemon's own HTTP framing. So
    client, engine, and CLI tests run without a daemon.
-2. **Process tests** (`server_staging_test.rb` and friends): daemon
-   lifecycle with the JVM faked. A `sleep` script stands in for the
+2. **Process tests**: daemon lifecycle with the native server faked.
+   A `sleep` script stands in for the
    inner-death path. A dying script stands in for fast-fail. Real
    `TCPServer`s test the port guards.
 3. **Corpus pairs** (`test/corpus/NN-before.md` / `NN-after.md`): each
@@ -111,8 +102,8 @@ except the tests whose job is the JVM boundary.
    comment pipeline. The first lint boots the daemon.
 
 Priority order: line and column fidelity first, then failure paths
-(every `exit 2` has a test), then rule correctness. Last: a JVM-free
-unit suite that runs in one second.
+(every `exit 2` has a test), then rule correctness. Unit tests run
+without starting the native server.
 
 ## Adding a rule
 
@@ -127,8 +118,8 @@ unit suite that runs in one second.
 
 ## Developing in a container
 
-You need podman or Docker. The image holds Ruby, Java, LanguageTool, and
-the jar path, so no local setup is needed.
+You need podman or Docker. The released image holds Ruby and the native
+LanguageTool server, so no local setup is needed.
 
 ```
 podman build -t se-dev .
