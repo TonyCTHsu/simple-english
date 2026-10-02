@@ -1,0 +1,14 @@
+{
+  "name": "simple-english-dev",
+  "description": "Development marketplace for the simple-english Claude Code plugin",
+  "owner": {
+    "name": "TonyCTHsu"
+  },
+  "plugins": [
+    {
+      "name": "simple-english",
+      "source": "./integrations/claude-code",
+      "description": "Lint Markdown prose with the plain-English rules, with a hook that feeds findings back after every edit."
+    }
+  ]
+}
