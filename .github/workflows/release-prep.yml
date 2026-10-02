@@ -41,9 +41,16 @@ jobs:
           validation_level: error
           validation_depth: 100
 
+      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        id: toby
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
       - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         id: cpr
         with:
+          token: ${{ steps.toby.outputs.token }}
           branch: release/v${{ steps.version.outputs.version }}
           title: Release v${{ steps.version.outputs.version }}
           labels: release
