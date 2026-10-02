@@ -56,8 +56,10 @@ subcommand.
 
 ### `se mcp` (new, in the gem)
 
-- `lib/simple_english/daemon/mcp.rb` runs a stdio JSON-RPC server. It
-  answers `initialize`, `tools/list`, and `tools/call`.
+- `lib/simple_english/model_context_protocol.rb` runs a stdio JSON-RPC
+  server, as `SimpleEnglish::ModelContextProtocol`. It answers
+  `initialize`, `tools/list`, and `tools/call`. It is a front door for
+  the daemon, not a part of it.
 - It exposes one tool, `lint`, with a file path argument. It delegates to
   the same pipeline as the daemon.
 - The framing is hand-rolled, in the style of `daemon/http.rb`. No new

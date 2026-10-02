@@ -78,7 +78,7 @@ module SimpleEnglish
 
     desc "mcp", "Run the MCP stdio server (one JSON-RPC message per line)"
     def mcp
-      SimpleEnglish::Daemon::MCP.run
+      SimpleEnglish::ModelContextProtocol.run
       0
     end
 

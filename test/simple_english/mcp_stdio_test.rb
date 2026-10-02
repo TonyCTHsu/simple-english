@@ -18,7 +18,7 @@ module SimpleEnglish
     def run_script(input_lines, linter:)
       input = StringIO.new(input_lines.map { |line| JSON.generate(line) }.join("\n") + "\n")
       output = StringIO.new(+"")
-      Daemon::MCP.run(io: input, out: output, linter: linter)
+      ModelContextProtocol.run(io: input, out: output, linter: linter)
       output.string
     end
 
@@ -37,21 +37,21 @@ module SimpleEnglish
     def test_run_stays_silent_for_notifications
       input = StringIO.new(JSON.generate({"jsonrpc" => "2.0", "method" => "notifications/initialized"}) + "\n")
       output = StringIO.new(+"")
-      Daemon::MCP.run(io: input, out: output, linter: ->(_p) { [] })
+      ModelContextProtocol.run(io: input, out: output, linter: ->(_p) { [] })
       assert_equal "", output.string
     end
 
     def test_run_skips_blank_and_malformed_lines
       input = StringIO.new("\nnot json\n")
       output = StringIO.new("")
-      Daemon::MCP.run(io: input, out: output, linter: ->(_p) { [] })
+      ModelContextProtocol.run(io: input, out: output, linter: ->(_p) { [] })
       assert_equal "", output.string
     end
 
     def test_run_skips_json_that_is_not_an_object
       input = StringIO.new("\"just a string\"\n")
       output = StringIO.new("")
-      Daemon::MCP.run(io: input, out: output, linter: ->(_p) { [] })
+      ModelContextProtocol.run(io: input, out: output, linter: ->(_p) { [] })
       assert_equal "", output.string
     end
 

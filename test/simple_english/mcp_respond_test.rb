@@ -20,7 +20,7 @@ module SimpleEnglish
     end
 
     def test_initialize_echoes_supported_protocol_version
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(1, "initialize", {"protocolVersion" => "2025-06-18"}),
         linter: linter_returning([])
       )
@@ -31,7 +31,7 @@ module SimpleEnglish
     end
 
     def test_initialize_answers_latest_version_for_unsupported_request
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(1, "initialize", {"protocolVersion" => "1999-01-01"}),
         linter: linter_returning([])
       )
@@ -39,7 +39,7 @@ module SimpleEnglish
     end
 
     def test_tools_list_returns_the_lint_tool
-      response = Daemon::MCP.respond(request(2, "tools/list"), linter: linter_returning([]))
+      response = ModelContextProtocol.respond(request(2, "tools/list"), linter: linter_returning([]))
       tools = response.dig("result", "tools")
       assert_equal 1, tools.length
       tool = tools.first
@@ -54,7 +54,7 @@ module SimpleEnglish
         Finding.new(3, nil, nil, nil, "SE_COUNT_WORDS", "Too many words.")
       ]
       path = existing_file("a.md")
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(3, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
         linter: ->(_path) { findings }
       )
@@ -68,7 +68,7 @@ module SimpleEnglish
 
     def test_tools_call_answers_clean_when_no_findings
       path = existing_file("a.md")
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(4, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
         linter: linter_returning([])
       )
@@ -79,7 +79,7 @@ module SimpleEnglish
 
     def test_tools_call_reports_unreachable_daemon_as_json_rpc_error
       path = existing_file("a.md")
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(5, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
         linter: ->(_path) {}
       )
@@ -89,7 +89,7 @@ module SimpleEnglish
     end
 
     def test_tools_call_rejects_a_missing_path
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(6, "tools/call", {"name" => "lint", "arguments" => {}}),
         linter: linter_returning([])
       )
@@ -99,7 +99,7 @@ module SimpleEnglish
     end
 
     def test_tools_call_rejects_a_directory
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(7, "tools/call", {"name" => "lint", "arguments" => {"path" => __dir__}}),
         linter: linter_returning([])
       )
@@ -109,7 +109,7 @@ module SimpleEnglish
     end
 
     def test_tools_call_rejects_a_file_that_does_not_exist
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(8, "tools/call", {"name" => "lint", "arguments" => {"path" => "no/such/file.md"}}),
         linter: linter_returning([])
       )
@@ -119,7 +119,7 @@ module SimpleEnglish
     end
 
     def test_tools_call_rejects_an_unknown_tool
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(9, "tools/call", {"name" => "nope", "arguments" => {}}),
         linter: linter_returning([])
       )
@@ -128,19 +128,19 @@ module SimpleEnglish
     end
 
     def test_unknown_method_answers_method_not_found
-      response = Daemon::MCP.respond(request(10, "no/such/method"), linter: linter_returning([]))
+      response = ModelContextProtocol.respond(request(10, "no/such/method"), linter: linter_returning([]))
       assert_equal(-32601, response.dig("error", "code"))
       assert_equal 10, response.fetch("id")
     end
 
     def test_request_without_method_answers_invalid_request
-      response = Daemon::MCP.respond({"jsonrpc" => "2.0", "id" => 11}, linter: linter_returning([]))
+      response = ModelContextProtocol.respond({"jsonrpc" => "2.0", "id" => 11}, linter: linter_returning([]))
       assert_equal(-32600, response.dig("error", "code"))
       assert_equal 11, response.fetch("id")
     end
 
     def test_array_params_are_treated_as_absent
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(12, "initialize", ["bad"]),
         linter: linter_returning([])
       )
@@ -148,7 +148,7 @@ module SimpleEnglish
     end
 
     def test_null_params_on_tools_call_answer_unknown_tool
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         {"jsonrpc" => "2.0", "id" => 13, "method" => "tools/call", "params" => nil},
         linter: linter_returning([])
       )
@@ -156,7 +156,7 @@ module SimpleEnglish
     end
 
     def test_array_arguments_are_treated_as_absent
-      response = Daemon::MCP.respond(
+      response = ModelContextProtocol.respond(
         request(14, "tools/call", {"name" => "lint", "arguments" => ["bad"]}),
         linter: linter_returning([])
       )
@@ -167,7 +167,7 @@ module SimpleEnglish
 
     def test_notification_without_id_returns_nil
       notification = {"jsonrpc" => "2.0", "method" => "notifications/initialized"}
-      assert_nil Daemon::MCP.respond(notification, linter: linter_returning([]))
+      assert_nil ModelContextProtocol.respond(notification, linter: linter_returning([]))
     end
   end
 end

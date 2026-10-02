@@ -21,7 +21,7 @@ require_relative "simple_english/client/language_tool"
 require_relative "simple_english/client/daemon"
 require_relative "simple_english/daemon/engine"
 require_relative "simple_english/daemon/http"
-require_relative "simple_english/daemon/mcp"
+require_relative "simple_english/model_context_protocol"
 require_relative "simple_english/daemon/server"
 
 module SimpleEnglish
