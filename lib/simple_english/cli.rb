@@ -20,7 +20,11 @@ module SimpleEnglish
           (first == "-" || !first.start_with?("-"))
         given_args = ["lint", *given_args]
       end
-      super
+      # Thor's own commands (help, tree) return junk like nil or a
+      # Hash, not an exit status. Contract: start always returns an
+      # Integer so every caller (bin/se, tests) can exit on it.
+      status = super
+      status.is_a?(Integer) ? status : 0
     end
 
     # The test entry point. It keeps the old module interface.

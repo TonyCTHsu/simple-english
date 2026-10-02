@@ -32,6 +32,10 @@ class CLIDispatchTest < Minitest::Test
     out, = capture_io { assert_equal 2, SimpleEnglish::CLI.run([]) }
     assert_match(/lint/, out)
   end
+
+  def test_thor_builtin_tree_returns_an_exit_status
+    capture_io { assert_equal 0, SimpleEnglish::CLI.run(["tree"]) }
+  end
 end
 
 class CLIServeTest < Minitest::Test
