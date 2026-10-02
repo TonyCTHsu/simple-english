@@ -134,22 +134,5 @@ jobs:
         run: bin/e2e-story
 
       - name: Boot the daemon in an empty environment
-        # launchd starts brew services with no LANG and no LC_ALL.
-        # The daemon must boot anyway. This is the exact 0.4.0 crash:
-        # run it here so it can never come back unnoticed.
-        run: |
-          env -i PATH="$PATH" HOME="$HOME" se serve --port 8281 &
-          daemon=$!
-          for _ in $(seq 1 60); do
-            if curl -fsS http://localhost:8281/ >/dev/null 2>&1; then
-              echo "the daemon answers under an empty environment"
-              kill "$daemon" 2>/dev/null || true
-              wait "$daemon" 2>/dev/null || true
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "the daemon never answered under an empty environment" >&2
-          kill "$daemon" 2>/dev/null || true
-          wait "$daemon" 2>/dev/null || true
-          exit 1
+        # See the script header for why this exists.
+        run: .github/scripts/daemon-empty-env.sh
