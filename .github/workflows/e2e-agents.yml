@@ -76,7 +76,7 @@ jobs:
 
       - name: Run the scenario
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           SE_E2E_PI_MODEL: ${{ vars.E2E_PI_MODEL }}
         run: bin/e2e-agents pi
 

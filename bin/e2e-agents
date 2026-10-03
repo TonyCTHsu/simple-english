@@ -47,7 +47,7 @@ PREFLIGHTS = {
     headers: ->(key) { ["Authorization: Bearer #{key}"] }
   },
   "pi" => {
-    keys: ["GOOGLE_API_KEY"],
+    keys: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
     url: "https://generativelanguage.googleapis.com/v1beta/models",
     headers: ->(key) { ["x-goog-api-key: #{key}"] }
   }
@@ -67,18 +67,28 @@ def preflight(agent, model)
   spec = PREFLIGHTS.fetch(agent)
   key = spec.fetch(:keys).map { |name| ENV[name] }.compact.first
   return unless key
-  out, _err, status = Open3.capture3("curl", "-sf", "-H", *spec.fetch(:headers).call(key),
-    spec.fetch(:url))
-  unless status.success?
-    abort "#{agent}: the provider rejected the key, so the model cannot be confirmed."
+  out, _err, _status = Open3.capture3("curl", "-s", "-w", "\n%{http_code}",
+    "-H", *spec.fetch(:headers).call(key), spec.fetch(:url))
+  http = out.lines.last.to_s.strip
+  body = out.lines[0..-2].join
+  unless http == "200"
+    hint = case http
+    when "400", "401", "403" then "the key was rejected. Check the secret value"
+    when "402" then "the account has no credit. Add billing at the provider"
+    when "", "000" then "the request never reached the provider. Check the runner network"
+    else "unexpected answer from the provider"
+    end
+    abort "#{agent}: preflight got HTTP #{http} from the model list: #{hint}."
   end
-  body = JSON.parse(out)
-  ids = (body["data"] || body["models"] || []).map do |entry|
+  parsed = JSON.parse(body)
+  ids = (parsed["data"] || parsed["models"] || []).map do |entry|
     (entry["id"] || entry["name"]).to_s.sub(/\Amodels\//, "")
   end
   return if ids.include?(model)
   abort "#{agent}: #{model} is not in the provider's list. " \
     "Pick one and set #{MODEL_ENV.fetch(agent)}:\n#{ids.join("\n")}"
+rescue JSON::ParserError
+  abort "#{agent}: the provider's model list was not valid JSON. Check the preflight URL in this script."
 end
 
 def scenario(name)
@@ -96,6 +106,17 @@ end
 def clean?(note)
   _out, status = Open3.capture2e("se", "lint", note)
   status.exitstatus.zero?
+end
+
+# Print what the agent left behind, inside the scenario dir before it
+# vanishes. A FAIL without this shows nothing but the word FAIL.
+def diagnose(note, agent_output = nil)
+  out, _status = Open3.capture2e("se", "lint", note)
+  puts "  findings still in note.md after the run:"
+  out.each_line { |line| puts "  #{line}" }
+  return unless agent_output
+  puts "  last of the agent's output:"
+  agent_output.to_s.lines.last(12).each { |line| puts "  #{line}" }
 end
 
 def binary?(name)
@@ -141,7 +162,9 @@ def run_claude
         "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
         "-p", "--permission-mode", "acceptEdits", "--output-format", "json",
         "--model", model_for("claude"), PROMPT)
-      [status.success? && clean?(File.join(dir, "note.md")), claude_usage(out)]
+      ok = status.success? && clean?(File.join(dir, "note.md"))
+      diagnose(File.join(dir, "note.md"), status.success? ? nil : "exit #{status.exitstatus}") unless ok
+      [ok, claude_usage(out)]
     end
   end
 end
@@ -151,7 +174,7 @@ def run_pi
     scenario("pi") do |dir|
       # A scratch agent dir: a user-level copy of the same tool would
       # collide with the package's tool of the same name. Credentials
-      # come from the environment (GOOGLE_API_KEY, or
+      # come from the environment (GEMINI_API_KEY for Google, or
       # SE_E2E_PI_PROVIDER for a different provider).
       home = File.join(dir, "pi-home")
       FileUtils.mkdir_p(home)
@@ -160,6 +183,7 @@ def run_pi
       ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi"), "-l") &&
         system(env, "pi", "-a", "-p", "--provider", provider, "--model", model_for("pi"), PROMPT) &&
         clean?(File.join(dir, "note.md"))
+      diagnose(File.join(dir, "note.md"), "no pi output captured") unless ok
       [ok, nil]
     end
   end
@@ -197,8 +221,11 @@ def run_codex
           "-m", model_for("codex"), PROMPT)
         ran = status.success?
         usage = codex_usage(out, err)
+        output = out + err
       end
-      [ran && clean?(File.join(dir, "note.md")), usage]
+      ok = ran && clean?(File.join(dir, "note.md"))
+      diagnose(File.join(dir, "note.md"), output) unless ok
+      [ok, usage]
     end
   end
 end
