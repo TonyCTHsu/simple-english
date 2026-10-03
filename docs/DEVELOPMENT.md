@@ -5,36 +5,22 @@ here. If you only want to lint prose, read the [README](../README.md).
 
 ## Layout
 
-The tree mirrors the architecture: one directory per domain, the
-client/daemon seam visible in `client/` and `daemon/`.
-
-- `lib/simple_english.rb` is the composition root: `lint_text`,
-  `lint_file`. `test/corpus_check.rb` runs the corpus pairs
-- `lib/simple_english/setup/` resolves the environment, once, at
-  the process edge. `languagetool.rb` holds the pinned-distro
-  facts: version, rules file, download. `install.rb` resolves the
-  on-machine installation (cache dir, jar paths, java). Build it
-  with `Install.from_env`. Tests construct installs directly, so no
-  test mutates ENV. `config.rb` reads `.simple-english.yml`, and
-  `fingerprint.rb` computes the identity digests for the handshake
-- `lib/simple_english/lint/` is the pipeline domain. `lint_plan.rb`
-  picks prose, code, or skip. `markdown.rb` strips Markdown.
-  `extractor.rb` and `annotated_text.rb` extract code comments and
-  map offsets back. `counts.rb` holds the counting rules, and
-  `suppressions.rb` applies `se: ignore`
-- Value objects live one per file: `finding.rb`, `paragraph.rb`,
-  `span.rb`, `segment.rb`, `result.rb`, `plain_text.rb`
-- `lib/simple_english/client/` is the client tier. `language_tool.rb`
-  speaks the LanguageTool wire protocol. The daemon's engine calls
-  it against the inner JVM. `daemon.rb` is the se daemon client:
-  probe, handshake, boot, lint
-- `lib/simple_english/daemon/` is the server tier. `engine.rb` runs
-  the daemon-side lint pipeline (Markdown and code-comment paths).
-  `http.rb` holds the HTTP/1.1 wire framing. `server.rb` holds the
-  lifecycle: staging, port guards, spawn/monitor, signals, cleanup.
-  Failures raise typed errors (`PortInUse`, `InnerDied`,
-  `InnerTimeout`). `cli.rb` at the top maps them to warnings and
-  exit codes
+- `lib/simple_english.rb` is the composition root: `lint_text` and `lint_file`
+- `lint/` holds text analysis, suppression handling, and value objects
+- `setup/languagetool.rb` holds pinned engine facts and the rules path
+- `setup/install.rb` resolves the native executable once at the process edge.
+  `SE_LANGUAGETOOL_EXECUTABLE` overrides the bundled path for source builds
+  and tests
+- `client/language_tool.rb` speaks the inner HTTP protocol.
+  `client/daemon.rb` probes and starts the public daemon
+- `daemon/engine.rb` holds the lint pipeline, `daemon/http.rb` holds HTTP
+  framing, and `daemon/server.rb` owns process lifecycle. Server failures
+  raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
+- `setup/config.rb` handles `.simple-english.yml`
+- `cli.rb` maps results and failures to output and exit codes
+- [`native/languagetool/README.md`](../native/languagetool/README.md)
+  documents native compilation, reachability metadata, verification,
+  runtime integration, and release targets
 
 All modules keep internals `private_class_method`.
 
@@ -64,9 +50,10 @@ ruby test/examples_check.rb   # every rule against its own examples
 ruby test/corpus_check.rb   # corpus pairs
 ```
 
-The last two need LanguageTool (run `bin/se setup` first, it
-downloads to `~/.cache/se`). If `java` is not on PATH, set
-`SE_JAVA`. The unit tests need the bundle's gems but no JVM.
+The last two need the native LanguageTool server. Build it with
+`ruby native/languagetool/build.rb`, then set
+`SE_LANGUAGETOOL_EXECUTABLE=tmp/native-languagetool/languagetool-native`.
+The unit tests do not need the native server.
 
 The self-lint lints through a daemon on port 8181. On macOS, a
 brew-installed se can run as a brew service. Its `KeepAlive` restarts
@@ -84,35 +71,36 @@ warning stops.
 
 ## Test strategy
 
-Five tiers. The theme: keep the JVM (LanguageTool) out of every test
-except the tests whose job is the JVM boundary.
+Five tiers. Most tests do not start the native LanguageTool server.
+Only boundary tests exercise the real executable.
 
 1. **Unit tests** (`test/simple_english/*_test.rb`, minitest): one class
    per file. `StubHTTPServer` in `test_helper.rb` fakes the LanguageTool
    and daemon endpoints. It reuses the daemon's own HTTP framing. So
    client, engine, and CLI tests run without a daemon.
-2. **Process tests** (`server_staging_test.rb` and friends): daemon
-   lifecycle with the JVM faked. A `sleep` script stands in for the
+2. **Process tests**: daemon lifecycle with the native server faked.
+   A `sleep` script stands in for the
    inner-death path. A dying script stands in for fast-fail. Real
    `TCPServer`s test the port guards.
 3. **Corpus pairs** (`test/corpus/NN-before.md` / `NN-after.md`): each
    rule triggers on its before file. It stays silent on its after file.
    The after file is the document-level false-positive guard.
-4. **LanguageTool boundary** (env-gated, skips locally):
+4. **LanguageTool boundary**: with a built native executable,
    `examples_check.rb` proves each XML rule fires on its incorrect
    example. It proves the rule stays silent on its correct example.
    `roundtrip_test.rb` and the daemon end-to-end test check offset
    mapping and the full serve → lint path with a real daemon.
-5. **CI user story** (`bin/e2e-story`): CI's `e2e` job builds and
-   installs the gem, runs `se setup`, then runs this script. It lints
+5. **CI user story** (`bin/e2e-story`): CI builds and installs the
+   platform gem, then runs this script without an executable override.
+   It lints
    every corpus pair outside the repo, so the corpus has one CI
    home. It asserts exit codes: findings on each before file, clean
    on each after file. It also lints a code comment through the
    comment pipeline. The first lint boots the daemon.
 
 Priority order: line and column fidelity first, then failure paths
-(every `exit 2` has a test), then rule correctness. Last: a JVM-free
-unit suite that runs in one second.
+(every `exit 2` has a test), then rule correctness. Unit tests run
+without starting the native server.
 
 ## Adding a rule
 
@@ -124,22 +112,6 @@ unit suite that runs in one second.
 4. Verify with `ruby test/examples_check.rb` (per-rule isolation), then
    `ruby test/corpus_check.rb` (rule interaction), then lint a real document
    by eye.
-
-## Developing in a container
-
-You need podman or Docker. The image holds Ruby, Java, LanguageTool, and
-the jar path, so no local setup is needed.
-
-```
-podman build -t se-dev .
-podman run --rm --entrypoint ruby -v "$PWD":/work -w /work se-dev test/run.rb
-podman run --rm -v "$PWD":/work -w /work se-dev README.md
-```
-
-The image runs `se` as its entrypoint. Pass `--entrypoint` to run
-something else, like the test suite above. Pass
-file arguments as relative paths. Then the findings print paths that
-match your checkout.
 
 ## Releasing
 

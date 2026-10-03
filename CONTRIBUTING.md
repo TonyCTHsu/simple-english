@@ -33,5 +33,5 @@ invite you as a collaborator.
 
 ## Run the tests on your machine
 
-Read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the layout, the
-test strategy, and the container setup.
+Read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the layout and
+test strategy.

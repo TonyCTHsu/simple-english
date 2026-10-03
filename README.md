@@ -41,9 +41,8 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-**Requirements:** On macOS, Homebrew covers everything. On Linux,
-Windows, or CI, you need Ruby 3.3 or newer and Java 11 or newer for
-LanguageTool. The Docker image bundles both.
+**Requirement:** Ruby 3.3 or newer on macOS arm64, or Linux x86-64
+with glibc 2.35 or newer.
 
 ### Homebrew (macOS)
 
@@ -52,37 +51,20 @@ brew install TonyCTHsu/tap/simple-english
 brew services start simple-english
 ```
 
-Homebrew installs Ruby and Java alongside, so the machine needs
-neither. The service keeps a background daemon running. Its first
-start downloads LanguageTool (about 300 MB), and later lints take
-milliseconds. Run `brew services stop simple-english` to stop it.
+Homebrew installs Ruby and the lint engine alongside the CLI. The
+service keeps a background daemon running. Run
+`brew services stop simple-english` to stop it.
 
-### Ruby gem (Linux, Windows, CI)
+### Ruby gem (supported platforms and CI)
 
 ```bash
 gem install simple_english
-se setup    # run once: downloads LanguageTool, locates Java, verifies both
 se README.md
 ```
 
-If `java` is not on PATH, set `SE_JAVA` to your java binary.
-
-### Container
-
-The image holds Ruby, Java, and LanguageTool, so it needs no setup:
-
-```bash
-docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
-```
-
-### Git repository
-
-Run `bundle install`, then use `bin/se`.
-
 ## Usage
 
-Lint files, directories, or stdin. From a checkout, the same commands
-run through `bin/se`:
+Lint files, directories, or stdin:
 
 ```bash
 se README.md
@@ -113,7 +95,7 @@ se --format sarif src/ > results.sarif
 
 - `0`: no findings
 - `1`: findings
-- `2`: setup error
+- `2`: input, configuration, installation, or daemon error
 
 ### CI
 
@@ -132,7 +114,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
       - run: gem install simple_english
-      - run: se setup
       - run: se --format sarif . > lint.sarif
       - run: se .
       - uses: github/codeql-action/upload-sarif@v3
@@ -177,11 +158,11 @@ In a code comment:
 
 ## The background daemon
 
-The CLI runs a small background server on your machine. The first
-lint starts it, which takes about 15 seconds. Later lints take
-milliseconds.
+The first lint starts the daemon automatically. Later lints use the
+running daemon.
 
-The first lint after a gem update prints a warning. Run `se serve --detached` then.
+The first lint after a gem update prints a warning. Run
+`se serve --detached` then.
 It stops the old daemon and starts the new one in the
 background. You never talk to the daemon directly. Its HTTP
 interface is internal and can change in any release.
@@ -209,8 +190,8 @@ We ported all 67 rules to Vale and ran the corpus on both engines.
 About 60 rules behave the same. Vale has no check for the em-dash
 and semicolon rules: its checks see words, not punctuation. Its
 tagger also mislabels verbs, so the condition-first rule stays
-silent. The rules here are LanguageTool XML with examples that CI
-verifies. Closing the Vale gaps needs scripts or an external
+silent. The rules here include examples that CI verifies. Closing
+the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 

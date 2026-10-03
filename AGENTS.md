@@ -9,7 +9,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   the daemon HTTP API
 - `docs/RULES.md` lists every rule in prose. Regenerate it with
   `bin/render-rules` after a rule change.
-- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules, container).
+- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules).
   `docs/RELEASING.md` holds the release flow (prepare, merge, publish)
 
 ## Branches
@@ -53,8 +53,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - The tree groups files by domain: `setup/`, `lint/`, `client/`,
   `daemon/`
 - `setup/` resolves the environment once, at the process edge. It
-  holds `languagetool.rb` (pinned-distro facts), `install.rb`
-  (cache dir, jar paths, java), `config.rb`, and `fingerprint.rb`
+  holds `languagetool.rb` (pinned engine facts), `install.rb`
+  (bundled executable), `config.rb`, and `fingerprint.rb`
 - `lint/` is the pipeline domain: `lint_plan.rb`, `markdown.rb`,
   `extractor.rb`, `annotated_text.rb`, `counts.rb`, `suppressions.rb`
 - `client/` is the client tier. `language_tool.rb` speaks the
@@ -74,11 +74,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   `tree_sitter_language_pack` for comment extraction and Markdown
   structure, and `thor` for the CLI. Any further runtime dependency
   needs a stated reason here first. (Thor was a
-  user-directed refactor, 2026-02-27.) The LanguageTool download
-  unpacks on stdlib `Zlib`. It replaced curl and unzip, then
-  `rubyzip`, which is now dev-only (2026-10-02). BYOR removal
-  dropped `rexml` from the runtime list. It is dev-only now too,
-  for `bin/render-rules` (2026-10-02).
+  user-directed refactor, 2026-02-27.) Platform gems bundle a native
+  LanguageTool server. Runtime no longer depends on a JVM (2026-10-01).
+  `rexml` remains dev-only for `bin/render-rules` (2026-10-02).
 - Dev and test tools are the exception. Pick the best tool for the
   job even when it adds a dev-only dependency. Record it here with a
   one-line reason. Keep such tools out of the gemspec runtime list.
@@ -86,8 +84,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   bundled gem alone is not enough, because `bundle exec` cannot
   require a bundled gem that the lockfile omits. `minitest-mock`
   restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
-  Both are dev-only, in the gemspec. `rubyzip` builds the zip fixtures
-  for the stdlib Zlib extractor tests (2026-10-02). `rexml` parses
+  Both are dev-only, in the gemspec. `rexml` parses
   the rule XML in `bin/render-rules`. It stopped shipping as a Ruby
   default gem in 4.x (2026-10-02). `changie` (a brew
   binary, not
@@ -120,18 +117,20 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Tests
 
-- `rake lint`: self-lint the repo's own prose. CI's `rules` job runs it,
+- `rake lint`: self-lint the repo's own prose. CI's `native` job runs it,
   then `ruby test/examples_check.rb` for the rule examples. The
-  `unit` job runs `rake test` on the Ruby matrix. CI adds
-  `standardrb`, `actionlint`, `hadolint`, and an `e2e` job on top.
-  The e2e job installs the built gem and runs `se setup`.
-  It then runs `bin/e2e-story`, which lints the corpus and a code
-  comment outside the repo. The corpus has that one CI home. standardrb stays out of the bundle.
+  `unit` job runs `rake test` on the supported-platform Ruby matrix.
+  CI adds `standardrb`, `actionlint`, and `hadolint` on top. The
+  `native` job installs the built platform gem, then runs
+  `bin/e2e-story` without an executable override. It lints the corpus
+  and a code comment outside the repo. The corpus has that one CI
+  home. standardrb stays out of the bundle.
   Reason: rubocop pins `json ~> 2.3`,
   and Ruby 4.0's default json gem is 3.x. Bundling it breaks
   `bundle exec` on 4.0
 - `rake test`: unit tests only, no LanguageTool needed
 - `ruby test/examples_check.rb` and `ruby test/corpus_check.rb`: need
-  LanguageTool (run `bin/se setup` first)
+  the native LanguageTool server. Set `SE_LANGUAGETOOL_EXECUTABLE` for a
+  source-tree build
 
 See `docs/DEVELOPMENT.md` for the full test strategy.

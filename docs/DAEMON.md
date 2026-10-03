@@ -7,24 +7,20 @@ reach the daemon.
 
 ## Why a daemon
 
-LanguageTool is a JVM process. A cold start takes seconds, so the
-CLI keeps a daemon running between lints. The first lint starts it
-automatically. Later lints take milliseconds.
+Starting the lint engine takes time, so the CLI keeps a daemon running
+between lints. The first lint starts it automatically. Later lints
+reuse it.
 
 ## Start
 
-The first lint starts the daemon automatically (about 15 seconds
-once, then you need Java and one run of `se setup`). Later lints hit
-the running daemon and take milliseconds. To start it ahead of time,
-or to replace one after a gem update:
+The first lint starts the daemon automatically. Later lints use the
+running daemon. To start it ahead of time:
 
 ```bash
 se serve --detached
 ```
 
 ## The HTTP wire (internal)
-
-## The HTTP API
 
 POST to `/lint` with form fields:
 
@@ -44,12 +40,6 @@ curl -d "text=x = 1 # Don't do this." -d "language=python" http://localhost:8181
 # code-comment linting uses positions in the source file
 ```
 
-GET / answers the handshake:
-
-```json
-{"version": "0.2.0", "pid": 123, "gem_digest": "…", "rules_digest": "…"}
-```
-
 `gem_digest` covers the gem code and the built-in rules. The CLI
 compares it at every lint.
 
@@ -61,35 +51,19 @@ and lints against the old code meanwhile. The warning names
 says `Update this gem` instead: `se serve` from an older CLI
 boots an older daemon in its place.
 
-`rules_digest` covers the staged rule set. Every daemon stages the
-same built-in rules, so a mismatch now only means a different gem
-version, which the `gem_digest` mismatch already reports. The field
-stays in the handshake for older clients.
+`rules_digest` covers the built-in rules. A mismatch now only means a
+different gem version, which the `gem_digest` mismatch already reports.
+The field stays in the handshake for older clients.
 
 The daemon is machine-global: one per port, shared by every
 project. Every project lints with the same built-in rules.
-
-## No Java? Run the CLI in a container
-
-The image holds Ruby, Java, and LanguageTool. Lint with it in one
-shot when the machine has no Java:
-
-```bash
-docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
-```
-
-The daemon also runs in a container, with `serve` as the image
-entrypoint. A user who needs that knows why. The CLI reaches a
-remote daemon through `SE_SERVER_URL`. Both stay undocumented on
-purpose: the wire is internal, and a remote daemon is never
-restarted for you.
 
 ## Lifecycle
 
 - Stop it with Ctrl-C or `kill` (TERM). If the inner server dies on
   its own, the daemon exits with code 2.
-- A lint starts the daemon when the port is cold (the first lint
-  takes about 15 s). A lint never replaces a running daemon:
+- A lint starts the daemon when the port is cold. A lint never
+  replaces a running daemon:
   `se serve` does that.
 - `se serve` stops a running se daemon of its own, then boots in its
   place. A service that does not answer the se handshake keeps the

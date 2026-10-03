@@ -1,5 +1,0 @@
-# DL3008 wants apt packages pinned to exact versions. The base image
-# tag moves, so a pin goes stale and breaks the build on the next
-# refresh. default-jre-headless follows the distro instead.
-ignored:
-  - DL3008

@@ -43,20 +43,94 @@ jobs:
 
   gem:
     needs: release
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            platform: x86_64-linux
+          - runner: macos-15-xlarge
+            platform: arm64-darwin
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
     permissions:
+      attestations: write
       contents: write
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
+        with:
+          distribution: graalvm
+          version: "25.0"
+          java-version: "25.0.4.1.1"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
+
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: "3.3"
           bundler-cache: true
-      - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
+
+      - name: Build and verify native LanguageTool server
+        run: |
+          ruby native/languagetool/build.rb
+          ruby native/languagetool/verify.rb \
+            "$(cat tmp/native-languagetool/classpath)" \
+            tmp/native-languagetool/languagetool-native
+          mkdir -p libexec/simple_english
+          install -m 0755 tmp/native-languagetool/languagetool-native \
+            libexec/simple_english/languagetool-server
+          mkdir -p dist
+          tar -C libexec -czf "dist/languagetool-server-${PLATFORM}.tar.gz" \
+            simple_english
+          cp tmp/native-languagetool/languagetool-native.sbom.json \
+            "dist/languagetool-server-${PLATFORM}.sbom.json"
+          ruby -rdigest -e \
+            'path = ARGV.fetch(0); puts "#{Digest::SHA256.file(path).hexdigest}  #{File.basename(path)}"' \
+            "dist/languagetool-server-${PLATFORM}.tar.gz" \
+            > "dist/languagetool-server-${PLATFORM}.tar.gz.sha256"
+        env:
+          NATIVE_IMAGE_PARALLELISM: "4"
+          PLATFORM: ${{ matrix.platform }}
+
+      - name: Build platform gem
+        run: |
+          gem build simple_english.gemspec \
+            --output "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          SIMPLE_ENGLISH_GEM_PLATFORM: ${{ matrix.platform }}
+          VERSION: ${{ needs.release.outputs.version }}
+
+      - name: Verify platform gem
+        run: |
+          gem install --no-document "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+          bin/e2e-story
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          VERSION: ${{ needs.release.outputs.version }}
+
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ github.workspace }}/dist/*
+
+      - name: Upload release artifacts
+        run: gh release upload "v${VERSION}" dist/* --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release.outputs.version }}
+
+      - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+
+      - name: Publish platform gem
+        run: gem push "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          VERSION: ${{ needs.release.outputs.version }}
 
   image:
     needs: [release, gem]
@@ -76,7 +150,7 @@ jobs:
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: |
             VERSION=${{ needs.release.outputs.version }}
           cache-from: type=gha

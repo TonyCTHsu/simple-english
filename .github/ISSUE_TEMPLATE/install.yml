@@ -1,12 +1,12 @@
 name: Installation problem
-description: The tool does not install, set up, or start.
+description: The tool does not install or start.
 labels: ["bug", "installation"]
 body:
   - type: textarea
     id: tried
     attributes:
       label: What did you try?
-      description: The command you ran, for example `se setup` or the Docker command.
+      description: The install or lint command you ran.
     validations:
       required: true
   - type: textarea
@@ -20,6 +20,6 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, Ruby version, Java version, and how you installed the tool (gem or Docker image).
+      description: OS, CPU architecture, Ruby version, and how you installed the gem.
     validations:
       required: true

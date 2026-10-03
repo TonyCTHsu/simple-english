@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# The command-line interface: Thor commands for lint, serve, and
-# setup. bin/se is a thin runner over this, so the installed
-# gem's RubyGems shim can load it.
+# The command-line interface: Thor commands for lint and serve.
+# bin/se is a thin runner over this, so the installed gem's RubyGems
+# shim can load it.
 
 require "thor"
 require_relative "../simple_english"
@@ -31,10 +31,6 @@ module SimpleEnglish
     def self.run(argv)
       start(argv)
     end
-
-    # How each Install.java_source found its java, for `se setup`'s
-    # report line.
-    JAVA_SOURCES = {env: "SE_JAVA", path: "PATH", homebrew: "Homebrew fallback"}.freeze
 
     default_task :lint
     desc "lint FILE_OR_DIR...", "Lint Markdown prose and code comments (- reads stdin)"
@@ -70,7 +66,7 @@ module SimpleEnglish
       results.empty? ? 0 : 1
     end
 
-    desc "version", "Print the gem version. The container image tag is v plus this."
+    desc "version", "Print the gem version"
     def version
       puts SimpleEnglish::VERSION
       0
@@ -104,29 +100,6 @@ module SimpleEnglish
       SimpleEnglish::Config::ConfigError => e
       warn "error: #{e.message}"
       2
-    end
-
-    desc "setup", "Download LanguageTool and locate Java. Idempotent."
-    def setup
-      install = SimpleEnglish::Install.from_env
-      lt = SimpleEnglish::LanguageTool.install(install.cache_dir)
-      return 2 unless lt
-      puts "LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION}: " \
-        "#{lt["downloaded"] ? "downloaded to" : "already present at"} #{lt["dir"]}"
-      unless install.java?
-        warn "error: #{install.java_message}"
-        return 2
-      end
-      puts "Java: #{install.java} (#{JAVA_SOURCES[install.java_source]})"
-      unless SimpleEnglish::LanguageTool.smoke(install)
-        warn "error: LanguageTool smoke test failed. The download may be corrupt. " \
-          "Delete #{lt["dir"]} and rerun `se setup`."
-        return 2
-      end
-      puts "Smoke test: passed"
-      puts
-      puts "se finds them automatically. Nothing to export."
-      0
     end
 
     # "-" stays as-is for stdin. Directories expand to all lintable files.
