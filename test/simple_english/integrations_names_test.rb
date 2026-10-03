@@ -9,6 +9,9 @@ class IntegrationsNamesTest < Minitest::Test
   SELF = "test/simple_english/integrations_names_test.rb"
 
   EXCLUDED_DIRS = [".git", ".superpowers", "node_modules", "tmp", ".changes", "docs/superpowers"].freeze
+  # Generated history. `changie batch` folds fragment bodies (which name
+  # tools) into it, and released history cannot be rewritten on a rename.
+  EXCLUDED_FILES = ["CHANGELOG.md"].freeze
 
   NAMES = {
     # The pi tool name.
@@ -32,6 +35,7 @@ class IntegrationsNamesTest < Minitest::Test
   def repo_files
     Dir.glob("**/*", File::FNM_DOTMATCH, base: repo_root).select do |rel|
       next false if rel == "." || EXCLUDED_DIRS.any? { |d| rel.start_with?("#{d}/") }
+      next false if EXCLUDED_FILES.include?(rel)
       next false if rel == SELF
       path = File.join(repo_root, rel)
       File.file?(path) && !File.symlink?(path)
