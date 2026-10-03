@@ -27,8 +27,12 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "tree_sitter_language_pack", "~> 1.20"
   spec.add_runtime_dependency "thor", "~> 1.0"
 
+  # rake runs the test and lint tasks.
   spec.add_development_dependency "rake", "~> 13.0"
+  # minitest runs the tests. The bundled gem alone is not enough:
+  # `bundle exec` cannot require a bundled gem the lockfile omits.
   spec.add_development_dependency "minitest", "~> 6.0"
+  # minitest-mock restores `Object#stub` after minitest 6 dropped it.
   spec.add_development_dependency "minitest-mock", "~> 5.27"
   # rubyzip builds the zip fixtures that exercise the stdlib Zlib
   # extractor in the tests.
