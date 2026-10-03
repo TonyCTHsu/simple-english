@@ -15,7 +15,7 @@ module SimpleEnglish
 
     module_function
 
-    def run(io: $stdin, out: $stdout, linter: ->(path) { SimpleEnglish.lint_file(path) })
+    def run(io: $stdin, out: $stdout, linter: method(:default_linter))
       while (line = io.gets)
         line = line.strip
         next if line.empty?
@@ -28,6 +28,15 @@ module SimpleEnglish
         response = respond(request, linter: linter)
         out.puts JSON.generate(response) if response
       end
+    end
+
+    # The CLI's lint pipeline as a callable: .simple-english.yml decides
+    # which paths and rules count, then the daemon lints the file.
+    def default_linter(path)
+      config = SimpleEnglish::Config.load
+      return [] if SimpleEnglish::Config.ignore?(config, path)
+      findings = SimpleEnglish.lint_file(path)
+      findings.nil? ? nil : SimpleEnglish::Config.filter(config, path, findings)
     end
 
     def respond(request, linter:)
@@ -79,7 +88,12 @@ module SimpleEnglish
       return ok(id, tool_error("the path argument is required.")) if path.nil? || path.to_s.empty?
       return ok(id, tool_error("#{path} is a directory. Give one file.")) if File.directory?(path)
       return ok(id, tool_error("file not found: #{path}")) unless File.exist?(path)
-      findings = linter.call(path)
+      findings =
+        begin
+          linter.call(path)
+        rescue SimpleEnglish::Config::ConfigError => e
+          return ok(id, tool_error("invalid .simple-english.yml: #{e.message}"))
+        end
       if findings.nil?
         error(id, -32603, "the se daemon did not answer. Run `se serve --detached` and retry.")
       else

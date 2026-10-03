@@ -15,10 +15,14 @@ module SimpleEnglish
       ]
     end
 
-    def run_script(input_lines, linter:)
+    def run_script(input_lines, linter: nil)
       input = StringIO.new(input_lines.map { |line| JSON.generate(line) }.join("\n") + "\n")
       output = StringIO.new(+"")
-      ModelContextProtocol.run(io: input, out: output, linter: linter)
+      if linter
+        ModelContextProtocol.run(io: input, out: output, linter: linter)
+      else
+        ModelContextProtocol.run(io: input, out: output)
+      end
       output.string
     end
 
@@ -32,6 +36,52 @@ module SimpleEnglish
       assert_equal "simple-english", responses[0].dig("result", "serverInfo", "name")
       assert_equal "lint", responses[1].dig("result", "tools").first.fetch("name")
       assert_equal "clean", responses[2].dig("result", "content").first.fetch("text")
+    end
+
+    def test_default_linter_honors_disabled_rules
+      Dir.mktmpdir("mcp_config") do |dir|
+        path = File.join(dir, "doc.md")
+        FileUtils.touch(path)
+        File.write(File.join(dir, ".simple-english.yml"), "disabled-rules:\n  - SE_X\n")
+        findings = [Finding.new(1, nil, nil, nil, "SE_X", "gone"),
+          Finding.new(2, nil, nil, nil, "SE_KEEP", "kept")]
+        Dir.chdir(dir) do
+          SimpleEnglish.stub(:lint_file, findings) do
+            out = run_script(script_lines(path))
+            text = JSON.parse(out.split("\n").last).dig("result", "content").first.fetch("text")
+            assert_includes text, "SE_KEEP"
+            refute_includes text, "SE_X"
+          end
+        end
+      end
+    end
+
+    def test_default_linter_skips_ignored_paths
+      Dir.mktmpdir("mcp_config") do |dir|
+        path = File.join(dir, "doc.md")
+        FileUtils.touch(path)
+        File.write(File.join(dir, ".simple-english.yml"), "ignore:\n  - doc.md\n")
+        Dir.chdir(dir) do
+          SimpleEnglish.stub(:lint_file, ->(_p) { raise "must not lint an ignored path" }) do
+            out = run_script(script_lines("doc.md"))
+            assert_equal "clean", JSON.parse(out.split("\n").last).dig("result", "content").first.fetch("text")
+          end
+        end
+      end
+    end
+
+    def test_bad_config_reports_an_error_not_a_crash
+      Dir.mktmpdir("mcp_config") do |dir|
+        path = File.join(dir, "doc.md")
+        FileUtils.touch(path)
+        File.write(File.join(dir, ".simple-english.yml"), ":!bad yaml: [\n")
+        Dir.chdir(dir) do
+          out = run_script(script_lines(path))
+          response = JSON.parse(out.split("\n").last)
+          assert response.dig("result", "isError")
+          assert_includes response.dig("result", "content").first.fetch("text"), ".simple-english.yml"
+        end
+      end
     end
 
     def test_run_stays_silent_for_notifications
