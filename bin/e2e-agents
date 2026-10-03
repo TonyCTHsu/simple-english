@@ -25,6 +25,39 @@ PROMPT = "note.md in this directory holds dense prose. " \
           "Rewrite it so it reads cleanly and plainly. " \
           "Save your changes into note.md."
 
+# Model names retire faster than code moves. Each provider publishes
+# its live model list on a free endpoint, so ask before any agent runs.
+# A wrong name fails here, cheap, instead of silently falling back to
+# a pricier default mid-scenario.
+PREFLIGHTS = {
+  "claude" => {
+    keys: ["ANTHROPIC_API_KEY"],
+    url: "https://api.anthropic.com/v1/models",
+    headers: ->(key) { ["x-api-key: #{key}", "anthropic-version: 2023-06-01"] }
+  },
+  "codex" => {
+    keys: ["CODEX_API_KEY", "OPENAI_API_KEY"],
+    url: "https://api.openai.com/v1/models",
+    headers: ->(key) { ["Authorization: Bearer #{key}"] }
+  },
+  "pi" => {
+    keys: ["GOOGLE_API_KEY"],
+    url: "https://generativelanguage.googleapis.com/v1beta/models",
+    headers: ->(key) { ["x-goog-api-key: #{key}"] }
+  }
+}.freeze
+
+def preflight(agent, model)
+  spec = PREFLIGHTS.fetch(agent)
+  key = spec.fetch(:keys).map { |name| ENV[name] }.compact.first
+  return unless key
+  out, _err, status = Open3.capture3("curl", "-sf", "-H", *spec.fetch(:headers).call(key),
+    spec.fetch(:url))
+  return if status.success? && out.include?(model)
+  abort "#{agent}: cannot confirm #{model} at the provider (retired name " \
+    "or rejected key). Set SE_E2E_#{agent.upcase}_MODEL to a current model."
+end
+
 def scenario(name)
   Dir.mktmpdir("se_e2e_#{name}") do |dir|
     FileUtils.cp(File.join(CORPUS, "01-before.md"), File.join(dir, "note.md"))
@@ -113,6 +146,7 @@ def run_codex
 end
 
 AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freeze
+MODELS = {"claude" => CLAUDE_MODEL, "pi" => PI_MODEL, "codex" => CODEX_MODEL}.freeze
 
 if ENV["SE_E2E_SKIP"] == "1"
   puts "SE_E2E_SKIP=1: print and exit."
@@ -130,6 +164,10 @@ agents.each do |agent|
   unless binary?(agent)
     puts "#{agent}: skipped (not installed)"
     next
+  end
+  # The Google preflight only covers the default provider.
+  unless agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"
+    preflight(agent, MODELS.fetch(agent))
   end
   ran += 1
   failed += 1 unless send(AGENTS.fetch(agent))
