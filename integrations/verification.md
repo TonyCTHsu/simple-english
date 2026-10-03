@@ -179,9 +179,8 @@ Two consequences, both release decisions, not bugs in pi:
    (`pi install ./integrations/pi`, from a full checkout) or from npm
    once published. It cannot be git-installed from this repo as laid
    out.
-2. `integrations/pi/package.json` names `./../shared/skills` for skills.
-   The path escapes the package root. A local-path install from a
-   checkout resolves it. An npm publish does not: `npm pack` strips
-   anything outside the package root. Vendor the skill into the package
-   before publishing. This is follow-up #2 in the ledger, now tested
-   rather than assumed.
+2. Skills are vendored into each adapter dir since 2026-10-03. The
+   pi package names `./skills`, inside its own root, so `npm pack`
+   carries it. An earlier symlink to `../shared/skills` dangled in any
+   install that copied a package dir alone. A test now pins every
+   vendored copy to the shared skill.

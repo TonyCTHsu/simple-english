@@ -33,14 +33,14 @@ class IntegrationsClaudeManifestTest < Minitest::Test
     assert File.exist?(File.join(PLUGIN, ".claude-plugin", "plugin.json"))
   end
 
-  def test_plugin_skills_symlink_resolves_to_the_shared_skill
+  def test_plugin_skills_are_vendored_not_a_symlink
     skills = File.join(PLUGIN, "skills")
-    assert File.symlink?(skills)
+    refute File.symlink?(skills)
     assert File.exist?(File.join(skills, "lint", "SKILL.md"))
   end
 
   def test_skill_names_the_mcp_tool
-    skill = File.read(File.expand_path("../shared/skills/lint/SKILL.md", PLUGIN))
+    skill = File.read(File.join(PLUGIN, "skills", "lint", "SKILL.md"))
     assert_includes skill, "`lint`"
   end
 end

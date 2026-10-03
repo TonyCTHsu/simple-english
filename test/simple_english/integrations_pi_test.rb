@@ -11,7 +11,7 @@ class IntegrationsPiTest < Minitest::Test
     assert_equal SimpleEnglish::VERSION, package.fetch("version")
     pi = package.fetch("pi")
     assert_equal ["./extensions/se-lint.ts"], pi.fetch("extensions")
-    assert_equal ["./../shared/skills"], pi.fetch("skills")
+    assert_equal ["./skills"], pi.fetch("skills")
   end
 
   def test_declared_paths_exist
@@ -29,8 +29,8 @@ class IntegrationsPiTest < Minitest::Test
     assert_includes source, "se_lint"
   end
 
-  def test_shared_skill_names_the_pi_tool
-    skill = File.read(File.expand_path("../shared/skills/lint/SKILL.md", ROOT))
+  def test_vendored_skill_names_the_pi_tool
+    skill = File.read(File.join(ROOT, "skills", "lint", "SKILL.md"))
     assert_includes skill, "se_lint"
   end
 end
