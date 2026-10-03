@@ -138,11 +138,17 @@ module SimpleEnglish
     # "-" stays as-is for stdin. Directories expand to all lintable files.
     # Glob output keeps a "./" prefix when the argument is ".". Strip it so
     # paths and config ignore globs always see the same form.
+    # Vendored and VCS trees hold third-party prose, not the user's. Skip
+    # them when expanding a directory. An explicit path still lints.
+    SKIPPED_DIRS = [".git", "node_modules", "vendor"].freeze
+
     def self.expand_paths(argv)
       extensions = (SimpleEnglish::Extractor::EXTENSION_LANGUAGES.keys.map { |e| e.delete_prefix(".") } + ["md"]).uniq.join(",")
       argv.flat_map do |path|
         if File.directory?(path)
-          Dir.glob(File.join(path, "**/*.{#{extensions}}")).sort
+          Dir.glob(File.join(path, "**/*.{#{extensions}}"))
+            .reject { |p| p.split(File::SEPARATOR).any? { |s| SKIPPED_DIRS.include?(s) } }
+            .sort
         else
           path
         end
