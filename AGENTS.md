@@ -50,6 +50,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   `lint_file`. `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
   is the only change that belongs in it. `cli.rb` is the Thor CLI
+- `lib/simple_english/model_context_protocol.rb` is the MCP stdio front
+  door (`SimpleEnglish::ModelContextProtocol`). It is a client of the
+  daemon, not a part of it
 - The tree groups files by domain: `setup/`, `lint/`, `client/`,
   `daemon/`
 - `setup/` resolves the environment once, at the process edge. It
@@ -98,6 +101,11 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   original line numbers, so stripping changes must preserve them.
 - Ruby 3.3 minimum. CI enforces it. The
   gemspec declares no floor.
+
+## Changes
+
+Follow the write-comment skill when a comment earns its place. Default to
+no comment otherwise.
 
 ## Adding a rule
 

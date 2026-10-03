@@ -1,0 +1,115 @@
+name: Agent e2e
+
+# Layer 2 of the integrations test strategy: drive a live agent per
+# harness through the lint scenario. Manual dispatch only, it spends
+# tokens. The maintainer adds the secrets below in the repo settings.
+#   ANTHROPIC_API_KEY: the Claude Code headless runs
+#   OPENAI_API_KEY:    the Codex headless runs
+#   GOOGLE_API_KEY:    the pi headless runs (default provider)
+on:
+  workflow_dispatch:
+
+jobs:
+  claude:
+    # Three agents with shell access and auto-approved edits run here on
+    # provider keys. Read-only token: nothing they generate may push.
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Build and install the gem
+        run: |
+          gem build simple_english.gemspec
+          gem install --no-document ./simple_english-*.gem
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/se
+          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+
+      - name: Set up the environment
+        run: se setup
+
+      - name: Install the agent
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run the scenario
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SE_E2E_CLAUDE_MODEL: ${{ vars.E2E_CLAUDE_MODEL }}
+        run: bin/e2e-agents claude
+
+  pi:
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Build and install the gem
+        run: |
+          gem build simple_english.gemspec
+          gem install --no-document ./simple_english-*.gem
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/se
+          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+
+      - name: Set up the environment
+        run: se setup
+
+      - name: Install the agent
+        run: npm install -g @earendil-works/pi-coding-agent
+
+      - name: Run the scenario
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          SE_E2E_PI_MODEL: ${{ vars.E2E_PI_MODEL }}
+        run: bin/e2e-agents pi
+
+  codex:
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Build and install the gem
+        run: |
+          gem build simple_english.gemspec
+          gem install --no-document ./simple_english-*.gem
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/se
+          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+
+      - name: Set up the environment
+        run: se setup
+
+      - name: Install the agent
+        run: npm install -g @openai/codex
+
+      - name: Run the scenario
+        env:
+          CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SE_E2E_CODEX_MODEL: ${{ vars.E2E_CODEX_MODEL }}
+        run: bin/e2e-agents codex

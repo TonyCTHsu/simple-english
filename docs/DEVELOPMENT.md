@@ -114,6 +114,30 @@ Priority order: line and column fidelity first, then failure paths
 (every `exit 2` has a test), then rule correctness. Last: a JVM-free
 unit suite that runs in one second.
 
+## Agent integrations
+
+`integrations/` holds one adapter per agent: `pi/` (a native
+extension), `claude-code/` (a hook plugin), and `codex/` (an MCP
+plugin). `integrations/shared/skills/lint/SKILL.md` holds the skill all
+three share. `integrations/verification.md` records the agent facts
+the adapters rely on. `.claude-plugin/marketplace.json` at the repo
+root lists the Claude Code plugin. The adapters ship nothing. Try them
+from local paths:
+
+- pi: `pi install <repo>/integrations/pi -l`
+- Claude Code: `claude --plugin-dir <repo>/integrations/claude-code`
+- Codex: a local marketplace, per `integrations/verification.md`
+
+`se mcp` runs the MCP server behind the Codex plugin. Any MCP client
+can use it.
+
+Testing has two layers. Layer 1 runs in the unit suite
+(`mcp_*_test.rb`, `integrations_*_test.rb`): fixtures replay each
+adapter's wire input, and no tokens are spent. Layer 2 is
+`bin/e2e-agents`: a live agent per adapter fixes seeded violations.
+The `e2e-agents.yml` workflow runs it on demand, with credentials.
+`SE_E2E_SKIP=1 bin/e2e-agents` prints the scenarios.
+
 ## Adding a rule
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and
