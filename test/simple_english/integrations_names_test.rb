@@ -2,9 +2,12 @@
 
 require_relative "test_helper"
 
-# The name audit from the spec's Names section. Each exposed name may
-# appear only in its recorded places. A rename updates those places and
-# this list together. New places need a spec change first.
+# The name audit from the spec's Names section. It covers the three
+# distinctive exposed names, listed in NAMES. The shared plugin name
+# "simple-english" is not distinctive, so the audit leaves it out.
+# Each audited name may appear only in its recorded places. A rename
+# updates those places and this list together. New places need a spec
+# change first.
 class IntegrationsNamesTest < Minitest::Test
   SELF = "test/simple_english/integrations_names_test.rb"
 
