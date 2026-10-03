@@ -19,7 +19,8 @@ Gem::Specification.new do |spec|
   }
 
   spec.files = Dir["lib/**/*.rb"] + Dir["libexec/**/*"] + Dir["rules/*.xml"] +
-    ["bin/se", "LICENSE", "README.md", "docs/RULES.md"]
+    Dir["licenses/**/*"] +
+    ["bin/se", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "docs/RULES.md"]
   spec.bindir = "bin"
   spec.executables = ["se"]
 
