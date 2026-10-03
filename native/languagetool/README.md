@@ -17,12 +17,11 @@ Native Image does not cross-compile. Build each executable on its target platfor
 
 Prerequisites:
 
-- Maven 3.9.16
 - Oracle GraalVM 25.0.4.1.1 with Native Image
 - A native C compiler, linker, and zlib development files
 - At least 10 GB of available memory
 
-The repository `.mise.toml` pins GraalVM. `mise.lock` pins target archive URLs and SHA-256 checksums. From the repository root, run:
+The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. From the repository root, run:
 
 ```sh
 ruby native/languagetool/build.rb

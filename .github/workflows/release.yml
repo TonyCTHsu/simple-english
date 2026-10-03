@@ -61,10 +61,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: jdx/mise-action@9149ea85001c7435d5a66bb127d6a1b6227cb0a5 # v5.0.0
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
-          version: 2026.9.12
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          distribution: graalvm
+          version: "25.0"
+          java-version: "25.0.4.1.1"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
 
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:

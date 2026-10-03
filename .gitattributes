@@ -1,3 +1,4 @@
 docs/RULES.md linguist-generated=true
-mise.lock linguist-generated=true
+mvnw linguist-generated=true
+mvnw.cmd text eol=crlf linguist-generated=true
 native/languagetool/config/reachability-metadata.json linguist-generated=true

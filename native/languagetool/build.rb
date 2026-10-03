@@ -44,7 +44,7 @@ module NativeLanguageToolBuild
 
   def build_classes
     system(
-      "mvn", "--batch-mode", "--no-transfer-progress",
+      ROOT.join("mvnw").to_s, "--batch-mode", "--no-transfer-progress",
       "-Dnative.build.directory=#{TARGET}",
       "-Dmdep.outputFile=#{DEPENDENCIES_FILE}",
       "-f", SOURCE.join("pom.xml").to_s,
