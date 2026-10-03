@@ -98,7 +98,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   bundled gem alone is not enough, because `bundle exec` cannot
   require a bundled gem that the lockfile omits. `minitest-mock`
   restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
-  Both are dev-only, in the gemspec. `rubyzip` builds the zip fixtures
+  Both are dev-only, in the gemspec. `json` is dev-only for the same
+  bundled-gem reason: the suite requires it under `bundle exec` (2026-09-28). `rubyzip` builds the zip fixtures
   for the stdlib Zlib extractor tests (2026-10-02). `rexml` parses
   the rule XML in `bin/render-rules`. It stopped shipping as a Ruby
   default gem in 4.x (2026-10-02). `changie` (a brew
@@ -139,11 +140,14 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 - `rake lint`: self-lint the repo's own prose. CI's `rules` job runs it,
   then `ruby test/examples_check.rb` for the rule examples. The
-  `unit` job runs `rake test` on the Ruby matrix. CI adds
-  `standardrb`, `actionlint`, `hadolint`, and an `e2e` job on top.
-  The e2e job installs the built gem and runs `se setup`.
+  `unit` job runs `rake test` on the Ruby matrix. The `lint` job adds
+  `standardrb`, `actionlint`, `hadolint`, and changie fragment
+  validation. The `e2e` job installs the built gem and runs `se setup`.
   It then runs `bin/e2e-story`, which lints the corpus and a code
-  comment outside the repo. The corpus has that one CI home. standardrb stays out of the bundle.
+  comment outside the repo. It also runs `daemon-empty-env.sh`, which
+  boots the daemon in an empty environment. The corpus has that one CI
+  home.
+  standardrb stays out of the bundle.
   Reason: rubocop pins `json ~> 2.3`,
   and Ruby 4.0's default json gem is 3.x. Bundling it breaks
   `bundle exec` on 4.0
