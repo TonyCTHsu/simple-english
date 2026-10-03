@@ -4,6 +4,32 @@ This module compiles LanguageTool 6.6's stock HTTP server as a native executable
 
 Ruby keeps ownership of the public `se` daemon, Markdown processing, and code-comment extraction. It also owns counting rules, configuration, suppressions, locations, and output. The native process provides LanguageTool's internal `/v2/check` API.
 
+## Technical overview
+
+The build uses GraalVM Native Image to compile LanguageTool's stock
+HTTP server and its runtime JARs ahead of time. The result is a
+platform-specific executable that starts without a JVM.
+
+Native Image can find direct code calls with static analysis. It
+cannot find every class loaded through reflection or every resource
+selected at run time. `metadata.rb` therefore runs the stock server on
+the JVM under GraalVM's tracing agent. The verifier exercises rules,
+annotated text, error recovery, offsets, and corpus files during that
+run. The agent records reached classes and resources in tracked
+reachability metadata.
+
+`build.rb` stages the custom rules, resolves the Maven classpath, and
+passes that metadata to Native Image. It then starts the compiled
+server and runs a smoke test. `verify.rb` sends the same full workload
+to the JVM server and native server and requires identical HTTP status
+codes and JSON responses.
+
+CI runs metadata generation, native compilation, parity verification,
+and platform-gem installation in that order. Release jobs repeat the
+build and verification on each target OS because Native Image does not
+cross-compile. At run time, Ruby starts the bundled executable on a
+loopback port. Users do not need GraalVM, Maven, Java, or build tools.
+
 ## Release targets
 
 Initial release artifacts target:
