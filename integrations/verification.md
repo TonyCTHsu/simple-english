@@ -160,3 +160,28 @@ pi -a -p "the prompt"
 ```
 
 All three print the final answer on stdout.
+
+## pi-git-install
+
+Live-tested 2026-10-02 with `pi install git:github.com/TonyCTHsu/simple-english@<branch>`
+into a scratch config dir, then read from pi's package manager source.
+
+Pi clones the repo, then collects package resources from the clone
+root only. It reads `package.json` at the clone root. It also reads
+conventional directories (`extensions/`, `skills/`) beside it. It
+never searches subdirectories. This repo keeps `package.json` in
+`integrations/pi/`. So a git install of this repo reports success and
+loads nothing.
+
+Two consequences, both release decisions, not bugs in pi:
+
+1. The pi package installs from a local path today
+   (`pi install ./integrations/pi`, from a full checkout) or from npm
+   once published. It cannot be git-installed from this repo as laid
+   out.
+2. `integrations/pi/package.json` names `./../shared/skills` for skills.
+   The path escapes the package root. A local-path install from a
+   checkout resolves it. An npm publish does not: `npm pack` strips
+   anything outside the package root. Vendor the skill into the package
+   before publishing. This is follow-up #2 in the ledger, now tested
+   rather than assumed.
