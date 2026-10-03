@@ -8,6 +8,7 @@ class IntegrationsPiTest < Minitest::Test
   def test_package_json_declares_the_pi_block
     package = JSON.parse(File.read(File.join(ROOT, "package.json")))
     assert_equal "simple-english", package.fetch("name")
+    assert_equal SimpleEnglish::VERSION, package.fetch("version")
     pi = package.fetch("pi")
     assert_equal ["./extensions/se-lint.ts"], pi.fetch("extensions")
     assert_equal ["./../shared/skills"], pi.fetch("skills")

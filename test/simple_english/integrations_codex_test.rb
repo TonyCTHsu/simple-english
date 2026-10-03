@@ -8,7 +8,7 @@ class IntegrationsCodexTest < Minitest::Test
   def test_manifest_declares_the_plugin
     manifest = JSON.parse(File.read(File.join(PLUGIN, ".codex-plugin", "plugin.json")))
     assert_equal "simple-english", manifest.fetch("name")
-    assert_match(/\A\d+\.\d+\.\d+\z/, manifest.fetch("version"))
+    assert_equal SimpleEnglish::VERSION, manifest.fetch("version")
     assert manifest.key?("description")
     assert_equal "./skills/", manifest.fetch("skills")
     assert_equal "./.mcp.json", manifest.fetch("mcpServers")

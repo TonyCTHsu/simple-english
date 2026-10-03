@@ -9,7 +9,7 @@ class IntegrationsClaudeManifestTest < Minitest::Test
   def test_plugin_manifest_declares_the_plugin
     manifest = JSON.parse(File.read(File.join(PLUGIN, ".claude-plugin", "plugin.json")))
     assert_equal "simple-english", manifest.fetch("name")
-    assert_match(/\A\d+\.\d+\.\d+\z/, manifest.fetch("version"))
+    assert_equal SimpleEnglish::VERSION, manifest.fetch("version")
     assert manifest.key?("description")
   end
 
