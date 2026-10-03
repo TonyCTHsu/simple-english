@@ -138,8 +138,13 @@ module SimpleEnglish
     # "-" stays as-is for stdin. Directories expand to all lintable files.
     # Glob output keeps a "./" prefix when the argument is ".". Strip it so
     # paths and config ignore globs always see the same form.
-    # Vendored and VCS trees hold third-party prose, not the user's. Skip
-    # them when expanding a directory. An explicit path still lints.
+    # These trees hold third-party prose, not the user's. The tool lints
+    # what the user owns. Skipped only during directory expansion. An
+    # explicit path always lints.
+    # Dir.glob never returns dotfiles, so ".git" is inert today. It
+    # guards a future FNM_DOTMATCH from turning git internals back on.
+    # .gitignore is not read. Users put ignore: globs in the config for
+    # build output and generated files.
     SKIPPED_DIRS = [".git", "node_modules", "vendor"].freeze
 
     def self.expand_paths(argv)
