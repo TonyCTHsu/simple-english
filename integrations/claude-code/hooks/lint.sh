@@ -1,6 +1,31 @@
 #!/usr/bin/env bash
 set -u
 
+emit() {
+  SE_MSG="$1" ruby -rjson -e '
+    puts(JSON.generate({
+      "hookSpecificOutput" => {
+        "hookEventName" => "PostToolUse",
+        "additionalContext" => ENV.fetch("SE_MSG")
+      }
+    }))
+  '
+}
+
+emit_findings() {
+  SE_TEXT="$1" ruby -rjson -e '
+    lines = ENV.fetch("SE_TEXT").split("\n")
+    word = lines.length == 1 ? "finding" : "findings"
+    message = "se found #{lines.length} lint #{word}. Fix them, then lint again.\n#{ENV.fetch("SE_TEXT")}"
+    puts(JSON.generate({
+      "hookSpecificOutput" => {
+        "hookEventName" => "PostToolUse",
+        "additionalContext" => message
+      }
+    }))
+  '
+}
+
 payload="$(cat)"
 
 file_path="$(printf '%s' "$payload" | ruby -rjson -e '
@@ -21,37 +46,20 @@ case "$file_path" in
 esac
 
 se_bin="${SE_BIN:-se}"
-findings_json="$("$se_bin" lint --format json "$file_path" 2>/dev/null)"
-[ -n "$findings_json" ] || exit 0
+command -v "$se_bin" >/dev/null 2>&1 || exit 0
 
-printf '%s' "$findings_json" | ruby -rjson -e '
-  begin
-    findings = JSON.parse(STDIN.read)
-  rescue JSON::ParserError
-    exit
-  end
-  exit if !findings.is_a?(Array) || findings.empty?
-  lines = findings.filter_map do |f|
-    next unless f.is_a?(Hash)
-    location = "#{f["path"]}:#{f["line"]}"
-    if f["column"]
-      location += ":#{f["column"]}"
-      if f["end_line"] && f["end_column"]
-        finish = f["end_line"] == f["line"] ? f["end_column"] : "#{f["end_line"]}:#{f["end_column"]}"
-        location += "-#{finish}"
-      end
-    end
-    "#{location}: [#{f["rule"]}] #{f["message"]}"
-  end
-  exit if lines.empty?
-  word = lines.length == 1 ? "finding" : "findings"
-  text = "se found #{lines.length} lint #{word}. Fix them, then lint again.\n#{lines.join("\n")}"
-  puts(JSON.generate({
-    "hookSpecificOutput" => {
-      "hookEventName" => "PostToolUse",
-      "additionalContext" => text
-    }
-  }))
-'
+text="$("$se_bin" lint --format text "$file_path" 2>/dev/null)"
+rc=$?
+
+# A clean file stays silent. A failed lint must not read as clean: say
+# so, or the agent takes silence for approval.
+if [ "$rc" -ge 2 ]; then
+  emit "se exited ${rc} and the prose was not linted. Run \"${se_bin} lint ${file_path}\" to see the error."
+  exit 0
+fi
+
+if [ "$rc" -eq 1 ] && [ -n "$text" ]; then
+  emit_findings "$text"
+fi
 
 exit 0
