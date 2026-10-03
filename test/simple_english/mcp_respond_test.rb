@@ -77,15 +77,15 @@ module SimpleEnglish
       assert_equal "clean", result.fetch("content").first.fetch("text")
     end
 
-    def test_tools_call_reports_unreachable_daemon_as_json_rpc_error
+    def test_tools_call_reports_unreachable_daemon_as_a_tool_error
       path = existing_file("a.md")
       response = ModelContextProtocol.respond(
         request(5, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
         linter: ->(_path) {}
       )
       assert_equal 5, response.fetch("id")
-      assert_equal(-32603, response.dig("error", "code"))
-      assert_includes response.dig("error", "message"), "daemon"
+      assert response.dig("result", "isError")
+      assert_includes response.dig("result", "content").first.fetch("text"), "daemon"
     end
 
     def test_tools_call_rejects_a_missing_path

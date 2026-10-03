@@ -102,7 +102,9 @@ module SimpleEnglish
           return ok(id, tool_error("invalid .simple-english.yml: #{e.message}"))
         end
       if findings.nil?
-        error(id, -32603, "the se daemon did not answer. Run `se serve --detached` and retry.")
+        # A tool error, not a protocol error: clients show the text to the
+        # model, and this message is the one that tells it how to recover.
+        ok(id, tool_error("the se daemon did not answer. Run `se serve --detached` and retry."))
       else
         ok(id, {"content" => [{"type" => "text", "text" => render(path, findings)}], "isError" => false})
       end
