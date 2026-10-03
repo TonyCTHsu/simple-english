@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
-# Drive one live agent per harness through a lint scenario. The agent
-# gets a note.md with seeded violations and a prompt that never names
-# the linter. Pass when the agent fixes the prose on its own.
+# Drive one live agent per harness through a lint scenario. note.md
+# opens with a question paragraph that carries seeded violations, and
+# the agent must answer the question in the same file. The agent is
+# never asked to clean prose: a pass means the adapter's feedback made
+# it fix violations it was not asked to touch, and keep its own answer
+# clean.
 #
 # Usage: bin/e2e-agents <pi|claude|codex|all>
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
@@ -20,11 +23,20 @@ require "tmpdir"
 require "fileutils"
 
 REPO = File.expand_path("..", __dir__)
-CORPUS = File.join(REPO, "test", "corpus")
 
-PROMPT = "note.md in this directory holds dense prose. " \
-          "Rewrite it so it reads cleanly and plainly. " \
-          "Save your changes into note.md."
+PROMPT = "The last paragraph of note.md asks a question. " \
+          "Answer it in the same file, as a new paragraph after the question."
+
+# The seeded question. Its first sentence breaks the pattern rules on
+# purpose: passive voice, "in order to", a comma-led -ing phrase, and a
+# run past the sentence cap. The question itself stays clean, so the
+# only violations to fix are in prose the agent was not asked to touch.
+QUESTION = "This note was written by the documentation team in order to " \
+  "explain the release process, which is being followed by every " \
+  "engineer, making the pipeline slower than it needs to be, and any " \
+  "engineer who joins the team must read the whole guide before pushing " \
+  "a single change to the shared repository. What is the difference " \
+  "between a compiler and an interpreter?\n"
 
 MODEL_ENV = {
   "claude" => "SE_E2E_CLAUDE_MODEL",
@@ -95,12 +107,14 @@ end
 
 def scenario(name)
   Dir.mktmpdir("se_e2e_#{name}") do |dir|
-    FileUtils.cp(File.join(CORPUS, "01-before.md"), File.join(dir, "note.md"))
+    note = File.join(dir, "note.md")
+    File.write(note, QUESTION)
+    baseline = File.readlines(note).size
     Dir.chdir(dir) do
       system("git init -q 2>/dev/null")
       system("git add -A 2>/dev/null")
       system("git -c user.email=e2e@se -c user.name=e2e commit -qm e2e 2>/dev/null")
-      yield dir
+      yield dir, baseline
     end
   end
 end
@@ -110,9 +124,18 @@ def clean?(note)
   status.exitstatus.zero?
 end
 
+# The gate: the file is clean, and the agent added lines. Cleaning the
+# question alone, or answering without cleaning, both fail.
+def scenario_passed?(note, baseline)
+  clean?(note) && File.readlines(note).size > baseline
+end
+
 # Print what the agent left behind, inside the scenario dir before it
 # vanishes. A FAIL without this shows nothing but the word FAIL.
-def diagnose(note, agent_output = nil)
+def diagnose(note, baseline, agent_output = nil)
+  lines = File.readlines(note).size
+  puts "  note.md has #{lines} lines (started with #{baseline}):" \
+    " #{(lines > baseline) ? "answer appended" : "no answer appended"}"
   out, _status = Open3.capture2e("se", "lint", note)
   puts "  findings still in note.md after the run:"
   out.each_line { |line| puts "  #{line}" }
@@ -159,13 +182,14 @@ end
 
 def run_claude
   with_retry("claude") do
-    scenario("claude") do |dir|
+    scenario("claude") do |dir, baseline|
+      note = File.join(dir, "note.md")
       out, _err, status = Open3.capture3("claude",
         "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
         "-p", "--permission-mode", "acceptEdits", "--output-format", "json",
         "--model", model_for("claude"), PROMPT)
-      ok = status.success? && clean?(File.join(dir, "note.md"))
-      diagnose(File.join(dir, "note.md"), status.success? ? nil : "exit #{status.exitstatus}") unless ok
+      ok = status.success? && scenario_passed?(note, baseline)
+      diagnose(note, baseline, status.success? ? nil : "exit #{status.exitstatus}") unless ok
       [ok, claude_usage(out)]
     end
   end
@@ -173,7 +197,7 @@ end
 
 def run_pi
   with_retry("pi") do
-    scenario("pi") do |dir|
+    scenario("pi") do |dir, baseline|
       # A scratch agent dir: a user-level copy of the same tool would
       # collide with the package's tool of the same name. The package
       # installs into the scratch dir's user scope, not with -l into the
@@ -187,8 +211,8 @@ def run_pi
       provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
       ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi")) &&
         system(env, "pi", "-a", "-p", "--provider", provider, "--model", model_for("pi"), PROMPT) &&
-        clean?(File.join(dir, "note.md"))
-      diagnose(File.join(dir, "note.md"), "no pi output captured") unless ok
+        scenario_passed?(File.join(dir, "note.md"), baseline)
+      diagnose(File.join(dir, "note.md"), baseline, "no pi output captured") unless ok
       [ok, nil]
     end
   end
@@ -196,7 +220,7 @@ end
 
 def run_codex
   with_retry("codex") do
-    scenario("codex") do |dir|
+    scenario("codex") do |dir, baseline|
       marketplace = File.join(dir, "local-marketplace")
       FileUtils.mkdir_p(File.join(marketplace, "plugins"))
       FileUtils.cp_r(File.join(REPO, "integrations", "codex"),
@@ -228,8 +252,8 @@ def run_codex
         usage = codex_usage(out, err)
         output = out + err
       end
-      ok = ran && clean?(File.join(dir, "note.md"))
-      diagnose(File.join(dir, "note.md"), output) unless ok
+      ok = ran && scenario_passed?(File.join(dir, "note.md"), baseline)
+      diagnose(File.join(dir, "note.md"), baseline, output) unless ok
       [ok, usage]
     end
   end
@@ -239,7 +263,7 @@ AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freez
 
 if ENV["SE_E2E_SKIP"] == "1"
   puts "SE_E2E_SKIP=1: print and exit."
-  AGENTS.each_key { |agent| puts "#{agent}: copy corpus 01-before.md, prompt, expect clean note.md" }
+  AGENTS.each_key { |agent| puts "#{agent}: seed the question, prompt, expect a clean note.md with an answer" }
   exit 0
 end
 
