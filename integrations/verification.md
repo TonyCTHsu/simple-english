@@ -102,12 +102,38 @@ codex plugin marketplace add ./local-marketplace
 codex plugin add the-plugin-name@local-dev
 ```
 
-A repo enables the plugin in `.codex/config.toml`:
+Enablement comes from `codex plugin add`, which writes global state.
+Every MCP tool call asks for approval by default. A headless
+`codex exec` answers every approval with policy `never`, so the
+call fails: "MCP tool call requires approval, but approval
+policy is never". Approve the plugin's server in the project's
+`.codex/config.toml`:
 
 ```toml
-[plugins."the-plugin-name@local-dev"]
-enabled = true
+[plugins."the-plugin-name@local-dev".mcp_servers.the-server-name]
+default_tools_approval_mode = "approve"
 ```
+
+The server name is the key in the plugin's `.mcp.json`. Check it with
+`codex mcp list`.
+
+Codex launches a plugin's MCP server with a filtered environment:
+`GEM_HOME` and `GEM_PATH` do not reach the child. So a gem-installed
+`se` must live where its binstub finds it without those variables.
+Otherwise the server dies inside rubygems before it answers, and
+codex drops the tool. Verified 2026-10-03 with codex 0.160.0.
+
+Two more codex 0.160.0 facts, same date:
+
+1. A plugin MCP server is optional. It must answer `initialize`
+   inside the startup grace (about one second), or codex omits it
+   from the session's tool binding. The agent then reports the tool
+   as unavailable. A trace log shows it as
+   `omitting pending optional MCP server`.
+2. MCP tools are not separate declarations in the request. They
+   resolve inside the `exec` orchestrator as
+   `tools.mcp__<server>__<tool>`, for example
+   `tools.mcp__simple-english__lint`.
 
 Source: the OpenAI plugin docs at
 `https://developers.openai.com/plugins/build/plugins` and the Codex
@@ -179,9 +205,8 @@ Two consequences, both release decisions, not bugs in pi:
    (`pi install ./integrations/pi`, from a full checkout) or from npm
    once published. It cannot be git-installed from this repo as laid
    out.
-2. `integrations/pi/package.json` names `./../shared/skills` for skills.
-   The path escapes the package root. A local-path install from a
-   checkout resolves it. An npm publish does not: `npm pack` strips
-   anything outside the package root. Vendor the skill into the package
-   before publishing. This is follow-up #2 in the ledger, now tested
-   rather than assumed.
+2. Skills are vendored into each adapter dir since 2026-10-03. The
+   pi package names `./skills`, inside its own root, so `npm pack`
+   carries it. An earlier symlink to `../shared/skills` dangled in any
+   install that copied a package dir alone. A test now pins every
+   vendored copy to the shared skill.

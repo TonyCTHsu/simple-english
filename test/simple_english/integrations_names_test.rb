@@ -22,6 +22,9 @@ class IntegrationsNamesTest < Minitest::Test
       "README.md",
       "integrations/pi/extensions/se-lint.ts",
       "integrations/shared/skills/lint/SKILL.md",
+      "integrations/claude-code/skills/lint/SKILL.md",
+      "integrations/codex/skills/lint/SKILL.md",
+      "integrations/pi/skills/lint/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
     ],
     # The development marketplace name.

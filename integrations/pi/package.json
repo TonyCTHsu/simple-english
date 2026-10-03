@@ -7,6 +7,6 @@
   "keywords": ["pi-package", "lint", "prose", "plain-english"],
   "pi": {
     "extensions": ["./extensions/se-lint.ts"],
-    "skills": ["./../shared/skills"]
+    "skills": ["./skills"]
   }
 }
