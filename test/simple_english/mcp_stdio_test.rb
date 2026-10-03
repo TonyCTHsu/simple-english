@@ -38,6 +38,34 @@ module SimpleEnglish
       assert_equal "clean", responses[2].dig("result", "content").first.fetch("text")
     end
 
+    def existing_file(name = "a.md")
+      dir = Dir.mktmpdir("mcp_stdio")
+      path = File.join(dir, name)
+      FileUtils.touch(path)
+      path
+    end
+
+    def test_run_survives_a_raising_tool_call
+      calls = 0
+      linter = lambda do |_path|
+        calls += 1
+        raise Errno::EACCES, "denied" if calls == 1
+        []
+      end
+      path = existing_file
+      lines = [
+        {"jsonrpc" => "2.0", "id" => 1, "method" => "tools/call",
+         "params" => {"name" => "lint", "arguments" => {"path" => path}}},
+        {"jsonrpc" => "2.0", "id" => 2, "method" => "tools/call",
+         "params" => {"name" => "lint", "arguments" => {"path" => path}}}
+      ]
+      out = run_script(lines, linter: linter)
+      responses = out.split("\n").map { |line| JSON.parse(line) }
+      assert_equal(-32603, responses[0].dig("error", "code"))
+      assert_includes responses[0].dig("error", "message"), "EACCES"
+      assert_equal "clean", responses[1].dig("result", "content").first.fetch("text")
+    end
+
     def test_default_linter_honors_disabled_rules
       Dir.mktmpdir("mcp_config") do |dir|
         path = File.join(dir, "doc.md")

@@ -25,7 +25,14 @@ module SimpleEnglish
           next
         end
         next unless request.is_a?(Hash)
-        response = respond(request, linter: linter)
+        response =
+          begin
+            respond(request, linter: linter)
+          rescue => e
+            # A broken tool call (unreadable file, daemon hiccup) must not
+            # kill the loop: answer it, then serve the next line.
+            request.key?("id") ? error(request["id"], -32603, "lint failed: #{e.class}: #{e.message}") : nil
+          end
         out.puts JSON.generate(response) if response
       end
     end
