@@ -234,14 +234,8 @@ def run_codex
              "source" => {"source" => "local", "path" => "./plugins/simple-english"}}
           ]
         }))
-      FileUtils.mkdir_p(".codex")
-      # The MCP tool carries its own approval mode. Headless exec cannot
-      # answer an approval prompt, so an unapproved tool drops out of
-      # the agent's toolset entirely. Approve it here.
-      File.write(".codex/config.toml",
-        "[plugins.\"simple-english@local-dev\"]\nenabled = true\n" \
-        "\n[plugins.\"simple-english@local-dev\".mcp_servers.simple-english]\n" \
-        "default_tools_approval_mode = \"approve\"\n")
+      # No project .codex/config.toml here: codex exec 0.160.0 ignores
+      # it, and `codex plugin add` enables the plugin globally.
       _out, _err, status = Open3.capture3("codex", "plugin", "marketplace", "add", marketplace)
       setup = status.success?
       if setup
