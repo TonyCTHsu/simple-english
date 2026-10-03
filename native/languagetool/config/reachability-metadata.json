@@ -640,9 +640,6 @@
       "glob": "com/optimaize/langdetect/cybozu/util/messages_en.properties"
     },
     {
-      "glob": "com/optimaize/langdetect/cybozu/util/messages_en_CA.properties"
-    },
-    {
       "glob": "commons-logging.properties"
     },
     {
@@ -820,10 +817,6 @@
     {
       "module": "java.xml",
       "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en.properties"
-    },
-    {
-      "module": "java.xml",
-      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en_CA.properties"
     },
     {
       "module": "java.xml",

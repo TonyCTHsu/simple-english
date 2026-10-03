@@ -11,7 +11,9 @@ require "uri"
 require_relative "../../lib/simple_english/languagetool"
 require_relative "../../lib/simple_english/markdown"
 
-abort "usage: verify.rb CLASSPATH NATIVE_EXECUTABLE" unless ARGV.length == 2
+unless (1..2).cover?(ARGV.length)
+  abort "usage: verify.rb CLASSPATH [NATIVE_EXECUTABLE]"
+end
 
 root = File.expand_path("../..", __dir__)
 rules_file = File.join(root, "rules/simple-english.xml")
@@ -123,19 +125,26 @@ corpus_pairs.each do |before, after|
 end
 classpath, executable = ARGV
 java = ENV.fetch("JAVA_HOME") { abort "JAVA_HOME must select Java 17 or newer" }
-jvm = HTTPRunner.new(File.join(java, "bin/java"), "-Dfile.encoding=UTF-8", "-cp", classpath,
+jvm_options = JSON.parse(ENV.fetch("SE_VERIFY_JVM_OPTIONS", "[]"))
+unless jvm_options.is_a?(Array) && jvm_options.all? { |option| option.is_a?(String) }
+  abort "SE_VERIFY_JVM_OPTIONS must be a JSON array of strings"
+end
+jvm = HTTPRunner.new(File.join(java, "bin/java"), *jvm_options, "-Dfile.encoding=UTF-8", "-cp", classpath,
   "org.languagetool.server.HTTPServer")
-native = HTTPRunner.new(executable)
+native = HTTPRunner.new(executable) if executable
 
 responses = requests.map.with_index do |request, index|
   jvm_response = jvm.check(request)
-  native_response = native.check(request)
-  abort "Native response #{index + 1} differs from JVM response" unless native_response == jvm_response
-
-  native_response
+  if native
+    native_response = native.check(request)
+    unless native_response == jvm_response
+      abort "Native response #{index + 1} differs from JVM response"
+    end
+  end
+  jvm_response
 end
 jvm.close
-native.close
+native&.close
 
 incorrect_matches = responses[0].dig("body", "matches")
 abort "Correct examples produced findings" unless responses[1].dig("body", "matches").empty?
@@ -164,4 +173,5 @@ abort "Annotated matched text changed" unless matched == "n't"
 
 incorrect_count = rules.values.sum { |examples| examples[:incorrect].size }
 correct_count = rules.values.sum { |examples| examples[:correct].size }
-puts "#{rules.size} rules: #{incorrect_count} incorrect examples, #{correct_count} correct examples, #{corpus_pairs.size} corpus pairs, stock HTTP native/JVM parity PASS"
+mode = native ? "stock HTTP native/JVM parity" : "stock HTTP JVM exercise"
+puts "#{rules.size} rules: #{incorrect_count} incorrect examples, #{correct_count} correct examples, #{corpus_pairs.size} corpus pairs, #{mode} PASS"

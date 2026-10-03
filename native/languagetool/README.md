@@ -70,9 +70,23 @@ The Ruby daemon starts the executable once on its internal loopback port and mon
 
 ## Reachability metadata
 
-`config/reachability-metadata.json` was collected with GraalVM 25's tracing agent while the full verifier exercised the JVM server. Regenerate it after any LanguageTool, JDK, dependency, server, or rules change. Then rebuild and run the full verifier before removing old metadata.
+`config/reachability-metadata.json` comes from GraalVM 25's tracing agent. The metadata script prepares the JVM classpath. It starts the stock JVM server through the full verifier workload, validates the agent output, and replaces the tracked file. Fixed JVM locale and time zone values make the output identical on macOS and Linux:
 
-The build currently inherits two metadata warnings from Micrometer dependencies: one experimental reflection configuration and one deprecated proxy configuration. They come from dependency JARs rather than this repository's metadata.
+```sh
+ruby native/languagetool/metadata.rb
+ruby native/languagetool/build.rb
+ruby native/languagetool/verify.rb \
+  "$(cat tmp/native-languagetool/classpath)" \
+  tmp/native-languagetool/languagetool-native
+```
+
+Run this sequence after any LanguageTool, JDK, dependency, server, or rules change. CI detects stale metadata without modifying it:
+
+```sh
+ruby native/languagetool/metadata.rb --check
+```
+
+Generated candidates stay under `tmp/native-languagetool/agent-metadata/`. The build currently inherits two metadata warnings from Micrometer dependencies: one experimental reflection configuration and one deprecated proxy configuration. They come from dependency JARs rather than this repository's metadata.
 
 ## Reproducibility
 

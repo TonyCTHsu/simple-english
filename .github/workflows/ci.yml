@@ -93,6 +93,9 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
+      - name: Check native reachability metadata
+        run: ruby native/languagetool/metadata.rb --check
+
       - name: Build native LanguageTool server
         run: ruby native/languagetool/build.rb
         env:

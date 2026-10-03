@@ -23,11 +23,9 @@ module NativeLanguageToolBuild
   MAIN_CLASS = "org.languagetool.server.HTTPServer"
 
   def run
-    FileUtils.rm_rf(TARGET)
-    FileUtils.rm_f([DEPENDENCIES_FILE, CLASSPATH_FILE, EXECUTABLE, SBOM])
+    prepare_classes
+    FileUtils.rm_f([EXECUTABLE, SBOM])
     FileUtils.rm_f(Dir[BUILD.join("lib*.so")])
-    FileUtils.mkdir_p(BUILD)
-    build_classes
     build_executable
     abort "Native Image did not export #{SBOM}" unless SBOM.file?
     smoke_test
@@ -35,6 +33,13 @@ module NativeLanguageToolBuild
     Dir[BUILD.join("lib*.so")].sort.each do |library|
       puts "Built #{Pathname(library).relative_path_from(ROOT)}"
     end
+  end
+
+  def prepare_classes
+    FileUtils.rm_rf(TARGET)
+    FileUtils.rm_f([DEPENDENCIES_FILE, CLASSPATH_FILE])
+    FileUtils.mkdir_p(BUILD)
+    build_classes
   end
 
   def build_classes
