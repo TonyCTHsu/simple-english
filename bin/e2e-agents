@@ -57,7 +57,10 @@ def model_for(agent)
   env = MODEL_ENV.fetch(agent)
   ENV.fetch(env)
 rescue KeyError
-  abort "set #{env} to the model for #{agent}. The provider's list is in the preflight output."
+  var = env.delete_prefix("SE_E2E_")
+  abort "set #{env} to the model for #{agent}. " \
+    "In GitHub this is the Actions variable E2E_#{var}. " \
+    "The provider's names are in the preflight output."
 end
 
 def preflight(agent, model)

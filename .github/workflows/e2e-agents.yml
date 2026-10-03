@@ -8,19 +8,6 @@ name: Agent e2e
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
 on:
   workflow_dispatch:
-    inputs:
-      claude_model:
-        description: "Claude model id (claude-haiku-4-5 was cheapest, 2026-10-02)"
-        required: true
-        default: claude-haiku-4-5
-      pi_model:
-        description: "Google model id (gemini-3.1-flash-lite was cheapest, 2026-10-02)"
-        required: true
-        default: gemini-3.1-flash-lite
-      codex_model:
-        description: "OpenAI model id (gpt-6-luna was cheapest, 2026-10-02)"
-        required: true
-        default: gpt-6-luna
 
 jobs:
   claude:
@@ -56,7 +43,7 @@ jobs:
       - name: Run the scenario
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          SE_E2E_CLAUDE_MODEL: ${{ inputs.claude_model }}
+          SE_E2E_CLAUDE_MODEL: ${{ vars.E2E_CLAUDE_MODEL }}
         run: bin/e2e-agents claude
 
   pi:
@@ -90,7 +77,7 @@ jobs:
       - name: Run the scenario
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          SE_E2E_PI_MODEL: ${{ inputs.pi_model }}
+          SE_E2E_PI_MODEL: ${{ vars.E2E_PI_MODEL }}
         run: bin/e2e-agents pi
 
   codex:
@@ -124,5 +111,5 @@ jobs:
       - name: Run the scenario
         env:
           CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SE_E2E_CODEX_MODEL: ${{ inputs.codex_model }}
+          SE_E2E_CODEX_MODEL: ${{ vars.E2E_CODEX_MODEL }}
         run: bin/e2e-agents codex
