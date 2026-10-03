@@ -103,9 +103,9 @@ codex plugin add the-plugin-name@local-dev
 ```
 
 Enablement comes from `codex plugin add`, which writes global state.
-Every MCP tool call asks for approval by default, and a headless
-`codex exec` answers every approval with policy `never`: the call
-then fails with "MCP tool call requires approval, but approval
+Every MCP tool call asks for approval by default. A headless
+`codex exec` answers every approval with policy `never`, so the
+call fails: "MCP tool call requires approval, but approval
 policy is never". Approve the plugin's server in the project's
 `.codex/config.toml`:
 
