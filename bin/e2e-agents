@@ -6,6 +6,13 @@
 # Usage: bin/e2e-agents <pi|claude|codex|all>
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
 # credentials.
+#
+# The model for each agent comes from the environment, with no code
+# default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, or SE_E2E_CODEX_MODEL.
+# The workflow's dispatch inputs carry the current choice, and a human
+# changes it there, never here. A preflight checks the name against the
+# provider's live model list and prints every available name on a miss,
+# so picking a replacement needs no code edit.
 
 require "json"
 require "open3"
@@ -15,20 +22,19 @@ require "fileutils"
 REPO = File.expand_path("..", __dir__)
 CORPUS = File.join(REPO, "test", "corpus")
 
-# The cheapest capable model per provider, checked 2026-10-02. Override
-# with an env var when a provider retires one.
-CLAUDE_MODEL = ENV.fetch("SE_E2E_CLAUDE_MODEL", "claude-haiku-4-5")
-PI_MODEL = ENV.fetch("SE_E2E_PI_MODEL", "gemini-3.1-flash-lite")
-CODEX_MODEL = ENV.fetch("SE_E2E_CODEX_MODEL", "gpt-6-luna")
-
 PROMPT = "note.md in this directory holds dense prose. " \
           "Rewrite it so it reads cleanly and plainly. " \
           "Save your changes into note.md."
 
-# Model names retire faster than code moves. Each provider publishes
-# its live model list on a free endpoint, so ask before any agent runs.
-# A wrong name fails here, cheap, instead of silently falling back to
-# a pricier default mid-scenario.
+MODEL_ENV = {
+  "claude" => "SE_E2E_CLAUDE_MODEL",
+  "pi" => "SE_E2E_PI_MODEL",
+  "codex" => "SE_E2E_CODEX_MODEL"
+}.freeze
+
+# Each provider publishes its live model list on a free endpoint. A
+# retired name fails the preflight cheap, before any agent runs, instead
+# of silently falling back to a pricier default mid-scenario.
 PREFLIGHTS = {
   "claude" => {
     keys: ["ANTHROPIC_API_KEY"],
@@ -47,15 +53,29 @@ PREFLIGHTS = {
   }
 }.freeze
 
+def model_for(agent)
+  env = MODEL_ENV.fetch(agent)
+  ENV.fetch(env)
+rescue KeyError
+  abort "set #{env} to the model for #{agent}. The provider's list is in the preflight output."
+end
+
 def preflight(agent, model)
   spec = PREFLIGHTS.fetch(agent)
   key = spec.fetch(:keys).map { |name| ENV[name] }.compact.first
   return unless key
   out, _err, status = Open3.capture3("curl", "-sf", "-H", *spec.fetch(:headers).call(key),
     spec.fetch(:url))
-  return if status.success? && out.include?(model)
-  abort "#{agent}: cannot confirm #{model} at the provider (retired name " \
-    "or rejected key). Set SE_E2E_#{agent.upcase}_MODEL to a current model."
+  unless status.success?
+    abort "#{agent}: the provider rejected the key, so the model cannot be confirmed."
+  end
+  body = JSON.parse(out)
+  ids = (body["data"] || body["models"] || []).map do |entry|
+    (entry["id"] || entry["name"]).to_s.sub(/\Amodels\//, "")
+  end
+  return if ids.include?(model)
+  abort "#{agent}: #{model} is not in the provider's list. " \
+    "Pick one and set #{MODEL_ENV.fetch(agent)}:\n#{ids.join("\n")}"
 end
 
 def scenario(name)
@@ -83,19 +103,42 @@ end
 
 def with_retry(agent)
   2.times do |attempt|
-    ok = yield
-    puts "#{agent}: #{ok ? "PASS" : "FAIL"} (attempt #{attempt + 1})"
+    ok, usage = yield
+    note = usage ? " (#{usage})" : ""
+    puts "#{agent}: #{ok ? "PASS" : "FAIL"} (attempt #{attempt + 1})#{note}"
     return true if ok
   end
   false
 end
 
+# Best effort: read the spend each agent reports about itself. Formats
+# drift, so a miss prints nothing rather than a wrong number.
+def claude_usage(out)
+  json = begin
+    JSON.parse(out)
+  rescue JSON::ParserError
+    return nil
+  end
+  return nil unless json.is_a?(Hash)
+  usage = json["usage"]
+  tokens = usage.is_a?(Hash) ? "#{usage["input_tokens"]} in / #{usage["output_tokens"]} out" : nil
+  cost = json["total_cost_usd"]
+  [tokens, cost ? "$#{cost}" : nil].compact.join(", ")
+end
+
+def codex_usage(out, err)
+  match = /tokens used:?\s*([\d,]+)/i.match("#{out}\n#{err}")
+  "#{match[1]} tokens" if match
+end
+
 def run_claude
   with_retry("claude") do
     scenario("claude") do |dir|
-      ok = system("claude", "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
-        "-p", "--permission-mode", "acceptEdits", "--model", CLAUDE_MODEL, PROMPT)
-      ok && clean?(File.join(dir, "note.md"))
+      out, _err, status = Open3.capture3("claude",
+        "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
+        "-p", "--permission-mode", "acceptEdits", "--output-format", "json",
+        "--model", model_for("claude"), PROMPT)
+      [status.success? && clean?(File.join(dir, "note.md")), claude_usage(out)]
     end
   end
 end
@@ -111,9 +154,10 @@ def run_pi
       FileUtils.mkdir_p(home)
       env = {"PI_CODING_AGENT_DIR" => home}
       provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
-      system(env, "pi", "install", File.join(REPO, "integrations", "pi"), "-l") &&
-        system(env, "pi", "-a", "-p", "--provider", provider, "--model", PI_MODEL, PROMPT) &&
+      ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi"), "-l") &&
+        system(env, "pi", "-a", "-p", "--provider", provider, "--model", model_for("pi"), PROMPT) &&
         clean?(File.join(dir, "note.md"))
+      [ok, nil]
     end
   end
 end
@@ -137,16 +181,26 @@ def run_codex
       FileUtils.mkdir_p(".codex")
       File.write(".codex/config.toml",
         "[plugins.\"simple-english@local-dev\"]\nenabled = true\n")
-      system("codex", "plugin", "marketplace", "add", marketplace) &&
-        system("codex", "plugin", "add", "simple-english@local-dev") &&
-        system("codex", "exec", "--sandbox", "workspace-write", "-m", CODEX_MODEL, PROMPT) &&
-        clean?(File.join(dir, "note.md"))
+      _out, _err, status = Open3.capture3("codex", "plugin", "marketplace", "add", marketplace)
+      setup = status.success?
+      if setup
+        _out, _err, status = Open3.capture3("codex", "plugin", "add", "simple-english@local-dev")
+        setup = status.success?
+      end
+      ran = false
+      usage = nil
+      if setup
+        out, err, status = Open3.capture3("codex", "exec", "--sandbox", "workspace-write",
+          "-m", model_for("codex"), PROMPT)
+        ran = status.success?
+        usage = codex_usage(out, err)
+      end
+      [ran && clean?(File.join(dir, "note.md")), usage]
     end
   end
 end
 
 AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freeze
-MODELS = {"claude" => CLAUDE_MODEL, "pi" => PI_MODEL, "codex" => CODEX_MODEL}.freeze
 
 if ENV["SE_E2E_SKIP"] == "1"
   puts "SE_E2E_SKIP=1: print and exit."
@@ -165,9 +219,10 @@ agents.each do |agent|
     puts "#{agent}: skipped (not installed)"
     next
   end
+  model = model_for(agent)
   # The Google preflight only covers the default provider.
   unless agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"
-    preflight(agent, MODELS.fetch(agent))
+    preflight(agent, model)
   end
   ran += 1
   failed += 1 unless send(AGENTS.fetch(agent))
