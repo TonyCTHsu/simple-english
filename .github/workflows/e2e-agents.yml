@@ -40,15 +40,7 @@ jobs:
       - name: Install the agent
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Run the scenario (attempt 1)
-        id: run1
-        continue-on-error: true
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: bin/e2e-agents claude
-
-      - name: Run the scenario (attempt 2)
-        if: steps.run1.outcome == 'failure'
+      - name: Run the scenario
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: bin/e2e-agents claude
@@ -81,15 +73,7 @@ jobs:
       - name: Install the agent
         run: npm install -g @earendil-works/pi-coding-agent
 
-      - name: Run the scenario (attempt 1)
-        id: run1
-        continue-on-error: true
-        env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        run: bin/e2e-agents pi
-
-      - name: Run the scenario (attempt 2)
-        if: steps.run1.outcome == 'failure'
+      - name: Run the scenario
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: bin/e2e-agents pi
@@ -122,15 +106,7 @@ jobs:
       - name: Install the agent
         run: npm install -g @openai/codex
 
-      - name: Run the scenario (attempt 1)
-        id: run1
-        continue-on-error: true
-        env:
-          CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: bin/e2e-agents codex
-
-      - name: Run the scenario (attempt 2)
-        if: steps.run1.outcome == 'failure'
+      - name: Run the scenario
         env:
           CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: bin/e2e-agents codex
