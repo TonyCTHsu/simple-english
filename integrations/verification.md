@@ -109,6 +109,18 @@ A repo enables the plugin in `.codex/config.toml`:
 enabled = true
 ```
 
+An MCP tool from a plugin carries its own approval mode, and the
+default asks. A headless `codex exec` cannot answer, so the tool drops
+out of the agent's toolset entirely. Approve it in the same file:
+
+```toml
+[plugins."the-plugin-name@local-dev".mcp_servers.the-server-name]
+default_tools_approval_mode = "approve"
+```
+
+The server name is the key in the plugin's `.mcp.json`. Check it with
+`codex mcp list`.
+
 Source: the OpenAI plugin docs at
 `https://developers.openai.com/plugins/build/plugins` and the Codex
 non-interactive docs.
