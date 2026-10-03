@@ -27,21 +27,63 @@ The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI a
 ruby native/languagetool/build.rb
 ```
 
-The script resolves the Maven runtime classpath and stages the custom rules. It builds the stock `org.languagetool.server.HTTPServer`, then sends two `/v2/check` requests through one process. Output:
+## Compilation pipeline
+
+`build.rb` performs these steps:
+
+1. `./mvnw process-resources dependency:build-classpath` resolves the
+   runtime JARs from `pom.xml`. The POM excludes `language-all`. It adds
+   English, Catalan, Spanish, and Portuguese. LanguageTool's English
+   `CommonWordsDetector` loads the other three language modules at run
+   time. simple_english enables only its custom English rules.
+2. The script copies `rules/simple-english.xml` to
+   `org/languagetool/rules/en/grammar_custom.xml` in the staged classes
+   directory. This is the stock server's custom English rule location.
+3. GraalVM Native Image compiles the staged classes and runtime JARs.
+   The entry point is LanguageTool's stock
+   `org.languagetool.server.HTTPServer`. This repository has no Java
+   launcher or request protocol.
+4. The script starts the executable and sends the same `/v2/check`
+   request twice. This proves the custom rules are embedded and the
+   server handles more than one request.
+
+Native Image receives these project-specific options:
+
+- `--no-fallback` fails the build instead of producing a JVM launcher.
+- `-march=compatibility` avoids build-host CPU requirements.
+- `-H:ConfigurationFileDirectories=.../config` loads the tracked
+  reachability metadata.
+- `--initialize-at-run-time=...` delays logging, metrics, telemetry,
+  and Netty initialization until process startup. Their static state
+  cannot be captured safely in the image heap.
+- `--enable-url-protocols=http,https` includes URL handlers used while
+  LanguageTool checks text.
+- `--enable-sbom=embed,export` puts a CycloneDX SBOM in the executable
+  and writes a copy beside it.
+- `NATIVE_IMAGE_PARALLELISM`, when set, limits Native Image worker
+  threads. CI and release builds set it to `4`.
+
+Build output:
 
 ```text
 tmp/native-languagetool/languagetool-native
 tmp/native-languagetool/languagetool-native.sbom.json
-tmp/native-languagetool/lib*.so # Linux only
+tmp/native-languagetool/lib*.so # Linux build support files
 ```
 
-The build embeds and exports a CycloneDX SBOM. It uses `-march=compatibility` and disables fallback images. It initializes logging and telemetry packages at run time. It also enables the HTTP and HTTPS URL handlers required by LanguageTool. Reachability metadata lives under `config/`.
+The Linux executable dynamically links glibc and zlib. GraalVM also
+emits AWT support libraries, but the exercised server path does not
+load them. The Linux platform gem does not include them.
 
-The stock server binds to loopback unless started with `--public`. The Ruby daemon never passes `--public`.
+The stock server binds to loopback unless started with `--public`.
+The Ruby daemon never passes `--public`.
 
 ## Full verification
 
-The verifier starts one JVM server and one native server. It compares HTTP status codes and JSON responses for every rule example, annotated text, UTF-16 offsets, malformed-request recovery, repeated requests, and all corpus pairs:
+The verifier starts one JVM server and one native server. It compares
+HTTP status codes and JSON responses for every rule example. It also
+checks annotated text, UTF-16 offsets, malformed-request recovery,
+repeated requests, and all corpus pairs:
 
 ```sh
 ruby native/languagetool/verify.rb \
@@ -49,7 +91,10 @@ ruby native/languagetool/verify.rb \
   tmp/native-languagetool/languagetool-native
 ```
 
-Release CI must also run `rake check`, inspect dynamic-library dependencies, and test each packaged artifact on its target platform.
+CI runs the Ruby tests, rule examples, self-lint, and an installed-gem
+user story after parity. Release jobs repeat parity on each target,
+install the resulting platform gem, and run the same user story before
+publication.
 
 ## Runtime integration
 
@@ -69,7 +114,13 @@ The Ruby daemon starts the executable once on its internal loopback port and mon
 
 ## Reachability metadata
 
-`config/reachability-metadata.json` comes from GraalVM 25's tracing agent. The metadata script prepares the JVM classpath. It starts the stock JVM server through the full verifier workload, validates the agent output, and replaces the tracked file. Fixed JVM locale and time zone values make the output identical on macOS and Linux:
+Native Image needs an explicit list of classes and resources reached
+through reflection or dynamic resource loading. GraalVM 25's tracing
+agent creates `config/reachability-metadata.json` while the stock JVM
+server runs. `metadata.rb` prepares the same classpath as `build.rb`,
+runs the full verifier workload under the agent, validates reflection
+and resource entries, and replaces the tracked file. Fixed JVM locale
+and time zone values make the file byte-identical on macOS and Linux:
 
 ```sh
 ruby native/languagetool/metadata.rb
@@ -79,14 +130,43 @@ ruby native/languagetool/verify.rb \
   tmp/native-languagetool/languagetool-native
 ```
 
-Run this sequence after any LanguageTool, JDK, dependency, server, or rules change. CI detects stale metadata without modifying it:
+Run this sequence after any LanguageTool, GraalVM, dependency, server,
+verifier, or rules change. CI detects stale metadata without modifying
+it:
 
 ```sh
 ruby native/languagetool/metadata.rb --check
 ```
 
-Generated candidates stay under `tmp/native-languagetool/agent-metadata/`. The build currently inherits two metadata warnings from Micrometer dependencies: one experimental reflection configuration and one deprecated proxy configuration. They come from dependency JARs rather than this repository's metadata.
+`--check` generates a candidate under
+`tmp/native-languagetool/agent-metadata/` and byte-compares it with the
+tracked file. It does not update the tracked file. The build currently
+inherits two metadata warnings from Micrometer dependencies: one
+experimental reflection configuration and one deprecated proxy
+configuration. They come from dependency JARs rather than this
+repository's metadata.
+
+## Changing the native engine
+
+For a LanguageTool, dependency, rule, GraalVM, or Native Image option
+change:
+
+1. Update `pom.xml`, build configuration, or rules.
+2. Run `ruby native/languagetool/metadata.rb`.
+3. Run `ruby native/languagetool/build.rb`.
+4. Run the full verifier shown above.
+5. Run the Ruby tests, rule examples, corpus checks, and self-lint with
+   `SE_LANGUAGETOOL_EXECUTABLE` pointing at the new executable.
+6. Review the exported SBOM for dependency graph changes.
+
+Commit the metadata when regeneration changes it. Do not commit files
+under `tmp/native-languagetool/`.
 
 ## Reproducibility
 
-Release jobs must pin GraalVM, Maven, target OS, compiler, linker, SDK, glibc baseline, and resolved Maven dependencies. Retain checksums, the embedded Native Image SBOM, and build provenance for every artifact. Verification requires equivalent behavior, not byte-identical executables.
+Release workflows pin the GraalVM action, GraalVM version, Maven
+Wrapper, Maven distribution checksum, LanguageTool version, Maven
+plugins, and target runner OS. The runner image supplies its compiler,
+linker, and SDK, so builds require behavioral parity rather than
+byte-identical executables. Each native server archive has a SHA-256
+checksum and exported SBOM. GitHub attests every release artifact.

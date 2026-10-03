@@ -18,6 +18,9 @@ here. If you only want to lint prose, read the [README](../README.md).
   raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
 - `setup/config.rb` handles `.simple-english.yml`
 - `cli.rb` maps results and failures to output and exit codes
+- [`native/languagetool/README.md`](../native/languagetool/README.md)
+  documents native compilation, reachability metadata, verification,
+  runtime integration, and release targets
 
 All modules keep internals `private_class_method`.
 
