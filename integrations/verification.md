@@ -122,9 +122,9 @@ The server name is the key in the plugin's `.mcp.json`. Check it with
 `codex mcp list`.
 
 Codex launches a plugin's MCP server with a filtered environment:
-`GEM_HOME` and `GEM_PATH` do not reach the child. A gem-installed
-`se` must therefore live where its binstub finds it without those
-variables, or the server dies inside rubygems before it answers and
+`GEM_HOME` and `GEM_PATH` do not reach the child. So a gem-installed
+`se` must live where its binstub finds it without those variables.
+Otherwise the server dies inside rubygems before it answers, and
 codex drops the tool. Verified 2026-10-03 with codex 0.160.0.
 
 Source: the OpenAI plugin docs at
