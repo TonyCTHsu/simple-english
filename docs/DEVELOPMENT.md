@@ -135,8 +135,8 @@ Testing has two layers. Layer 1 runs in the unit suite
 (`mcp_*_test.rb`, `integrations_*_test.rb`): fixtures replay each
 adapter's wire input, and no tokens are spent. Layer 2 is
 `bin/e2e-agents`: a live agent per adapter answers a seeded question
-in note.md. The gate: the whole file ends clean, including violations
-the agent was never asked to fix, and an answer was appended.
+in note.md. The gate: the whole file ends clean, the answer was
+appended, and violations the agent was never asked to fix are gone.
 The `e2e-agents.yml` workflow runs it on demand, with credentials.
 `SE_E2E_SKIP=1 bin/e2e-agents` prints the scenarios.
 
