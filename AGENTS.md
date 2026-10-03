@@ -69,8 +69,13 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 
 ## Changes
 
-Follow the write-comment skill when a comment earns its place. Default to
-no comment otherwise.
+Default to no comment. A comment earns its place only when it says
+what the code cannot. It explains why: a non-obvious tradeoff, a
+workaround for an upstream bug, a perf choice that looks wrong. It
+warns of a real hazard: ordering, concurrency, a caller invariant.
+It cites an external source. Never narration of the nearby code,
+restatement of a good name, or notes about the change itself.
+Prefer a clearer name or a test over a comment.
 
 ## Adding a rule
 
