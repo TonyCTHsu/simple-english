@@ -102,24 +102,11 @@ codex plugin marketplace add ./local-marketplace
 codex plugin add the-plugin-name@local-dev
 ```
 
-A repo enables the plugin in `.codex/config.toml`:
-
-```toml
-[plugins."the-plugin-name@local-dev"]
-enabled = true
-```
-
-An MCP tool from a plugin carries its own approval mode, and the
-default asks. A headless `codex exec` cannot answer, so the tool drops
-out of the agent's toolset entirely. Approve it in the same file:
-
-```toml
-[plugins."the-plugin-name@local-dev".mcp_servers.the-server-name]
-default_tools_approval_mode = "approve"
-```
-
-The server name is the key in the plugin's `.mcp.json`. Check it with
-`codex mcp list`.
+Enablement comes from `codex plugin add`, which writes global
+state. A headless `codex exec` 0.160.0 ignores a project-level
+`.codex/config.toml`: a bogus key in it does not fail
+`--strict-config`. The plugin docs still show a repo-enable block,
+but no headless run needs one.
 
 Codex launches a plugin's MCP server with a filtered environment:
 `GEM_HOME` and `GEM_PATH` do not reach the child. So a gem-installed
