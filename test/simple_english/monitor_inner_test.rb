@@ -75,8 +75,9 @@ class MonitorInnerTest < Minitest::Test
     if waiter.join(10)
       _, status = waiter.value
       # Exit 2 (not the sentinel 42) proves the daemon left via the
-      # inner-death path, and the message proves the reason.
-      assert_equal 2, status.exitstatus
+      # inner-death path, and the message proves the reason. The
+      # child's stderr rides along, so a wrong exit shows its cause.
+      assert_equal 2, status.exitstatus, File.read(err.path)
       assert_includes File.read(err.path), "inner LanguageTool server died. Rerun se serve."
     else
       Process.kill("KILL", pid)
