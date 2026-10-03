@@ -200,7 +200,7 @@ module SimpleEnglish
         break
       end
       monitor.kill if monitor.alive?
-      raise InnerDied, "inner native LanguageTool server died. Rerun se serve." if inner_died
+      raise InnerDied, "lint engine died. Rerun se serve." if inner_died
     ensure
       if inner
         begin
@@ -257,13 +257,13 @@ module SimpleEnglish
       end
       if died
         raise InnerDied,
-          "inner native LanguageTool server exited during startup. " \
+          "lint engine exited during startup. " \
           "First log line: #{first_log_line(log_path)}"
       end
       unless ready
         kill_and_reap(pid)
         raise InnerTimeout,
-          "inner native LanguageTool server did not start " \
+          "lint engine did not start " \
           "within #{SimpleEnglish::LanguageTool::TIMEOUT_SECONDS} seconds. " \
           "First log line: #{first_log_line(log_path)}"
       end

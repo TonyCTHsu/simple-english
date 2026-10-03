@@ -12,7 +12,7 @@ class SetupCLITest < Minitest::Test
         out, err = capture_io do
           assert_equal 0, SimpleEnglish::CLI.run(["setup"])
         end
-        assert_includes out, "is bundled and ready"
+        assert_includes out, "simple_english is ready"
         assert_empty err
       end
     end
@@ -23,7 +23,7 @@ class SetupCLITest < Minitest::Test
       _out, err = capture_io do
         assert_equal 2, SimpleEnglish::CLI.run(["setup"])
       end
-      assert_match(/native LanguageTool server not found/, err)
+      assert_includes err, "lint engine not found"
     end
   end
 end

@@ -102,14 +102,14 @@ module SimpleEnglish
       2
     end
 
-    desc "setup", "Verify the bundled native LanguageTool server"
+    desc "setup", "Verify the installation"
     def setup
       install = SimpleEnglish::Install.from_env
       unless install.executable?
         warn "error: #{install.setup_error}"
         return 2
       end
-      puts "LanguageTool #{SimpleEnglish::LanguageTool::LT_VERSION} is bundled and ready."
+      puts "simple_english is ready."
       0
     end
 

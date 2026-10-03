@@ -69,7 +69,7 @@ class MonitorInnerTest < Minitest::Test
       # Exit 2 (not the sentinel 42) proves the daemon left via the
       # inner-death path, and the message proves the reason.
       assert_equal 2, status.exitstatus
-      assert_includes File.read(err.path), "inner native LanguageTool server died. Rerun se serve."
+      assert_includes File.read(err.path), "lint engine died. Rerun se serve."
     else
       Process.kill("KILL", pid)
       Process.wait(pid)

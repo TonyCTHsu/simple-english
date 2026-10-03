@@ -33,7 +33,7 @@ module SimpleEnglish
     end
 
     def setup_error
-      "native LanguageTool server not found or not executable at #{executable}. " \
+      "lint engine not found or not executable at #{executable}. " \
         "Install a supported platform build of this gem."
     end
   end

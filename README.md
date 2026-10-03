@@ -42,8 +42,7 @@ The full list, with a wrong and a right example for each rule:
 ## Install
 
 **Requirement:** Ruby 3.3 or newer on macOS arm64 or Linux x86-64 with
-glibc 2.35 or newer. Platform gems bundle the native LanguageTool server,
-so Java and a separate setup step are not required.
+glibc 2.35 or newer.
 
 ### Homebrew (macOS)
 
@@ -64,12 +63,11 @@ gem install simple_english
 se README.md
 ```
 
-`se setup` is optional. It verifies that the bundled native server is
-present and executable.
+`se setup` is optional. It verifies the installation.
 
 ### Container
 
-The image holds Ruby and the native LanguageTool server, so it needs no setup:
+The image needs no setup:
 
 ```bash
 docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
@@ -176,9 +174,8 @@ In a code comment:
 
 ## The background daemon
 
-The first lint starts the daemon and its bundled native LanguageTool
-server automatically. Later lints use the running daemon. To start it
-ahead of time:
+The first lint starts the daemon automatically. Later lints use the
+running daemon. To start it ahead of time:
 
 The first lint after a gem update prints a warning. Run `se serve --detached` then.
 It stops the old daemon and starts the new one in the

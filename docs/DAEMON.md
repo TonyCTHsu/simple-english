@@ -13,9 +13,8 @@ automatically. Later lints take milliseconds.
 
 ## Start
 
-The first lint starts the daemon and its bundled native LanguageTool
-server automatically. Later lints use the running daemon. To start it
-ahead of time:
+The first lint starts the daemon automatically. Later lints use the
+running daemon. To start it ahead of time:
 
 ```bash
 se serve --detached
