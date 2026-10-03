@@ -7,9 +7,9 @@ reach the daemon.
 
 ## Why a daemon
 
-LanguageTool is a JVM process. A cold start takes seconds, so the
-CLI keeps a daemon running between lints. The first lint starts it
-automatically. Later lints take milliseconds.
+Starting the lint engine takes time, so the CLI keeps a daemon running
+between lints. The first lint starts it automatically. Later lints
+reuse it.
 
 ## Start
 
@@ -21,8 +21,6 @@ se serve --detached
 ```
 
 ## The HTTP wire (internal)
-
-## The HTTP API
 
 POST to `/lint` with form fields:
 
@@ -62,18 +60,16 @@ and lints against the old code meanwhile. The warning names
 says `Update this gem` instead: `se serve` from an older CLI
 boots an older daemon in its place.
 
-`rules_digest` covers the staged rule set. Every daemon stages the
-same built-in rules, so a mismatch now only means a different gem
-version, which the `gem_digest` mismatch already reports. The field
-stays in the handshake for older clients.
+`rules_digest` covers the built-in rules. A mismatch now only means a
+different gem version, which the `gem_digest` mismatch already reports.
+The field stays in the handshake for older clients.
 
 The daemon is machine-global: one per port, shared by every
 project. Every project lints with the same built-in rules.
 
-## No Java? Run the CLI in a container
+## Run the CLI in a container
 
-The image holds Ruby, Java, and LanguageTool. Lint with it in one
-shot when the machine has no Java:
+The image holds the full installation. Lint with it in one shot:
 
 ```bash
 docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
@@ -89,8 +85,8 @@ your machine, map another port on both sides, for example
 
 - Stop it with Ctrl-C or `kill` (TERM). If the inner server dies on
   its own, the daemon exits with code 2.
-- A lint starts the daemon when the port is cold (the first lint
-  takes about 15 s). A lint never replaces a running daemon:
+- A lint starts the daemon when the port is cold. A lint never
+  replaces a running daemon:
   `se serve` does that.
 - `se serve` stops a running se daemon of its own, then boots in its
   place. A service that does not answer the se handshake keeps the

@@ -72,7 +72,7 @@ module SimpleEnglish
               port_free?(port + 1)
     end
 
-    # Graceful only. SIGKILL skips the TERM trap and the inner JVM
+    # Graceful only. SIGKILL skips the TERM trap and the inner server
     # teardown. The orphan still holds port + 1 and breaks the next
     # boot. The pid comes off the wire, so only a positive integer is
     # TERMed: 0 signals the caller's own process group, a negative
@@ -142,7 +142,7 @@ module SimpleEnglish
       preflight_install(install)
       takeover(port)
       assert_port_free(port)
-      # The inner LanguageTool server lives on port + 1. Guard it too so an occupied
+      # The inner native server lives on port + 1. Guard it too so an occupied
       # inner port raises in milliseconds instead of timing out later.
       assert_port_free(port + 1)
       # The inner native server's stderr goes to a file so failure messages can quote
@@ -215,7 +215,7 @@ module SimpleEnglish
 
     # Reaps the inner process and runs on_death (which stops the outer
     # server) whenever it exits, so the daemon dies instead of serving
-    # without LanguageTool behind it.
+    # without the lint engine behind it.
     def monitor_inner(pid, on_death:)
       Thread.new do
         Process.wait(pid)
@@ -223,7 +223,7 @@ module SimpleEnglish
       end
     end
 
-    # Boots the inner LanguageTool server and blocks until it answers
+    # Boots the inner native server and blocks until it answers
     # /v2/check. Raises InnerDied when it dies during startup, and
     # InnerTimeout when it never becomes ready (the child is killed and
     # reaped first, so a failed boot leaks no process). Both messages quote

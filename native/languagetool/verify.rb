@@ -8,8 +8,8 @@ require "socket"
 require "tempfile"
 require "uri"
 
-require_relative "../../lib/simple_english/languagetool"
-require_relative "../../lib/simple_english/markdown"
+require_relative "../../lib/simple_english/setup/languagetool"
+require_relative "../../lib/simple_english/lint/markdown"
 
 unless (1..2).cover?(ARGV.length)
   abort "usage: verify.rb CLASSPATH [NATIVE_EXECUTABLE]"

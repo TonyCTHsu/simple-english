@@ -41,8 +41,8 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-**Requirement:** Ruby 3.3 or newer on macOS arm64 or Linux x86-64 with
-glibc 2.35 or newer.
+**Requirement:** Ruby 3.3 or newer on macOS arm64, or Linux x86-64
+with glibc 2.35 or newer.
 
 ### Homebrew (macOS)
 
@@ -51,12 +51,11 @@ brew install TonyCTHsu/tap/simple-english
 brew services start simple-english
 ```
 
-Homebrew installs Ruby and Java alongside, so the machine needs
-neither. The service keeps a background daemon running. Its first
-start downloads LanguageTool (about 300 MB), and later lints take
-milliseconds. Run `brew services stop simple-english` to stop it.
+Homebrew installs Ruby and the lint engine alongside the CLI. The
+service keeps a background daemon running. Run
+`brew services stop simple-english` to stop it.
 
-### Ruby gem (Linux, Windows, CI)
+### Ruby gem (supported platforms and CI)
 
 ```bash
 gem install simple_english
@@ -175,9 +174,10 @@ In a code comment:
 ## The background daemon
 
 The first lint starts the daemon automatically. Later lints use the
-running daemon. To start it ahead of time:
+running daemon.
 
-The first lint after a gem update prints a warning. Run `se serve --detached` then.
+The first lint after a gem update prints a warning. Run
+`se serve --detached` then.
 It stops the old daemon and starts the new one in the
 background. You never talk to the daemon directly. Its HTTP
 interface is internal and can change in any release.
@@ -205,8 +205,8 @@ We ported all 67 rules to Vale and ran the corpus on both engines.
 About 60 rules behave the same. Vale has no check for the em-dash
 and semicolon rules: its checks see words, not punctuation. Its
 tagger also mislabels verbs, so the condition-first rule stays
-silent. The rules here are LanguageTool XML with examples that CI
-verifies. Closing the Vale gaps needs scripts or an external
+silent. The rules here include examples that CI verifies. Closing
+the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 

@@ -110,7 +110,29 @@ jobs:
             "$(cat tmp/native-languagetool/classpath)" \
             tmp/native-languagetool/languagetool-native
 
-      - name: Run the rules checks
-        run: bundle exec rake check
+      - name: Run the Ruby and rules checks
+        run: |
+          bundle exec rake test
+          bundle exec rake lint
+          bundle exec ruby test/examples_check.rb
         env:
           SE_LANGUAGETOOL_EXECUTABLE: ${{ github.workspace }}/tmp/native-languagetool/languagetool-native
+
+      - name: Build and install the platform gem
+        run: |
+          mkdir -p libexec/simple_english
+          install -m 0755 tmp/native-languagetool/languagetool-native \
+            libexec/simple_english/languagetool-server
+          gem build simple_english.gemspec
+          gem install --no-document ./simple_english-*-x86_64-linux.gem
+        env:
+          SIMPLE_ENGLISH_GEM_PLATFORM: x86_64-linux
+
+      - name: Lint as a user
+        run: |
+          se setup
+          se serve --detached
+          bin/e2e-story
+
+      - name: Boot the daemon in an empty environment
+        run: .github/scripts/daemon-empty-env.sh

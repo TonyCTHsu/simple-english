@@ -5,26 +5,19 @@ here. If you only want to lint prose, read the [README](../README.md).
 
 ## Layout
 
-- `lib/simple_english.rb` is the composition root: `lint_text`, `lint_file`, `corpus_test`
-- `lib/simple_english/markdown.rb`, `counts.rb`, `languagetool.rb`, `extractor.rb`,
-  and `annotated_text.rb` do text analysis: Markdown strip, sentence counts,
-  process helpers, comment extraction, offset mapping
-- Value objects live one per file: `finding.rb`, `paragraph.rb`, `span.rb`,
-  `segment.rb`, `result.rb`, `plain_text.rb`
-- `lib/simple_english/languagetool.rb` holds the pinned LanguageTool version,
-  rules file, and bundled executable path
-- `lib/simple_english/install.rb` resolves the native executable once at the
-  process edge. `SE_LANGUAGETOOL_EXECUTABLE` overrides the bundled path for
-  source builds and tests
-- `lib/simple_english/engine.rb` holds the daemon-side lint pipeline (Markdown
-  and code-comment paths)
-- `lib/simple_english/http.rb` holds the daemon's HTTP/1.1 wire framing
-- `lib/simple_english/server.rb` holds the daemon lifecycle: port guards,
-  native server spawn and monitoring, signals, and cleanup. Failures raise typed errors
-  (`PortInUse`, `InnerDied`, `InnerTimeout`). `cli.rb` maps them to
-  warnings and exit codes
-- `lib/simple_english/client.rb`, `config.rb`, and `suppressions.rb` hold the
-  daemon client, `.simple-english.yml`, and `se: ignore` directives
+- `lib/simple_english.rb` is the composition root: `lint_text` and `lint_file`
+- `lint/` holds text analysis, suppression handling, and value objects
+- `setup/languagetool.rb` holds pinned engine facts and the rules path
+- `setup/install.rb` resolves the native executable once at the process edge.
+  `SE_LANGUAGETOOL_EXECUTABLE` overrides the bundled path for source builds
+  and tests
+- `client/language_tool.rb` speaks the inner HTTP protocol.
+  `client/daemon.rb` probes and starts the public daemon
+- `daemon/engine.rb` holds the lint pipeline, `daemon/http.rb` holds HTTP
+  framing, and `daemon/server.rb` owns process lifecycle. Server failures
+  raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
+- `setup/config.rb` handles `.simple-english.yml`
+- `cli.rb` maps results and failures to output and exit codes
 
 All modules keep internals `private_class_method`.
 
@@ -75,7 +68,7 @@ warning stops.
 
 ## Test strategy
 
-Four tiers. Most tests do not start the native LanguageTool server.
+Five tiers. Most tests do not start the native LanguageTool server.
 Only boundary tests exercise the real executable.
 
 1. **Unit tests** (`test/simple_english/*_test.rb`, minitest): one class
@@ -94,8 +87,8 @@ Only boundary tests exercise the real executable.
    example. It proves the rule stays silent on its correct example.
    `roundtrip_test.rb` and the daemon end-to-end test check offset
    mapping and the full serve → lint path with a real daemon.
-5. **CI user story** (`bin/e2e-story`): CI's `e2e` job builds and
-   installs the gem, runs `se setup`, then runs this script. It lints
+5. **CI user story** (`bin/e2e-story`): CI builds and installs the
+   platform gem, runs `se setup`, then runs this script. It lints
    every corpus pair outside the repo, so the corpus has one CI
    home. It asserts exit codes: findings on each before file, clean
    on each after file. It also lints a code comment through the

@@ -16,8 +16,7 @@ cd "$story"
 
 # A repo checkout carries .simple-english.yml. Lint runs outside it,
 # so no config applies. The corpus has one CI home: here, through
-# the installed gem. The first lint boots the daemon. It takes
-# about 15 seconds.
+# the installed gem. The first lint boots the daemon.
 for file in *-before.md; do
   rc=0; se lint "$file" || rc=$?
   [ "$rc" -eq 1 ] || { echo "$file: expected exit 1, got $rc"; exit 1; }

@@ -2,7 +2,7 @@
 
 # The LanguageTool wire protocol: form posts to /v2/check, and
 # matches mapped back to findings. Runs daemon-side (Engine calls it
-# against the inner JVM) and in tests. The se daemon client - probe,
+# against the inner native server) and in tests. The se daemon client - probe,
 # trust, boot - lives in client/daemon.rb.
 #
 # The LanguageTool namespace is shared with setup/languagetool.rb,
