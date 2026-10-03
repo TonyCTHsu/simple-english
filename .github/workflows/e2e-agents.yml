@@ -11,6 +11,10 @@ on:
 
 jobs:
   claude:
+    # Three agents with shell access and auto-approved edits run here on
+    # provider keys. Read-only token: nothing they generate may push.
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -50,6 +54,8 @@ jobs:
         run: bin/e2e-agents claude
 
   pi:
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -89,6 +95,8 @@ jobs:
         run: bin/e2e-agents pi
 
   codex:
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
