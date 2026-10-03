@@ -140,6 +140,32 @@ appended, and violations the agent was never asked to fix are gone.
 The `e2e-agents.yml` workflow runs it on demand, with credentials.
 `SE_E2E_SKIP=1 bin/e2e-agents` prints the scenarios.
 
+### What the codex failures taught
+
+The codex scenario went red five times before it went green. Three
+bugs stacked, and each hid the next. The codex facts live in
+`integrations/verification.md`. The process lessons live here.
+
+1. A green run proves the whole set of changes. It does not prove
+   each change is needed. Before you remove a fix, rerun without it
+   and nothing else. One run failed because a fix was removed on
+   reasoning that the passing run cannot support.
+2. A config that fails no validation check is not proven unread.
+   The audit confused "not validated" with "not read", and dropped
+   a config the run needed.
+3. Test a stdio server with the client's stdin still open. Closing
+   stdin flushes Ruby's output buffer and hides buffering bugs. The
+   server passed every closed-stdin test, then sat silent for a
+   real client. The regression test keeps stdin open on purpose.
+4. Read the wire, not the outcome. A fake provider captures the
+   request. A logging proxy sits between client and server. Both
+   answered what hours of result logs left open.
+5. Make failures narrate themselves. The `RUST_LOG` lines printed
+   into the job log named the failing mechanism. The agent's own
+   words named the missing tool. Neither needed a local
+   reproduction.
+
+
 ## Adding a rule
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and
