@@ -127,6 +127,18 @@ Codex launches a plugin's MCP server with a filtered environment:
 Otherwise the server dies inside rubygems before it answers, and
 codex drops the tool. Verified 2026-10-03 with codex 0.160.0.
 
+Two more codex 0.160.0 facts, same date:
+
+1. A plugin MCP server is optional. It must answer `initialize`
+   inside the startup grace (about one second), or codex omits it
+   from the session's tool binding. The agent then reports the tool
+   as unavailable. A trace log shows it as
+   `omitting pending optional MCP server`.
+2. MCP tools are not separate declarations in the request. They
+   resolve inside the `exec` orchestrator as
+   `tools.mcp__<server>__<tool>`, for example
+   `tools.mcp__simple-english__lint`.
+
 Source: the OpenAI plugin docs at
 `https://developers.openai.com/plugins/build/plugins` and the Codex
 non-interactive docs.

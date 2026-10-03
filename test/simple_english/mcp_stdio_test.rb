@@ -26,6 +26,31 @@ module SimpleEnglish
       output.string
     end
 
+    def test_run_flushes_each_answer_without_eof
+      # An MCP client keeps stdin open while it waits for the answer.
+      # Ruby buffers a pipe until 4 KB or EOF, so an unflushed response
+      # never arrives and the client drops the server as unresponsive.
+      in_r, in_w = IO.pipe
+      out_r, out_w = IO.pipe
+      out_w.sync = false # the real $stdout is buffered when piped
+      thread = Thread.new do
+        ModelContextProtocol.run(io: in_r, out: out_w, linter: ->(_p) { [] })
+      end
+      request = {"jsonrpc" => "2.0", "id" => 1, "method" => "initialize",
+                 "params" => {"protocolVersion" => "2025-06-18"}}
+      in_w.write(JSON.generate(request) + "\n")
+      ready = IO.select([out_r], nil, nil, 2)
+      assert ready, "the initialize answer never flushed"
+      response = JSON.parse(out_r.readline)
+      assert_equal 1, response.fetch("id")
+      in_w.close
+      thread.join
+      out_w.close
+      out_r.close
+    ensure
+      [in_r, in_w].each(&:close)
+    end
+
     def test_run_answers_each_request_in_order
       dir = Dir.mktmpdir("mcp_stdio")
       path = File.join(dir, "a.md")

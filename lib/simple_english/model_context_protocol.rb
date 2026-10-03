@@ -16,6 +16,10 @@ module SimpleEnglish
     module_function
 
     def run(io: $stdin, out: $stdout, linter: method(:default_linter))
+      # A piped stdout buffers until 4 KB or EOF. An MCP client keeps
+      # stdin open while it waits for the answer, so an unflushed
+      # response never arrives and the client drops the server.
+      out.sync = true
       while (line = io.gets)
         line = line.strip
         next if line.empty?
