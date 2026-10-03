@@ -234,8 +234,15 @@ def run_codex
              "source" => {"source" => "local", "path" => "./plugins/simple-english"}}
           ]
         }))
-      # No project .codex/config.toml here: codex exec 0.160.0 ignores
-      # it, and `codex plugin add` enables the plugin globally.
+      FileUtils.mkdir_p(".codex")
+      # MCP tool calls ask for approval by default, and headless exec
+      # answers every approval with `never` (verified in CI: the call
+      # fails with "MCP tool call requires approval"). Approve the
+      # plugin's server here so the tool call runs.
+      File.write(".codex/config.toml",
+        "[plugins.\"simple-english@local-dev\"]\nenabled = true\n" \
+        "\n[plugins.\"simple-english@local-dev\".mcp_servers.simple-english]\n" \
+        "default_tools_approval_mode = \"approve\"\n")
       _out, _err, status = Open3.capture3("codex", "plugin", "marketplace", "add", marketplace)
       setup = status.success?
       if setup
