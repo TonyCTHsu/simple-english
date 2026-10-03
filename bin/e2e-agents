@@ -251,11 +251,15 @@ def run_codex
       ran = false
       usage = nil
       if setup
-        out, err, status = Open3.capture3("codex", "exec", "--sandbox", "workspace-write",
+        # RUST_LOG surfaces the MCP connection lines: a tool that never
+        # reached the agent now says why in the log.
+        env = {"RUST_LOG" => "codex_mcp=warn,codex_rmcp_client=info"}
+        out, err, status = Open3.capture3(env, "codex", "exec", "--sandbox", "workspace-write",
           "-m", model_for("codex"), PROMPT)
         ran = status.success?
         usage = codex_usage(out, err)
         output = out + err
+        (out + err).lines.grep(/mcp|simple-english/i).each { |line| puts "  codex: #{line.strip}" }
       end
       ok = ran && scenario_passed?(File.join(dir, "note.md"), baseline)
       diagnose(File.join(dir, "note.md"), baseline, output) unless ok
