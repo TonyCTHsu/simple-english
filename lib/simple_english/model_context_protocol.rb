@@ -103,17 +103,7 @@ module SimpleEnglish
 
     def render(path, findings)
       return "clean" if findings.empty?
-      findings.map do |finding|
-        location = "#{path}:#{finding.line}"
-        if finding.column
-          location += ":#{finding.column}"
-          if finding.end_line && finding.end_column
-            finish = (finding.end_line == finding.line) ? finding.end_column : "#{finding.end_line}:#{finding.end_column}"
-            location += "-#{finish}"
-          end
-        end
-        "#{location}: [#{finding.rule}] #{finding.message}"
-      end.join("\n")
+      findings.map { |finding| finding.to_line(path) }.join("\n")
     end
 
     def tool_error(text)

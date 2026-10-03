@@ -185,16 +185,7 @@ module SimpleEnglish
         )
       else
         results.each do |path, finding|
-          location = "#{path}:#{finding.line}"
-          if finding.column
-            location += ":#{finding.column}"
-            if finding.end_line && finding.end_column
-              finish = (finding.end_line == finding.line) ? finding.end_column :
-                "#{finding.end_line}:#{finding.end_column}"
-              location += "-#{finish}"
-            end
-          end
-          puts "#{location}: [#{finding.rule}] #{finding.message}"
+          puts finding.to_line(path)
         end
       end
     end
