@@ -82,13 +82,14 @@ Only boundary tests exercise the real executable.
 3. **Corpus pairs** (`test/corpus/NN-before.md` / `NN-after.md`): each
    rule triggers on its before file. It stays silent on its after file.
    The after file is the document-level false-positive guard.
-4. **LanguageTool boundary** (env-gated, skips locally):
+4. **LanguageTool boundary**: with a built native executable,
    `examples_check.rb` proves each XML rule fires on its incorrect
    example. It proves the rule stays silent on its correct example.
    `roundtrip_test.rb` and the daemon end-to-end test check offset
    mapping and the full serve → lint path with a real daemon.
 5. **CI user story** (`bin/e2e-story`): CI builds and installs the
-   platform gem, runs `se setup`, then runs this script. It lints
+   platform gem, then runs this script without an executable override.
+   It lints
    every corpus pair outside the repo, so the corpus has one CI
    home. It asserts exit codes: findings on each before file, clean
    on each after file. It also lints a code comment through the
@@ -108,22 +109,6 @@ without starting the native server.
 4. Verify with `ruby test/examples_check.rb` (per-rule isolation), then
    `ruby test/corpus_check.rb` (rule interaction), then lint a real document
    by eye.
-
-## Developing in a container
-
-You need podman or Docker. The released image holds Ruby and the native
-LanguageTool server, so no local setup is needed.
-
-```
-podman build -t se-dev .
-podman run --rm --entrypoint ruby -v "$PWD":/work -w /work se-dev test/run.rb
-podman run --rm -v "$PWD":/work -w /work se-dev README.md
-```
-
-The image runs `se` as its entrypoint. Pass `--entrypoint` to run
-something else, like the test suite above. Pass
-file arguments as relative paths. Then the findings print paths that
-match your checkout.
 
 ## Releasing
 

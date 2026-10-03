@@ -62,24 +62,9 @@ gem install simple_english
 se README.md
 ```
 
-`se setup` is optional. It verifies the installation.
-
-### Container
-
-The image needs no setup:
-
-```bash
-docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
-```
-
-### Git repository
-
-Run `bundle install`, then use `bin/se`.
-
 ## Usage
 
-Lint files, directories, or stdin. From a checkout, the same commands
-run through `bin/se`:
+Lint files, directories, or stdin:
 
 ```bash
 se README.md
@@ -110,7 +95,7 @@ se --format sarif src/ > results.sarif
 
 - `0`: no findings
 - `1`: findings
-- `2`: setup error
+- `2`: input, configuration, installation, or daemon error
 
 ### CI
 

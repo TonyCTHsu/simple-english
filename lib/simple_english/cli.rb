@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# The command-line interface: Thor commands for lint, serve, and
-# setup. bin/se is a thin runner over this, so the installed
-# gem's RubyGems shim can load it.
+# The command-line interface: Thor commands for lint and serve.
+# bin/se is a thin runner over this, so the installed gem's RubyGems
+# shim can load it.
 
 require "thor"
 require_relative "../simple_english"
@@ -66,7 +66,7 @@ module SimpleEnglish
       results.empty? ? 0 : 1
     end
 
-    desc "version", "Print the gem version. The container image tag is v plus this."
+    desc "version", "Print the gem version"
     def version
       puts SimpleEnglish::VERSION
       0
@@ -100,17 +100,6 @@ module SimpleEnglish
       SimpleEnglish::Config::ConfigError => e
       warn "error: #{e.message}"
       2
-    end
-
-    desc "setup", "Verify the installation"
-    def setup
-      install = SimpleEnglish::Install.from_env
-      unless install.executable?
-        warn "error: #{install.setup_error}"
-        return 2
-      end
-      puts "simple_english is ready."
-      0
     end
 
     # "-" stays as-is for stdin. Directories expand to all lintable files.

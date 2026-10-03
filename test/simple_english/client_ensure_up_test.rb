@@ -51,7 +51,7 @@ class ClientEnsureUpTest < Minitest::Test
   end
 
   def test_ensure_up_warns_about_an_image_for_a_foreign_legacy_daemon
-    # A pre-handshake daemon behind SE_SERVER_URL (a container image):
+    # A pre-handshake service behind SE_SERVER_URL:
     # the fix is updating the image, not a local `se serve`.
     with_se_server_url("http://localhost:1") do
       SimpleEnglish::Client.stub :info, :foreign do

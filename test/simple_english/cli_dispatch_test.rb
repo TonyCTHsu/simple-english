@@ -28,6 +28,10 @@ class CLIDispatchTest < Minitest::Test
     assert_equal SimpleEnglish::VERSION, out.strip
   end
 
+  def test_setup_command_is_not_exposed
+    refute_includes SimpleEnglish::CLI.all_commands, "setup"
+  end
+
   def test_empty_invocation_prints_usage_and_returns_2
     out, = capture_io { assert_equal 2, SimpleEnglish::CLI.run([]) }
     assert_match(/lint/, out)

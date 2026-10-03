@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The e2e user story: lint the whole corpus through the installed
-# gem, outside the repo. CI's e2e job runs this. Locally, put the
-# checkout's bin on PATH first, and run `se setup` once.
+# gem, outside the repo. CI runs this after installing the platform
+# gem. Locally, put the checkout's bin on PATH first.
 set -euo pipefail
 
 story="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/se-story"

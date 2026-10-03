@@ -40,15 +40,6 @@ curl -d "text=x = 1 # Don't do this." -d "language=python" http://localhost:8181
 # code-comment linting uses positions in the source file
 ```
 
-## Run the daemon in a container
-
-You need no Ruby on your machine. Pull the image and run
-the daemon in it:
-
-```bash
-docker run -d --name se-daemon -p 8181:8181 ghcr.io/tonycthsu/simple-english:latest serve
-```
-
 `gem_digest` covers the gem code and the built-in rules. The CLI
 compares it at every lint.
 
@@ -66,20 +57,6 @@ The field stays in the handshake for older clients.
 
 The daemon is machine-global: one per port, shared by every
 project. Every project lints with the same built-in rules.
-
-## Run the CLI in a container
-
-The image holds the full installation. Lint with it in one shot:
-
-```bash
-docker run -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest docs/
-```
-
-The CLI sends text over HTTP and never starts a
-daemon of its own. Pin the image tag to your gem version, because
-different versions carry different rules. If port 8181 is busy on
-your machine, map another port on both sides, for example
-`-p 8281:8181` and `SE_SERVER_URL=http://localhost:8281`.
 
 ## Lifecycle
 

@@ -5,7 +5,7 @@
 # Usage: run `se serve` (or let the first lint start it), then
 #   ruby test/corpus_check.rb
 #
-# CI lints the corpus in the e2e job, from the installed gem. This
+# CI lints the corpus in the native job, from the installed gem. This
 # runner stays for local use.
 
 require_relative "../lib/simple_english"

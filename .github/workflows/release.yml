@@ -105,6 +105,14 @@ jobs:
           SIMPLE_ENGLISH_GEM_PLATFORM: ${{ matrix.platform }}
           VERSION: ${{ needs.release.outputs.version }}
 
+      - name: Verify platform gem
+        run: |
+          gem install --no-document "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+          bin/e2e-story
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          VERSION: ${{ needs.release.outputs.version }}
+
       - name: Attest release artifacts
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:

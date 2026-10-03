@@ -9,7 +9,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   the daemon HTTP API
 - `docs/RULES.md` lists every rule in prose. Regenerate it with
   `bin/render-rules` after a rule change.
-- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules, container).
+- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules).
   `docs/RELEASING.md` holds the release flow (prepare, merge, publish)
 
 ## Branches
@@ -117,13 +117,14 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Tests
 
-- `rake lint`: self-lint the repo's own prose. CI's `rules` job runs it,
+- `rake lint`: self-lint the repo's own prose. CI's `native` job runs it,
   then `ruby test/examples_check.rb` for the rule examples. The
-  `unit` job runs `rake test` on the Ruby matrix. CI adds
-  `standardrb`, `actionlint`, and `hadolint` on top. The `rules` job
-  also installs the built platform gem and runs `se setup`.
-  It then runs `bin/e2e-story`, which lints the corpus and a code
-  comment outside the repo. The corpus has that one CI home. standardrb stays out of the bundle.
+  `unit` job runs `rake test` on the supported-platform Ruby matrix.
+  CI adds `standardrb`, `actionlint`, and `hadolint` on top. The
+  `native` job installs the built platform gem, then runs
+  `bin/e2e-story` without an executable override. It lints the corpus
+  and a code comment outside the repo. The corpus has that one CI
+  home. standardrb stays out of the bundle.
   Reason: rubocop pins `json ~> 2.3`,
   and Ruby 4.0's default json gem is 3.x. Bundling it breaks
   `bundle exec` on 4.0
