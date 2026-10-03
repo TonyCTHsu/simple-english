@@ -39,17 +39,17 @@ PREFLIGHTS = {
   "claude" => {
     keys: ["ANTHROPIC_API_KEY"],
     url: "https://api.anthropic.com/v1/models",
-    headers: ->(key) { ["x-api-key: #{key}", "anthropic-version: 2023-06-01"] }
+    headers: ->(key) { ["-H", "x-api-key: #{key}", "-H", "anthropic-version: 2023-06-01"] }
   },
   "codex" => {
     keys: ["CODEX_API_KEY", "OPENAI_API_KEY"],
     url: "https://api.openai.com/v1/models",
-    headers: ->(key) { ["Authorization: Bearer #{key}"] }
+    headers: ->(key) { ["-H", "Authorization: Bearer #{key}"] }
   },
   "pi" => {
     keys: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
     url: "https://generativelanguage.googleapis.com/v1beta/models",
-    headers: ->(key) { ["x-goog-api-key: #{key}"] }
+    headers: ->(key) { ["-H", "x-goog-api-key: #{key}"] }
   }
 }.freeze
 
@@ -68,7 +68,7 @@ def preflight(agent, model)
   key = spec.fetch(:keys).map { |name| ENV[name] }.compact.first
   return unless key
   out, _err, _status = Open3.capture3("curl", "-s", "-w", "\n%{http_code}",
-    "-H", *spec.fetch(:headers).call(key), spec.fetch(:url))
+    *spec.fetch(:headers).call(key), spec.fetch(:url))
   http = out.lines.last.to_s.strip
   body = out.lines[0..-2].join
   unless http == "200"
@@ -78,7 +78,9 @@ def preflight(agent, model)
     when "", "000" then "the request never reached the provider. Check the runner network"
     else "unexpected answer from the provider"
     end
-    abort "#{agent}: preflight got HTTP #{http} from the model list: #{hint}."
+    detail = body.to_s.strip.split("\n").first.to_s[0, 300]
+    abort "#{agent}: preflight got HTTP #{http} from the model list: #{hint}." \
+      "\nprovider said: #{detail}"
   end
   parsed = JSON.parse(body)
   ids = (parsed["data"] || parsed["models"] || []).map do |entry|
@@ -173,14 +175,17 @@ def run_pi
   with_retry("pi") do
     scenario("pi") do |dir|
       # A scratch agent dir: a user-level copy of the same tool would
-      # collide with the package's tool of the same name. Credentials
-      # come from the environment (GEMINI_API_KEY for Google, or
-      # SE_E2E_PI_PROVIDER for a different provider).
+      # collide with the package's tool of the same name. The package
+      # installs into the scratch dir's user scope, not with -l into the
+      # project: project scope needs an interactive trust grant, which
+      # headless runs can never answer. Credentials come from the
+      # environment (GEMINI_API_KEY for Google, or SE_E2E_PI_PROVIDER
+      # for a different provider).
       home = File.join(dir, "pi-home")
       FileUtils.mkdir_p(home)
       env = {"PI_CODING_AGENT_DIR" => home}
       provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
-      ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi"), "-l") &&
+      ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi")) &&
         system(env, "pi", "-a", "-p", "--provider", provider, "--model", model_for("pi"), PROMPT) &&
         clean?(File.join(dir, "note.md"))
       diagnose(File.join(dir, "note.md"), "no pi output captured") unless ok

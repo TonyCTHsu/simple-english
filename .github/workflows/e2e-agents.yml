@@ -108,6 +108,13 @@ jobs:
       - name: Install the agent
         run: npm install -g @openai/codex
 
+      # ubuntu-24.04 restricts unprivileged user namespaces through
+      # AppArmor, and bubblewrap's sandbox (used by codex --sandbox) needs
+      # one. Lift the restriction or every command fails with
+      # `bwrap: loopback: Failed RTM_NEWADDR`.
+      - name: Let bubblewrap create its sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Run the scenario
         env:
           CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
