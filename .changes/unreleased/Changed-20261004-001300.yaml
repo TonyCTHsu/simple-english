@@ -1,0 +1,3 @@
+kind: Changed
+body: The native lint engine bundles only the English LanguageTool modules, dropping the unused Catalan, Spanish, and Portuguese modules.
+time: 2026-10-04T00:13:00.340047+02:00
