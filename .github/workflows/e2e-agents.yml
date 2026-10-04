@@ -6,6 +6,10 @@ name: Agent e2e
 #   ANTHROPIC_API_KEY: the Claude Code headless runs
 #   OPENAI_API_KEY:    the Codex headless runs
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
+#
+# One job runs every selected agent in one process, so the Actions
+# summary carries one result table for all harnesses. The cost is
+# sequential runtime, fine for a manual dispatch.
 on:
   workflow_dispatch:
     inputs:
@@ -23,14 +27,14 @@ on:
         default: true
 
 jobs:
-  claude:
+  agents:
     # Three agents with shell access and auto-approved edits run here on
     # provider keys. Read-only token: nothing they generate may push.
     permissions:
       contents: read
-    if: inputs.run_claude
+    if: inputs.run_claude || inputs.run_pi || inputs.run_codex
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -51,78 +55,11 @@ jobs:
       - name: Set up the environment
         run: se setup
 
-      - name: Install the agent
-        run: npm install -g @anthropic-ai/claude-code@2.1.288
-
-      - name: Run the scenario
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          SE_E2E_CLAUDE_MODEL: ${{ vars.E2E_CLAUDE_MODEL }}
-        run: bin/e2e-agents claude
-
-  pi:
-    permissions:
-      contents: read
-    if: inputs.run_pi
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
-        with:
-          ruby-version: "3.3"
-
-      - name: Build and install the gem
+      - name: Install the agents
         run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
-
-      - name: Set up the environment
-        run: se setup
-
-      - name: Install the agent
-        run: npm install -g @earendil-works/pi-coding-agent@1.0.1
-
-      - name: Run the scenario
-        env:
-          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          SE_E2E_PI_MODEL: ${{ vars.E2E_PI_MODEL }}
-        run: bin/e2e-agents pi
-
-  codex:
-    permissions:
-      contents: read
-    if: inputs.run_codex
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
-        with:
-          ruby-version: "3.3"
-
-      - name: Build and install the gem
-        run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
-
-      - name: Set up the environment
-        run: se setup
-
-      - name: Install the agent
-        run: npm install -g @openai/codex@0.160.0
+          npm install -g @anthropic-ai/claude-code@2.1.288
+          npm install -g @earendil-works/pi-coding-agent@1.0.1
+          npm install -g @openai/codex@0.160.0
 
       # ubuntu-24.04 restricts unprivileged user namespaces through
       # AppArmor, and bubblewrap's sandbox (used by codex --sandbox) needs
@@ -131,8 +68,17 @@ jobs:
       - name: Let bubblewrap create its sandbox
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-      - name: Run the scenario
+      - name: Run the scenarios
         env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SE_E2E_CLAUDE_MODEL: ${{ vars.E2E_CLAUDE_MODEL }}
+          SE_E2E_PI_MODEL: ${{ vars.E2E_PI_MODEL }}
           SE_E2E_CODEX_MODEL: ${{ vars.E2E_CODEX_MODEL }}
-        run: bin/e2e-agents codex
+        run: |
+          agents=""
+          if [ "${{ inputs.run_claude }}" = true ]; then agents="claude"; fi
+          if [ "${{ inputs.run_pi }}" = true ]; then agents="$agents pi"; fi
+          if [ "${{ inputs.run_codex }}" = true ]; then agents="$agents codex"; fi
+          bin/e2e-agents $agents

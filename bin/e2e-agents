@@ -6,7 +6,7 @@
 # it fix violations it was not asked to touch, and keep its own answer
 # clean.
 #
-# Usage: bin/e2e-agents <pi|claude|codex|all>
+# Usage: bin/e2e-agents [claude pi codex ...]. No argument runs all.
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
 # credentials.
 #
@@ -293,8 +293,11 @@ def write_summary
   path = ENV["GITHUB_STEP_SUMMARY"]
   return unless path
   File.open(path, "a") do |f|
+    passed = SUMMARY.count { |row| row.fetch(:ok) }
+    f.puts "# Agent e2e: #{passed} of #{SUMMARY.size} passed"
     SUMMARY.each do |row|
       agent = row.fetch(:agent)
+      f.puts
       f.puts "## #{agent}"
       f.puts
       f.puts "| Result | Model | Usage |"
@@ -319,8 +322,8 @@ if ENV["SE_E2E_SKIP"] == "1"
   exit 0
 end
 
-target = ARGV[0] || "all"
-agents = (target == "all") ? AGENTS.keys : [target]
+requested = ARGV.empty? ? ["all"] : ARGV
+agents = requested == ["all"] ? AGENTS.keys : requested
 abort "usage: bin/e2e-agents <pi|claude|codex|all>" unless (agents - AGENTS.keys).empty?
 
 ran = 0
