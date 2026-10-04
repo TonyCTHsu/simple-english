@@ -28,8 +28,10 @@ task :build do
   File.write("#{tar}.sha256", "#{checksum}  #{File.basename(tar)}\n")
 
   gem = "dist/simple_english-#{SimpleEnglish::VERSION}-#{platform}.gem"
-  sh({"SIMPLE_ENGLISH_GEM_PLATFORM" => platform},
-    "gem build simple_english.gemspec --output #{gem}")
+  Bundler.with_unbundled_env do
+    sh({"SIMPLE_ENGLISH_GEM_PLATFORM" => platform},
+      "gem build simple_english.gemspec --output #{gem}")
+  end
 end
 
 task default: :test
