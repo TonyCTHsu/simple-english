@@ -96,16 +96,16 @@ jobs:
           bundler-cache: true
 
       - name: Check native reachability metadata
-        run: ruby native/languagetool/metadata.rb --check
+        run: bundle exec ruby native/languagetool/metadata.rb --check
 
       - name: Build native LanguageTool server
-        run: ruby native/languagetool/build.rb
+        run: bundle exec ruby native/languagetool/build.rb
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
 
       - name: Verify native LanguageTool parity
         run: |
-          ruby native/languagetool/verify.rb \
+          bundle exec ruby native/languagetool/verify.rb \
             "$(cat tmp/native-languagetool/classpath)" \
             tmp/native-languagetool/languagetool-native
 

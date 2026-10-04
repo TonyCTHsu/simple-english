@@ -76,8 +76,8 @@ jobs:
 
       - name: Build and verify native LanguageTool server
         run: |
-          ruby native/languagetool/build.rb
-          ruby native/languagetool/verify.rb \
+          bundle exec ruby native/languagetool/build.rb
+          bundle exec ruby native/languagetool/verify.rb \
             "$(cat tmp/native-languagetool/classpath)" \
             tmp/native-languagetool/languagetool-native
           mkdir -p libexec/simple_english
