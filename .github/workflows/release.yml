@@ -100,12 +100,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.release.outputs.version }}
 
+      - name: Check out the RubyGems attestation patch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: rubygems/release-gem
+          ref: v1.4.1
+          path: .tmp/release-gem
+          persist-credentials: false
+
       - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
 
       - name: Publish platform gem
         run: gem push "dist/simple_english-${VERSION}-${PLATFORM}.gem"
         env:
           PLATFORM: ${{ matrix.platform }}
+          RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
           VERSION: ${{ needs.release.outputs.version }}
 
   image:
