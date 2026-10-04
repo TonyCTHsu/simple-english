@@ -122,7 +122,7 @@ jobs:
           install -m 0755 tmp/native-languagetool/languagetool-native \
             libexec/simple_english/languagetool-server
           gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*-${PLATFORM}.gem
+          gem install --no-document "./simple_english-*-${PLATFORM}.gem"
         env:
           SIMPLE_ENGLISH_GEM_PLATFORM: ${{ matrix.platform }}
           PLATFORM: ${{ matrix.platform }}
