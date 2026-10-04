@@ -61,14 +61,12 @@ module NativeLanguageToolBuild
   def build_executable
     options = ["--no-fallback", "--enable-sbom=embed,export"]
     # -march is an AMD64-only option. AArch64 has a single baseline.
-    options << "-march=compatibility" if RbConfig::CONFIG["host_cpu"] =~ /x86_64|amd64/i
-    options.concat(
-      [
+    options << "-march=compatibility" if RbConfig::CONFIG["host_cpu"].match?(/x86_64|amd64/)
+    options += [
       "--initialize-at-run-time=ch.qos.logback,org.slf4j,io.prometheus,io.opentelemetry,io.grpc.netty.shaded.io.netty",
       "--enable-url-protocols=http,https",
       "-H:ConfigurationFileDirectories=#{SOURCE.join("config")}"
-      ]
-    )
+    ]
     parallelism = ENV["NATIVE_IMAGE_PARALLELISM"]
     options << "--parallelism=#{parallelism}" if parallelism
     system(
