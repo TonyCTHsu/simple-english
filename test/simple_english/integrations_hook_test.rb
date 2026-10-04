@@ -109,9 +109,12 @@ class IntegrationsHookTest < Minitest::Test
     assert_equal "", out
   end
 
-  def test_missing_se_binary_degrades_quietly
+  def test_missing_se_binary_names_the_remedy
     out, code = hook(payload_for(md_file), {"SE_BIN" => "/no/such/se"})
     assert_equal 0, code
-    assert_equal "", out
+    context = JSON.parse(out).dig("hookSpecificOutput", "additionalContext")
+    assert_includes context, "not linted"
+    assert_includes context, "gem install simple_english"
+    assert_includes context, "se setup"
   end
 end
