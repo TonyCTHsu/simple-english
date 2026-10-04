@@ -28,8 +28,9 @@ class CLIDispatchTest < Minitest::Test
     assert_equal SimpleEnglish::VERSION, out.strip
   end
 
-  def test_setup_command_is_not_exposed
-    refute_includes SimpleEnglish::CLI.all_commands, "setup"
+  def test_setup_is_a_no_op_deprecation
+    out, = capture_io { assert_equal 0, SimpleEnglish::CLI.run(["setup"]) }
+    assert_match(/lint engine ships with the gem/, out)
   end
 
   def test_empty_invocation_prints_usage_and_returns_2

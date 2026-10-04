@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# The command-line interface: Thor commands for lint and serve.
-# bin/se is a thin runner over this, so the installed gem's RubyGems
-# shim can load it.
+# The command-line interface: Thor commands for lint and serve, plus
+# a no-op setup for older callers. bin/se is a thin runner over this,
+# so the installed gem's RubyGems shim can load it.
 
 require "thor"
 require_relative "../simple_english"
@@ -100,6 +100,12 @@ module SimpleEnglish
       SimpleEnglish::Config::ConfigError => e
       warn "error: #{e.message}"
       2
+    end
+
+    desc "setup", "Do nothing; the lint engine ships with the gem"
+    def setup
+      puts "nothing to set up; the lint engine ships with the gem"
+      0
     end
 
     # "-" stays as-is for stdin. Directories expand to all lintable files.
