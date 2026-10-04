@@ -140,7 +140,7 @@ appended, and violations the agent was never asked to fix are gone.
 The `e2e-agents.yml` workflow runs it on demand, with credentials.
 
 Each run writes its result, model, usage, and leftover findings to
-the Actions run summary page, one table per harness in one process.
+the Actions run summary page, one table per agent in one process.
 `SE_E2E_SKIP=1 bin/e2e-agents` prints
 the scenarios.
 
