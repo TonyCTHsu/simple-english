@@ -32,6 +32,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   only when the tool's behavior changes. Documentation-only changes get no entry.
   Pass the kind and body as flags: bare `changie new` prompts
   interactively, which hangs a non-interactive session.
+  Unsure of the kind? Ask the user, do not guess it.
   Pull requests add fragments, not changelog lines, so they never conflict.
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
   a major bump in `changie next auto`. Breaking means the change breaks
