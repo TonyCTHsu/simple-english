@@ -152,13 +152,15 @@ end
 
 # An annotation on the run page, one per agent job. GitHub shows
 # every job's annotations together, so the page lists each agent at
-# a glance. The guard keeps local runs free of the workflow-command
-# syntax.
+# a glance. A pass that needed the retry warns: the adapter worked,
+# and the model needed two chances. The guard keeps local runs free
+# of the workflow-command syntax.
 def announce(agent, model, ok, attempts, usage)
   return unless ENV["GITHUB_ACTIONS"]
   parts = ["#{ok ? "PASS" : "FAIL"} (attempt #{attempts})", model]
   parts << usage if usage
-  puts "::#{ok ? "notice" : "error"} title=#{agent}::#{parts.join(", ")}"
+  severity = !ok ? "error" : (attempts > 1 ? "warning" : "notice")
+  puts "::#{severity} title=#{agent}::#{parts.join(", ")}"
 end
 
 def with_retry(agent)
