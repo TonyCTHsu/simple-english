@@ -105,10 +105,20 @@ jobs:
       - name: Check native reachability metadata
         run: bundle exec ruby native/languagetool/metadata.rb --check
 
+      - name: Restore the native build cache
+        id: native_cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            tmp/native-languagetool/languagetool-native
+            tmp/native-languagetool/languagetool-native.sbom.json
+          key: native-v1-${{ matrix.platform }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock', '.github/workflows/ci.yml') }}
+
       - name: Build, verify, and package the native server and gem
         run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
+          NATIVE_CACHE_HIT: ${{ steps.native_cache.outputs.cache-hit }}
           PLATFORM: ${{ matrix.platform }}
 
       - name: Install the platform gem
