@@ -140,6 +140,9 @@ appended, and violations the agent was never asked to fix are gone.
 The `e2e-agents.yml` workflow runs it on demand, with credentials.
 `SE_E2E_SKIP=1 bin/e2e-agents` prints the scenarios.
 
+Each agent job also emits its result as a run annotation. The run
+page then lists every agent, its model, and its token usage.
+
 ### What the codex failures taught
 
 The codex scenario went red five times before it went green. Three
