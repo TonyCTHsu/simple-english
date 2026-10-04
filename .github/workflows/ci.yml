@@ -112,7 +112,7 @@ jobs:
           path: |
             tmp/native-languagetool/languagetool-native
             tmp/native-languagetool/languagetool-native.sbom.json
-          key: native-v1-${{ matrix.platform }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock', '.github/workflows/ci.yml') }}
+          key: native-v1-${{ matrix.runner }}-${{ matrix.platform }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock', '.github/workflows/ci.yml') }}
 
       - name: Build, verify, and package the native server and gem
         run: bundle exec rake build
