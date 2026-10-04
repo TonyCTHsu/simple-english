@@ -46,7 +46,10 @@ case "$file_path" in
 esac
 
 se_bin="${SE_BIN:-se}"
-command -v "$se_bin" >/dev/null 2>&1 || exit 0
+command -v "$se_bin" >/dev/null 2>&1 || {
+  emit "se is not installed, so the prose was not linted. Install it: gem install simple_english && se setup"
+  exit 0
+}
 
 text="$("$se_bin" lint --format text "$file_path" 2>/dev/null)"
 rc=$?

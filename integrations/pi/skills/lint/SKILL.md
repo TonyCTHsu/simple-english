@@ -14,5 +14,8 @@ The tool names differ by agent:
 - pi exposes the tool `se_lint`.
 - MCP clients expose the tool `lint`.
 
+If the lint tool is missing or unavailable, the engine is not installed.
+Run `gem install simple_english`, then `se setup`, then retry.
+
 Fixing the findings is part of writing the prose. A draft with findings
 is not done.
