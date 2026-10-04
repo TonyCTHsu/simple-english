@@ -6,7 +6,7 @@
 # it fix violations it was not asked to touch, and keep its own answer
 # clean.
 #
-# Usage: bin/e2e-agents [claude pi codex ...]. No argument runs all.
+# Usage: bin/e2e-agents <pi|claude|codex|all>
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
 # credentials.
 #
@@ -23,11 +23,6 @@ require "tmpdir"
 require "fileutils"
 
 REPO = File.expand_path("..", __dir__)
-
-# Rows and diagnosis lines collected for the Actions summary.
-SUMMARY = []
-MODELS = {}
-DIAGNOSIS = []
 
 PROMPT = "The last paragraph of note.md asks a question. " \
           "Answer it in the same file, as a new paragraph after the question."
@@ -136,21 +131,17 @@ def scenario_passed?(note, baseline)
 end
 
 # Print what the agent left behind, inside the scenario dir before it
-# vanishes. A FAIL without this shows nothing but the word FAIL. The
-# same lines ride along into the Actions summary through DIAGNOSIS.
+# vanishes. A FAIL without this shows nothing but the word FAIL.
 def diagnose(note, baseline, agent_output = nil)
-  count = File.readlines(note).size
-  verdict = count > baseline ? "answer appended" : "no answer appended"
+  lines = File.readlines(note).size
+  puts "  note.md has #{lines} lines (started with #{baseline}):" \
+    " #{(lines > baseline) ? "answer appended" : "no answer appended"}"
   out, _status = Open3.capture2e("se", "lint", note)
-  lines = ["note.md has #{count} lines (started with #{baseline}): #{verdict}",
-    "findings still in note.md after the run:"]
-  out.each_line { |line| lines << line.chomp }
-  if agent_output
-    lines << "last of the agent's output:"
-    agent_output.to_s.lines.last(12).each { |line| lines << line.chomp }
-  end
-  lines.each { |line| puts "  #{line}" }
-  DIAGNOSIS.concat(lines)
+  puts "  findings still in note.md after the run:"
+  out.each_line { |line| puts "  #{line}" }
+  return unless agent_output
+  puts "  last of the agent's output:"
+  agent_output.to_s.lines.last(12).each { |line| puts "  #{line}" }
 end
 
 def binary?(name)
@@ -159,22 +150,29 @@ def binary?(name)
   end
 end
 
+# An annotation on the run page, one per agent job. GitHub shows
+# every job's annotations together, so the page lists each agent at
+# a glance. The guard keeps local runs free of the workflow-command
+# syntax.
+def announce(agent, model, ok, attempts, usage)
+  return unless ENV["GITHUB_ACTIONS"]
+  parts = ["#{ok ? "PASS" : "FAIL"} (attempt #{attempts})", model]
+  parts << usage if usage
+  puts "::#{ok ? "notice" : "error"} title=#{agent}::#{parts.join(", ")}"
+end
+
 def with_retry(agent)
   attempts = 0
   ok = false
   usage = nil
   2.times do
     attempts += 1
-    # A retry starts a new scenario, so the old diagnosis is stale.
-    DIAGNOSIS.clear
     ok, usage = yield
     note = usage ? " (#{usage})" : ""
     puts "#{agent}: #{ok ? "PASS" : "FAIL"} (attempt #{attempts})#{note}"
     break if ok
   end
-  SUMMARY << {agent: agent, attempts: attempts, ok: ok, usage: usage,
-    notes: ok ? [] : DIAGNOSIS.dup}
-  ok
+  [ok, attempts, usage]
 end
 
 # Best effort: read the spend each agent reports about itself. Formats
@@ -286,34 +284,6 @@ def run_codex
   end
 end
 
-# GitHub sets GITHUB_STEP_SUMMARY in every step, and the run summary
-# page stacks one section per job. Local runs have no such variable,
-# so this stays a no-op outside CI.
-def write_summary
-  path = ENV["GITHUB_STEP_SUMMARY"]
-  return unless path
-  File.open(path, "a") do |f|
-    passed = SUMMARY.count { |row| row.fetch(:ok) }
-    f.puts "# Agent e2e: #{passed} of #{SUMMARY.size} passed"
-    SUMMARY.each do |row|
-      agent = row.fetch(:agent)
-      f.puts
-      f.puts "## #{agent}"
-      f.puts
-      f.puts "| Result | Model | Usage |"
-      f.puts "|---|---|---|"
-      result = "#{row.fetch(:ok) ? "PASS" : "FAIL"} (attempt #{row.fetch(:attempts)})"
-      f.puts "| #{result} | #{MODELS.fetch(agent, "?")} | #{row.fetch(:usage) || "not reported"} |"
-      notes = row.fetch(:notes)
-      next if notes.empty?
-      f.puts
-      f.puts "```"
-      notes.each { |line| f.puts line }
-      f.puts "```"
-    end
-  end
-end
-
 AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freeze
 
 if ENV["SE_E2E_SKIP"] == "1"
@@ -322,8 +292,8 @@ if ENV["SE_E2E_SKIP"] == "1"
   exit 0
 end
 
-requested = ARGV.empty? ? ["all"] : ARGV
-agents = requested == ["all"] ? AGENTS.keys : requested
+target = ARGV[0] || "all"
+agents = (target == "all") ? AGENTS.keys : [target]
 abort "usage: bin/e2e-agents <pi|claude|codex|all>" unless (agents - AGENTS.keys).empty?
 
 ran = 0
@@ -334,16 +304,15 @@ agents.each do |agent|
     next
   end
   model = model_for(agent)
-  MODELS[agent] = model
   # The Google preflight only covers the default provider.
   unless agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"
     preflight(agent, model)
   end
   ran += 1
-  failed += 1 unless send(AGENTS.fetch(agent))
+  ok, attempts, usage = send(AGENTS.fetch(agent))
+  announce(agent, model, ok, attempts, usage)
+  failed += 1 unless ok
 end
-
-write_summary
 
 abort "agent e2e failed" if failed.positive?
 puts "agent e2e passed (#{ran} agent#{"s" unless ran == 1} ran)" if ran.positive?

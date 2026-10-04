@@ -138,11 +138,10 @@ adapter's wire input, and no tokens are spent. Layer 2 is
 in note.md. The gate: the whole file ends clean, the answer was
 appended, and violations the agent was never asked to fix are gone.
 The `e2e-agents.yml` workflow runs it on demand, with credentials.
+`SE_E2E_SKIP=1 bin/e2e-agents` prints the scenarios.
 
-Each run writes its result, model, usage, and leftover findings to
-the Actions run summary page, one table per agent in one process.
-`SE_E2E_SKIP=1 bin/e2e-agents` prints
-the scenarios.
+Each agent job also emits its result as a run annotation. The run
+page then lists every agent, its model, and its token usage.
 
 ### What the codex failures taught
 
