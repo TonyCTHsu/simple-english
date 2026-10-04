@@ -31,7 +31,8 @@ repository.
    ```
 
 Do not push tags by hand. The workflow tags the release commit. It builds
-and verifies native servers on Ubuntu 22.04 x86-64 and macOS arm64. It builds,
+and verifies native servers on Ubuntu 22.04 x86-64, Ubuntu 22.04
+arm64, and macOS arm64. It builds,
 installs, and exercises each platform gem before publication. Each native
 executable also has a SHA-256 checksum and signed build-provenance attestation
 on the GitHub release.

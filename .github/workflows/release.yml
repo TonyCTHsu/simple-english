@@ -48,6 +48,8 @@ jobs:
         include:
           - runner: ubuntu-22.04
             platform: x86_64-linux
+          - runner: ubuntu-22.04-arm
+            platform: aarch64-linux
           - runner: macos-15-xlarge
             platform: arm64-darwin
     runs-on: ${{ matrix.runner }}

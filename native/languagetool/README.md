@@ -35,9 +35,9 @@ loopback port. Users do not need GraalVM, Maven, Java, or build tools.
 Initial release artifacts target:
 
 - macOS arm64
-- Linux x86-64 with glibc
+- Linux x86-64 and Linux arm64, both with glibc
 
-Native Image does not cross-compile. Build each executable on its target platform. Linux releases use Ubuntu 22.04 and require glibc 2.35 or newer. GraalVM emits Linux AWT support libraries beside the stock server. An isolated Ubuntu test proves that the executable does not load them, so release packages exclude them. Linux arm64, macOS x86-64, Windows, and musl Linux are deferred.
+Native Image does not cross-compile. Build each executable on its target platform. Linux releases use Ubuntu 22.04 and require glibc 2.35 or newer. GraalVM emits Linux AWT support libraries beside the stock server. An isolated Ubuntu test proves that the executable does not load them, so release packages exclude them. macOS x86-64, Windows, and musl Linux are deferred.
 
 ## Build
 
@@ -76,7 +76,8 @@ ruby native/languagetool/build.rb
 Native Image receives these project-specific options:
 
 - `--no-fallback` fails the build instead of producing a JVM launcher.
-- `-march=compatibility` avoids build-host CPU requirements.
+- `-march=compatibility` avoids build-host CPU requirements on x86-64.
+  AArch64 has a single baseline, so the option stays off there.
 - `-H:ConfigurationFileDirectories=.../config` loads the tracked
   reachability metadata.
 - `--initialize-at-run-time=...` delays logging, metrics, telemetry,

@@ -78,7 +78,14 @@ jobs:
           validation_depth: 100
 
   native:
-    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            platform: x86_64-linux
+          - runner: ubuntu-24.04-arm
+            platform: aarch64-linux
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -115,9 +122,10 @@ jobs:
           install -m 0755 tmp/native-languagetool/languagetool-native \
             libexec/simple_english/languagetool-server
           gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*-x86_64-linux.gem
+          gem install --no-document ./simple_english-*-${PLATFORM}.gem
         env:
-          SIMPLE_ENGLISH_GEM_PLATFORM: x86_64-linux
+          SIMPLE_ENGLISH_GEM_PLATFORM: ${{ matrix.platform }}
+          PLATFORM: ${{ matrix.platform }}
 
       - name: Verify the installed platform gem
         run: bin/e2e-story
