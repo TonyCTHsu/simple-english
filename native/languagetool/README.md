@@ -24,11 +24,13 @@ server and runs a smoke test. `verify.rb` sends the same full workload
 to the JVM server and native server and requires identical HTTP status
 codes and JSON responses.
 
-CI runs metadata generation, native compilation, parity verification,
-and platform-gem installation in that order. Release jobs repeat the
-build and verification on each target OS because Native Image does not
-cross-compile. At run time, Ruby starts the bundled executable on a
-loopback port. Users do not need GraalVM, Maven, Java, or build tools.
+CI runs the metadata check, `rake build` (native compilation, parity
+verification, and packaging), and an installed-gem exercise. A cache
+keyed on the build inputs skips recompilation when they do not change.
+Release jobs repeat the same build on each target OS because Native
+Image does not cross-compile. At run time, Ruby starts the bundled
+executable on a loopback port. Users do not need GraalVM, Maven, Java,
+or build tools.
 
 ## Release targets
 
@@ -47,11 +49,15 @@ Prerequisites:
 - A native C compiler, linker, and zlib development files
 - At least 10 GB of available memory
 
-The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. From the repository root, run:
+The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. CI also caches the compiled executable keyed on the build inputs and reuses it when they do not change. From the repository root, run:
 
 ```sh
-ruby native/languagetool/build.rb
+PLATFORM=arm64-darwin rake build
 ```
+
+`rake build` compiles the server, verifies parity, installs it under
+`libexec/simple_english/languagetool-server`, and packages the platform
+gem plus release artifacts under `dist/`.
 
 ## Compilation pipeline
 

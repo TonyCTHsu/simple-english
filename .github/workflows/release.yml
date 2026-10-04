@@ -75,36 +75,11 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
-      - name: Build and verify native LanguageTool server
-        run: |
-          bundle exec ruby native/languagetool/build.rb
-          bundle exec ruby native/languagetool/verify.rb \
-            "$(cat tmp/native-languagetool/classpath)" \
-            tmp/native-languagetool/languagetool-native
-          mkdir -p libexec/simple_english
-          install -m 0755 tmp/native-languagetool/languagetool-native \
-            libexec/simple_english/languagetool-server
-          mkdir -p dist
-          tar -C libexec -czf "dist/languagetool-server-${PLATFORM}.tar.gz" \
-            simple_english
-          cp tmp/native-languagetool/languagetool-native.sbom.json \
-            "dist/languagetool-server-${PLATFORM}.sbom.json"
-          ruby -rdigest -e \
-            'path = ARGV.fetch(0); puts "#{Digest::SHA256.file(path).hexdigest}  #{File.basename(path)}"' \
-            "dist/languagetool-server-${PLATFORM}.tar.gz" \
-            > "dist/languagetool-server-${PLATFORM}.tar.gz.sha256"
+      - name: Build, verify, and package the native server and gem
+        run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
           PLATFORM: ${{ matrix.platform }}
-
-      - name: Build platform gem
-        run: |
-          gem build simple_english.gemspec \
-            --output "dist/simple_english-${VERSION}-${PLATFORM}.gem"
-        env:
-          PLATFORM: ${{ matrix.platform }}
-          SIMPLE_ENGLISH_GEM_PLATFORM: ${{ matrix.platform }}
-          VERSION: ${{ needs.release.outputs.version }}
 
       - name: Verify platform gem
         run: |

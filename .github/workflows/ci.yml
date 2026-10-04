@@ -105,26 +105,15 @@ jobs:
       - name: Check native reachability metadata
         run: bundle exec ruby native/languagetool/metadata.rb --check
 
-      - name: Build native LanguageTool server
-        run: bundle exec ruby native/languagetool/build.rb
+      - name: Build, verify, and package the native server and gem
+        run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
+          PLATFORM: ${{ matrix.platform }}
 
-      - name: Verify native LanguageTool parity
-        run: |
-          bundle exec ruby native/languagetool/verify.rb \
-            "$(cat tmp/native-languagetool/classpath)" \
-            tmp/native-languagetool/languagetool-native
-
-      - name: Build and install the platform gem
-        run: |
-          mkdir -p libexec/simple_english
-          install -m 0755 tmp/native-languagetool/languagetool-native \
-            libexec/simple_english/languagetool-server
-          gem build simple_english.gemspec
-          gem install --no-document "./simple_english-*-${PLATFORM}.gem"
+      - name: Install the platform gem
+        run: gem install --no-document "./dist/simple_english-*-${PLATFORM}.gem"
         env:
-          SIMPLE_ENGLISH_GEM_PLATFORM: ${{ matrix.platform }}
           PLATFORM: ${{ matrix.platform }}
 
       - name: Verify the installed platform gem
