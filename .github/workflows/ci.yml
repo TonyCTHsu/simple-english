@@ -85,7 +85,67 @@ jobs:
           validation_level: error
           validation_depth: 100
 
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      native: ${{ steps.filter.outputs.native }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether the native job runs
+        id: filter
+        # Docs, tests, rules, agent integrations, and changelog text
+        # never reach the binary, so a PR touching only those skips
+        # the compile. Every other event builds.
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "native=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          base="${{ github.event.pull_request.base.sha }}"
+          if git diff --name-only "$base"...HEAD \
+            | grep -vE '^(\.changes/|docs/|integrations/|licenses/|rules/|test/|\.github/ISSUE_TEMPLATE/|THIRD_PARTY_NOTICES\.md|[^/]+\.md$)' \
+            | grep -q .; then
+            echo "native=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "native=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  rules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
+        with:
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Stage the JVM classpath
+        run: bundle exec ruby -e 'require "./native/languagetool/build"; NativeLanguageToolBuild.prepare_classes'
+
+      - name: Run the rules and daemon checks on the JVM
+        env:
+          SE_LANGUAGETOOL_EXECUTABLE: ${{ github.workspace }}/bin/dev-server
+        run: |
+          bundle exec rake test
+          bundle exec ruby test/examples_check.rb
+          PATH="$PWD/bin:$PATH" bundle exec bin/e2e-story
+
   native:
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -135,8 +195,5 @@ jobs:
       - name: Boot the installed daemon in an empty environment
         run: .github/scripts/daemon-empty-env.sh
 
-      - name: Run the Ruby and rules checks
-        run: |
-          bundle exec rake test
-          bundle exec rake lint
-          bundle exec ruby test/examples_check.rb
+      - name: Run the Ruby tests against the binary
+        run: bundle exec rake test

@@ -72,8 +72,10 @@ JAVA_HOME=/Users/you/graalvm/graalvm-community-openjdk-25.0.2+10.1/Contents/Home
 install.
 
 Edit the XML, rerun the check, and skip the recompile until the
-rules settle. Recompile once before a push: CI runs the parity and
-rules checks against the native binary.
+rules settle. CI runs the rules and daemon checks on the JVM for
+every PR, so rule work needs no compile. The native matrix runs
+when the change touches the binary's inputs, and on every master
+push.
 
 The self-lint lints through a daemon on port 8181. On macOS, a
 brew-installed se can run as a brew service. Its `KeepAlive` restarts
@@ -110,11 +112,12 @@ Only boundary tests exercise the real executable.
    example. It proves the rule stays silent on its correct example.
    `roundtrip_test.rb` and the daemon end-to-end test check offset
    mapping and the full serve → lint path with a real daemon.
-5. **CI user story** (`bin/e2e-story`): CI builds and installs the
-   platform gem, then runs this script without an executable override.
-   It lints
-   every corpus pair outside the repo, so the corpus has one CI
-   home. It asserts exit codes: findings on each before file, clean
+5. **CI user story** (`bin/e2e-story`): the rules job runs it
+   against the JVM server with an executable override. The native
+   job builds and installs the platform gem, then runs it without
+   one. Both lint
+   every corpus pair outside the repo. Each job asserts exit codes:
+   findings on each before file, clean
    on each after file. It also lints a code comment through the
    comment pipeline. The first lint boots the daemon.
 
