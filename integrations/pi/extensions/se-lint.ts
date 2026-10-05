@@ -50,7 +50,7 @@ export default function (pi: ExtensionAPI) {
 				const e = err as NodeJS.ErrnoException;
 				if (e.code === "ENOENT") {
 					throw new Error(
-						"`se` not found. Install it first: `gem install simple_english`, then `se setup`, then retry.",
+						"`se` not found. Install it first: `gem install simple_english`, then retry.",
 					);
 				}
 				throw new Error(`se lint failed: ${e.message}`);

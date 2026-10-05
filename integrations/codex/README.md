@@ -10,8 +10,8 @@ call the `lint` tool and fix every finding.
 
 ## Install
 
-The linter is a Ruby gem. Install the gem and run `se setup` first.
-Then install the plugin through a local marketplace:
+Install the gem first. Then install the plugin through a local
+marketplace:
 
 ```bash
 codex plugin marketplace add ./local-marketplace

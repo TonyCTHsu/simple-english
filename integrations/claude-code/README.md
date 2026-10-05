@@ -11,12 +11,10 @@ Claude fixes them in its next turn. The plugin also ships the
 
 ## Install
 
-The linter is a Ruby gem. Install the gem, run `se setup`, then
-install the plugin:
+The linter is a Ruby gem. Install the gem, then install the plugin:
 
 ```bash
 gem install simple_english
-se setup
 claude plugin marketplace add TonyCTHsu/simple-english
 ```
 

@@ -10,12 +10,10 @@ The package adds two things to pi:
 
 ## Install
 
-The linter is a Ruby gem. Install the gem, run `se setup`, then
-install the package:
+The linter is a Ruby gem. Install the gem, then install the package:
 
 ```bash
 gem install simple_english
-se setup
 pi install npm:pi-simple-english
 ```
 

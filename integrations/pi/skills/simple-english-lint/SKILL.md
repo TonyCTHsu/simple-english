@@ -15,7 +15,7 @@ The tool names differ by agent:
 - MCP clients expose the tool `lint`.
 
 If the lint tool is missing or unavailable, the engine is not installed.
-Run `gem install simple_english`, then `se setup`, then retry.
+Run `gem install simple_english`, then retry.
 
 Fixing the findings is part of writing the prose. A draft with findings
 is not done.
