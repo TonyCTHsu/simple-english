@@ -7,10 +7,11 @@ on:
 
 # The toolchain facts the native cache keys on. A distribution or version
 # change must invalidate the cached binary, so both live here, next to the
-# cache key that consumes them.
+# cache key that consumes them. setup-graalvm accepts a train like 25.0
+# only: it resolves the exact patch through the GraalVM Download Service.
 env:
   GRAALVM_DISTRIBUTION: graalvm
-  GRAALVM_VERSION: "25.0.4.1.1"
+  GRAALVM_VERSION: "25.0"
 
 jobs:
   unit:
