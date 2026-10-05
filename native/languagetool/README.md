@@ -58,8 +58,8 @@ rake build
 `rake build` compiles the server, verifies parity, installs it under
 `libexec/simple_english/languagetool-server`, and packages the platform
 gem plus release artifacts under `dist/`. The build host determines the
-platform label; `rake build` aborts on hosts outside the supported set
-(macOS arm64 and glibc Linux x86-64 or arm64).
+platform label, and `rake build` aborts on hosts outside the supported
+set (macOS arm64 and glibc Linux x86-64 or arm64).
 
 ## Compilation pipeline
 

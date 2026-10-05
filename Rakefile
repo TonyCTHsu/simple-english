@@ -25,12 +25,12 @@ def native_platform
   local = Gem::Platform.local
   candidate = "#{local.cpu}-#{local.os}"
   SUPPORTED_PLATFORMS.include?(candidate) or
-    abort "error: unsupported build host #{candidate}. Supported: #{SUPPORTED_PLATFORMS.join(', ')}"
+    abort "error: unsupported build host #{candidate}. Supported: #{SUPPORTED_PLATFORMS.join(", ")}"
   candidate
 end
 
 desc "Build the native lint engine and the platform gem"
-task :build => NATIVE_EXECUTABLE do
+task build: NATIVE_EXECUTABLE do
   platform = native_platform
   build = Pathname.new(NATIVE_BUILD)
   executable = build.join("languagetool-native")
