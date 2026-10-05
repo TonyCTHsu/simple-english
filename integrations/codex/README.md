@@ -21,7 +21,7 @@ codex plugin add simple-english@local-dev
 
 `local-dev` is the `name` field of the marketplace file, from the
 example in `integrations/verification.md`. Name yours whatever you
-like; the install command follows.
+like. The install command follows.
 
 `integrations/verification.md` in the repository holds the full
 steps: the marketplace file and the approval settings.
