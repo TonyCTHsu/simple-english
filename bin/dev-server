@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Run the LanguageTool server on the JVM with the current rules. The
+# daemon spawns SE_LANGUAGETOOL_EXECUTABLE with --port, and this
+# script forwards the same args to the JVM server. Tests then lint
+# against the fresh rules with no native recompile. One native build
+# must have staged the classpath under tmp/, and JAVA_HOME must point
+# at GraalVM. Run bin/setup-graalvm to install one.
+set -euo pipefail
+
+repo="$(cd "$(dirname "$0")/.." && pwd)"
+build="$repo/tmp/native-languagetool"
+classes="$build/maven-target/classes/org/languagetool/rules/en"
+
+if [ ! -d "$classes" ]; then
+  echo "error: no staged classpath under $build." >&2
+  echo "Run JAVA_HOME=... bundle exec rake build once." >&2
+  exit 1
+fi
+if [ -z "${JAVA_HOME:-}" ]; then
+  echo "error: set JAVA_HOME to GraalVM. Run bin/setup-graalvm to install one." >&2
+  exit 1
+fi
+
+cp "$repo/rules/simple-english.xml" "$classes/grammar_custom.xml"
+exec "$JAVA_HOME/bin/java" -cp "$(cat "$build/classpath")" \
+  org.languagetool.server.HTTPServer "$@"

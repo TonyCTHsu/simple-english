@@ -63,7 +63,7 @@ module SimpleEnglish
       daemon = Client.info(base_url: "http://localhost:#{port}")
       return unless daemon.is_a?(Hash)
       stop(daemon["pid"])
-      # The outer listener closes first. The inner server takes longer
+      # The outer listener closes first. The inner server takes
       # longer. Both ports must free, or the next boot hits the inner
       # port and dies.
       deadline = Time.now + 10

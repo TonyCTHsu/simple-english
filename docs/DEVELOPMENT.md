@@ -51,9 +51,29 @@ ruby test/corpus_check.rb   # corpus pairs
 ```
 
 The last two need the native LanguageTool server. Build it with
-`ruby native/languagetool/build.rb`, then set
+`rake build`, then set
 `SE_LANGUAGETOOL_EXECUTABLE=tmp/native-languagetool/languagetool-native`.
 The unit tests do not need the native server.
+
+### Iterate on rules without a native recompile
+
+The native server embeds `rules/simple-english.xml` at build time, so
+a rule change normally costs a recompile. The JVM runs the same
+rules from disk, and one native build stages the JVM classpath under
+`tmp/`. After that, `bin/dev-server` serves the current rules on the
+JVM, and the daemon accepts it through `SE_LANGUAGETOOL_EXECUTABLE`:
+
+```
+JAVA_HOME=/Users/you/graalvm/graalvm-jdk-25.0.4.1.1+1.1/Contents/Home \
+  SE_LANGUAGETOOL_EXECUTABLE=bin/dev-server bundle exec ruby test/corpus_check.rb
+```
+
+`bin/setup-graalvm` prints the exact `JAVA_HOME` path for your
+install.
+
+Edit the XML, rerun the check, and skip the recompile until the
+rules settle. Recompile once before a push: CI runs the parity and
+rules checks against the native binary.
 
 The self-lint lints through a daemon on port 8181. On macOS, a
 brew-installed se can run as a brew service. Its `KeepAlive` restarts

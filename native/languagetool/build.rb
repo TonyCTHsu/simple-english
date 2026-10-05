@@ -4,7 +4,6 @@
 require "fileutils"
 require "json"
 require "net/http"
-require "pathname"
 require "socket"
 require "tempfile"
 require "uri"
@@ -35,6 +34,16 @@ module NativeLanguageToolBuild
     end
   end
 
+  # Native Image stamps the build host's OS version into the binary
+  # unless the link pins an older floor. MACOSX_DEPLOYMENT_TARGET has no
+  # effect: the compiler passes its own minimum flag, and this linker
+  # option overrides it.
+  def deployment_target_option
+    return [] unless RbConfig::CONFIG["host_os"].include?("darwin")
+
+    ["-H:NativeLinkerOption=-mmacosx-version-min=12.0"]
+  end
+
   def prepare_classes
     FileUtils.rm_rf(TARGET)
     FileUtils.rm_f([DEPENDENCIES_FILE, CLASSPATH_FILE])
@@ -58,11 +67,18 @@ module NativeLanguageToolBuild
     CLASSPATH_FILE.write(classpath)
   end
 
+  def native_image
+    from_home = File.join(ENV.fetch("JAVA_HOME", ""), "bin", "native-image")
+    return from_home if File.executable?(from_home)
+
+    "native-image"
+  end
+
   def build_executable
-    options = [
-      "--no-fallback",
-      "--enable-sbom=embed,export",
-      "-march=compatibility",
+    options = ["--no-fallback", "--enable-sbom=embed,export"]
+    # -march is an AMD64-only option. AArch64 has a single baseline.
+    options << "-march=compatibility" if RbConfig::CONFIG["host_cpu"].match?(/x86_64|amd64/)
+    options += deployment_target_option + [
       "--initialize-at-run-time=ch.qos.logback,org.slf4j,io.prometheus,io.opentelemetry,io.grpc.netty.shaded.io.netty",
       "--enable-url-protocols=http,https",
       "-H:ConfigurationFileDirectories=#{SOURCE.join("config")}"
@@ -70,7 +86,7 @@ module NativeLanguageToolBuild
     parallelism = ENV["NATIVE_IMAGE_PARALLELISM"]
     options << "--parallelism=#{parallelism}" if parallelism
     system(
-      "native-image", *options,
+      native_image, *options,
       "-cp", CLASSPATH_FILE.read.strip,
       MAIN_CLASS,
       EXECUTABLE.to_s,
