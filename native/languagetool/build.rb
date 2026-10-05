@@ -18,15 +18,15 @@ module NativeLanguageToolBuild
   DEPENDENCIES_FILE = BUILD.join("dependencies.classpath")
   CLASSPATH_FILE = BUILD.join("classpath")
   EXECUTABLE = BUILD.join("languagetool-native")
-  SBOM = Pathname("#{EXECUTABLE}.sbom.json")
+  SBOM = TARGET.join("bom.json")
   MAIN_CLASS = "org.languagetool.server.HTTPServer"
 
   def run
     prepare_classes
-    FileUtils.rm_f([EXECUTABLE, SBOM])
+    FileUtils.rm_f(EXECUTABLE)
     FileUtils.rm_f(Dir[BUILD.join("lib*.so")])
     build_executable
-    abort "Native Image did not export #{SBOM}" unless SBOM.file?
+    abort "Maven did not export #{SBOM}" unless SBOM.file?
     smoke_test
     puts "Built #{EXECUTABLE.relative_path_from(ROOT)}"
     Dir[BUILD.join("lib*.so")].sort.each do |library|
@@ -57,7 +57,7 @@ module NativeLanguageToolBuild
       "-Dnative.build.directory=#{TARGET}",
       "-Dmdep.outputFile=#{DEPENDENCIES_FILE}",
       "-f", SOURCE.join("pom.xml").to_s,
-      "process-resources", "dependency:build-classpath",
+      "process-resources", "dependency:build-classpath", "cyclonedx:makeBom",
       exception: true
     )
     rules = TARGET.join("classes/org/languagetool/rules/en/grammar_custom.xml")
@@ -75,7 +75,7 @@ module NativeLanguageToolBuild
   end
 
   def build_executable
-    options = ["--no-fallback", "--enable-sbom=embed,export"]
+    options = ["--no-fallback"]
     # -march is an AMD64-only option. AArch64 has a single baseline.
     options << "-march=compatibility" if RbConfig::CONFIG["host_cpu"].match?(/x86_64|amd64/)
     options += deployment_target_option + [

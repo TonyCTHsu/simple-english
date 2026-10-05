@@ -8,11 +8,10 @@ own code is MIT-licensed; see `LICENSE`.
 
 Each platform gem ships a compiled lint engine at
 `libexec/simple_english/languagetool-server`. The binary is built with
-GraalVM Community Edition 25.0.4.1.1 and contains code from the
+GraalVM Community Edition 25.0.2 and contains code from the
 components below. The authoritative list of components inside a given
 binary is the CycloneDX SBOM published with each release
-(`dist/languagetool-server-<platform>.sbom.json`) and embedded in the
-binary itself.
+(`dist/languagetool-server-<platform>.sbom.json`).
 
 | Component | License | Notice |
 |---|---|---|

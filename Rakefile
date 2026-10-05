@@ -42,8 +42,8 @@ task build: NATIVE_EXECUTABLE do
   FileUtils.mkdir_p("dist")
   tar = "dist/languagetool-server-#{platform}.tar.gz"
   sh "tar -C libexec -czf #{tar} simple_english"
-  FileUtils.cp(build.join("languagetool-native.sbom.json"),
-    "dist/languagetool-server-#{platform}.sbom.json")
+  sbom = build.join("maven-target/bom.json")
+  FileUtils.cp(sbom, "dist/languagetool-server-#{platform}.sbom.json")
   checksum = Digest::SHA256.file(tar).hexdigest
   File.write("#{tar}.sha256", "#{checksum}  #{File.basename(tar)}\n")
 

@@ -45,7 +45,7 @@ Native Image does not cross-compile. Build each executable on its target platfor
 
 Prerequisites:
 
-- Oracle GraalVM 25.0.4.1.1 with Native Image
+- GraalVM Community 25.0.2 with Native Image
 - A native C compiler, linker, and zlib development files
 - At least 10 GB of available memory
 
@@ -101,8 +101,11 @@ Native Image receives these project-specific options:
   cannot be captured safely in the image heap.
 - `--enable-url-protocols=http,https` includes URL handlers used while
   LanguageTool checks text.
-- `--enable-sbom=embed,export` puts a CycloneDX SBOM in the executable
-  and writes a copy beside it.
+- The CycloneDX Maven plugin writes `maven-target/bom.json`, a
+  CycloneDX SBOM of the engine's dependency tree. Community
+  native-image has no SBOM feature. The SBOM therefore lists the
+  declared dependencies rather than the classes retained in the
+  binary.
 - `NATIVE_IMAGE_PARALLELISM`, when set, limits Native Image worker
   threads. CI and release builds set it to `4`.
 
@@ -110,7 +113,7 @@ Build output:
 
 ```text
 tmp/native-languagetool/languagetool-native
-tmp/native-languagetool/languagetool-native.sbom.json
+maven-target/bom.json (under tmp/native-languagetool)
 tmp/native-languagetool/lib*.so # Linux build support files
 ```
 
