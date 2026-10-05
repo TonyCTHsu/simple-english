@@ -1,6 +1,6 @@
 {
   "name": "simple-english",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Lint Markdown prose with the plain-English rules. The hook feeds findings back after every edit, so Claude fixes them in its next turn.",
   "author": {
     "name": "TonyCTHsu"

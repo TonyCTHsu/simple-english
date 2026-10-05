@@ -1,6 +1,6 @@
 {
   "name": "simple-english",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Lint prose and code comments with the simple_english plain-English rules.",
   "type": "module",
   "license": "MIT",

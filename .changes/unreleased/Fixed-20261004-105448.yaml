@@ -1,3 +1,0 @@
-kind: Fixed
-body: Fix `ignore:` entries not matching the absolute paths that agent hooks pass, so globs like `docs/**` hold for every surface.
-time: 2026-10-04T10:54:48.020012+02:00
