@@ -11,7 +11,7 @@ on:
 # only: it resolves the exact patch through the GraalVM Download Service.
 env:
   GRAALVM_DISTRIBUTION: graalvm
-  GRAALVM_VERSION: "25.4"
+  GRAALVM_VERSION: "25.0"
 
 jobs:
   unit:
