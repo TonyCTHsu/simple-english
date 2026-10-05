@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    simple_english (0.4.2)
+    simple_english (0.5.0)
       thor (~> 1.0)
       tree_sitter_language_pack (~> 1.20)
 
@@ -54,7 +54,7 @@ CHECKSUMS
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   rubyzip (3.7.0) sha256=65c19294da75297a939006f3516deacc33185fbd721ff1954f7a231db6d3e121
-  simple_english (0.4.2)
+  simple_english (0.5.0)
   sorbet-runtime (0.6.13508) sha256=011ee266adead459077ebc0058d36aeb75d6c90968db8524916050ce3c62e526
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
   tree_sitter_language_pack (1.20.0-aarch64-linux) sha256=8b43f4c3d18705d4211a5dc0d9281f5e68616c8dd6b323df411b9ee026894f6f

@@ -1,3 +1,0 @@
-kind: Added
-body: Add `se mcp`, an MCP stdio server with one lint tool. It honors `.simple-english.yml` like the CLI.
-time: 2026-10-02T21:16:39.792262+02:00
