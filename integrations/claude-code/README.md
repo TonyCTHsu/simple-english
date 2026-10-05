@@ -21,7 +21,7 @@ claude plugin marketplace add TonyCTHsu/simple-english
 Then, inside Claude Code:
 
 ```
-/plugin install simple-english@simple-english-dev
+/plugin install simple-english@simple-english
 ```
 
 You can also try the plugin from a checkout of this repository:

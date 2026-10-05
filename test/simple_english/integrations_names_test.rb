@@ -4,7 +4,8 @@ require_relative "test_helper"
 
 # The name audit from the spec's Names section. It covers the three
 # distinctive exposed names, listed in NAMES. The shared plugin name
-# "simple-english" is not distinctive, so the audit leaves it out.
+# "simple-english" is not distinctive, and the marketplace now shares
+# it, so the audit leaves both out.
 # Each audited name may appear only in its recorded places. A rename
 # updates those places and this list together. New places need a spec
 # change first.
@@ -36,11 +37,6 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/codex/skills/simple-english-lint/SKILL.md",
       "integrations/pi/skills/simple-english-lint/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
-    ],
-    # The development marketplace name.
-    "simple-english-dev" => [
-      ".claude-plugin/marketplace.json",
-      "integrations/claude-code/README.md"
     ],
     # The MCP subcommand wiring.
     "se mcp" => [
