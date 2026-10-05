@@ -76,7 +76,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   needs a stated reason here first. (Thor was a
   user-directed refactor, 2026-02-27.) Platform gems bundle a native
   LanguageTool server. Runtime no longer depends on a JVM (2026-10-01).
-  `rexml` remains dev-only for `bin/render-rules` (2026-10-02).
+  `rexml` remains dev-only for `bin/render-rules` and
+  `native/languagetool/verify.rb` (2026-10-02).
 - Dev and test tools are the exception. Pick the best tool for the
   job even when it adds a dev-only dependency. Record it here with a
   one-line reason. Keep such tools out of the gemspec runtime list.
@@ -85,7 +86,8 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   require a bundled gem that the lockfile omits. `minitest-mock`
   restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
   Both are dev-only, in the gemspec. `rexml` parses
-  the rule XML in `bin/render-rules`. It stopped shipping as a Ruby
+  the rule XML in `bin/render-rules` and `verify.rb` extracts rule
+  examples from it for native parity checks. It stopped shipping as a Ruby
   default gem in 4.x (2026-10-02). `changie` (a brew
   binary, not
   a gem) batches change fragments into `CHANGELOG.md` at release

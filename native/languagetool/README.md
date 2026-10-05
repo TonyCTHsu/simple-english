@@ -24,20 +24,22 @@ server and runs a smoke test. `verify.rb` sends the same full workload
 to the JVM server and native server and requires identical HTTP status
 codes and JSON responses.
 
-CI runs metadata generation, native compilation, parity verification,
-and platform-gem installation in that order. Release jobs repeat the
-build and verification on each target OS because Native Image does not
-cross-compile. At run time, Ruby starts the bundled executable on a
-loopback port. Users do not need GraalVM, Maven, Java, or build tools.
+CI runs the metadata check, `rake build` (native compilation, parity
+verification, and packaging), and an installed-gem exercise. A cache
+keyed on the build inputs skips recompilation when they do not change.
+Release jobs repeat the same build on each target OS because Native
+Image does not cross-compile. At run time, Ruby starts the bundled
+executable on a loopback port. Users do not need GraalVM, Maven, Java,
+or build tools.
 
 ## Release targets
 
 Initial release artifacts target:
 
 - macOS arm64
-- Linux x86-64 with glibc
+- Linux x86-64 and Linux arm64, both with glibc
 
-Native Image does not cross-compile. Build each executable on its target platform. Linux releases use Ubuntu 22.04 and require glibc 2.35 or newer. GraalVM emits Linux AWT support libraries beside the stock server. An isolated Ubuntu test proves that the executable does not load them, so release packages exclude them. Linux arm64, macOS x86-64, Windows, and musl Linux are deferred.
+Native Image does not cross-compile. Build each executable on its target platform. Linux releases use Ubuntu 22.04 and require glibc 2.35 or newer. GraalVM emits Linux AWT support libraries beside the stock server. An isolated Ubuntu test proves that the executable does not load them, so release packages exclude them. macOS x86-64, Windows, and musl Linux are deferred.
 
 ## Build
 
@@ -47,11 +49,25 @@ Prerequisites:
 - A native C compiler, linker, and zlib development files
 - At least 10 GB of available memory
 
-The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. From the repository root, run:
+The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. Each workflow pins the distribution and version in its `env` block. The CI cache keys on the build inputs and that toolchain pin. CI caches the build directory and touches the restored executable, so Rake reuses it when the inputs do not change. From the repository root, run:
 
 ```sh
-ruby native/languagetool/build.rb
+rake build
 ```
+
+`rake build` compiles the server, verifies parity, installs it under
+`libexec/simple_english/languagetool-server`, and packages the platform
+gem plus release artifacts under `dist/`. The build host determines the
+platform label, and `rake build` aborts on hosts outside the supported
+set (macOS arm64 and glibc Linux x86-64 or arm64). The darwin build
+pins the deployment target to macOS 12, so newer build machines do not
+raise the floor. The release workflow checks the stamped floor on the
+built binary: glibc 2.35 through `objdump` on Linux, macOS 12 through
+`otool` on darwin.
+
+Run `bin/setup-graalvm` to install the pinned GraalVM under
+`~/graalvm` without admin rights. It downloads the same artifact CI
+installs and prints the `JAVA_HOME` line for the build.
 
 ## Compilation pipeline
 
@@ -76,7 +92,8 @@ ruby native/languagetool/build.rb
 Native Image receives these project-specific options:
 
 - `--no-fallback` fails the build instead of producing a JVM launcher.
-- `-march=compatibility` avoids build-host CPU requirements.
+- `-march=compatibility` avoids build-host CPU requirements on x86-64.
+  AArch64 has a single baseline, so the option stays off there.
 - `-H:ConfigurationFileDirectories=.../config` loads the tracked
   reachability metadata.
 - `--initialize-at-run-time=...` delays logging, metrics, telemetry,

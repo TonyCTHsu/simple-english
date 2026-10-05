@@ -5,6 +5,14 @@ on:
     branches: [master]
   pull_request:
 
+# The toolchain facts the native cache keys on. A distribution or version
+# change must invalidate the cached binary, so both live here, next to the
+# cache key that consumes them. setup-graalvm accepts a train like 25.0
+# only: it resolves the exact patch through the GraalVM Download Service.
+env:
+  GRAALVM_DISTRIBUTION: graalvm
+  GRAALVM_VERSION: "25.0"
+
 jobs:
   unit:
     runs-on: ${{ matrix.os }}
@@ -78,16 +86,19 @@ jobs:
           validation_depth: 100
 
   native:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
-          distribution: graalvm
-          version: "25.0"
-          java-version: "25.0.4.1.1"
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: maven
 
@@ -97,28 +108,26 @@ jobs:
           bundler-cache: true
 
       - name: Check native reachability metadata
-        run: ruby native/languagetool/metadata.rb --check
+        run: bundle exec ruby native/languagetool/metadata.rb --check
 
-      - name: Build native LanguageTool server
-        run: ruby native/languagetool/build.rb
+      - name: Restore the native build cache
+        id: native_cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tmp/native-languagetool
+          key: native-v2-${{ matrix.runner }}-${{ env.GRAALVM_DISTRIBUTION }}-${{ env.GRAALVM_VERSION }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock') }}
+
+      - name: Mark the cached executable as fresh
+        if: steps.native_cache.outputs.cache-hit == 'true'
+        run: touch tmp/native-languagetool/languagetool-native
+
+      - name: Build, verify, and package the native server and gem
+        run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
 
-      - name: Verify native LanguageTool parity
-        run: |
-          ruby native/languagetool/verify.rb \
-            "$(cat tmp/native-languagetool/classpath)" \
-            tmp/native-languagetool/languagetool-native
-
-      - name: Build and install the platform gem
-        run: |
-          mkdir -p libexec/simple_english
-          install -m 0755 tmp/native-languagetool/languagetool-native \
-            libexec/simple_english/languagetool-server
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*-x86_64-linux.gem
-        env:
-          SIMPLE_ENGLISH_GEM_PLATFORM: x86_64-linux
+      - name: Install the platform gem
+        run: gem install --no-document ./dist/simple_english-*.gem
 
       - name: Verify the installed platform gem
         run: bin/e2e-story
