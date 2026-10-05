@@ -33,6 +33,17 @@ class ConfigTest < Minitest::Test
     assert_equal [kept], SimpleEnglish::Config.filter(config, "lib/a.py", [dropped, kept])
   end
 
+  def test_absolute_path_under_cwd_matches_relative_glob
+    config = {ignore: ["docs/**"], disabled_rules: []}
+    finding = SimpleEnglish::Finding.new(line: 1, column: nil, rule: "R", message: "x")
+    in_tmpdir(chdir: true) do |dir|
+      absolute = File.join(dir, "docs", "a.md")
+      FileUtils.mkdir_p(File.dirname(absolute))
+      FileUtils.touch(absolute)
+      assert_empty SimpleEnglish::Config.filter(config, absolute, [finding])
+    end
+  end
+
   def test_invalid_yaml_raises_config_error
     in_tmpdir do |dir|
       File.write(File.join(dir, ".simple-english.yml"), "ignore: [unclosed\n")

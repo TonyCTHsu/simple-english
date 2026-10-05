@@ -27,15 +27,19 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   first, not a direct fix. Pull requests are drafts.
 - A pull request that touches `.github/workflows/` follows the action
   pinning rules in `.github/AGENTS.md`.
-- Changelog: run `changie new` and commit the fragment under `.changes/unreleased/`
+- Changelog: run `changie new -k <Kind> -b "BODY"` and commit the fragment
+  under `.changes/unreleased/`
   only when the tool's behavior changes. Documentation-only changes get no entry.
+  Pass the kind and body as flags: bare `changie new` prompts
+  interactively, which hangs a non-interactive session.
+  Unsure of the kind? Ask the user, do not guess it.
   Pull requests add fragments, not changelog lines, so they never conflict.
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
   a major bump in `changie next auto`. Breaking means the change breaks
   the CLI, the config, or an output format.
   Write the body as one line, per the rules in `.changes/AGENTS.md`.
-  Preview the entry with `changie batch <kind> --dry-run` before the
-  pull request. `rake lint` lints the fragment bodies.
+  Preview the entry with `--dry-run` on the same `changie new` command
+  before the pull request. `rake lint` lints the fragment bodies.
 
 ## Layout
 
