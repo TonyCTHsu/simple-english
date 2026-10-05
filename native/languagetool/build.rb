@@ -22,7 +22,6 @@ module NativeLanguageToolBuild
   MAIN_CLASS = "org.languagetool.server.HTTPServer"
 
   def run
-    pin_deployment_target
     prepare_classes
     FileUtils.rm_f([EXECUTABLE, SBOM])
     FileUtils.rm_f(Dir[BUILD.join("lib*.so")])
@@ -35,12 +34,14 @@ module NativeLanguageToolBuild
     end
   end
 
-  def pin_deployment_target
-    # Without a target the linker stamps the build host's SDK version
-    # into the binary, so every newer build machine raises the gem's
-    # floor. The release workflow checks the stamped floor with otool.
-    ENV["MACOSX_DEPLOYMENT_TARGET"] ||= "12.0" if
-      RbConfig::CONFIG["host_os"].include?("darwin")
+  # Native Image stamps the build host's OS version into the binary
+  # unless the link pins an older floor. MACOSX_DEPLOYMENT_TARGET has no
+  # effect: the compiler passes its own minimum flag, and this linker
+  # option overrides it.
+  def deployment_target_option
+    return [] unless RbConfig::CONFIG["host_os"].include?("darwin")
+
+    ["-H:NativeLinkerOption=-mmacosx-version-min=12.0"]
   end
 
   def prepare_classes
@@ -77,7 +78,7 @@ module NativeLanguageToolBuild
     options = ["--no-fallback", "--enable-sbom=embed,export"]
     # -march is an AMD64-only option. AArch64 has a single baseline.
     options << "-march=compatibility" if RbConfig::CONFIG["host_cpu"].match?(/x86_64|amd64/)
-    options += [
+    options += deployment_target_option + [
       "--initialize-at-run-time=ch.qos.logback,org.slf4j,io.prometheus,io.opentelemetry,io.grpc.netty.shaded.io.netty",
       "--enable-url-protocols=http,https",
       "-H:ConfigurationFileDirectories=#{SOURCE.join("config")}"
