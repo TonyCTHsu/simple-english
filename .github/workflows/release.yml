@@ -74,6 +74,27 @@ jobs:
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
 
+      - name: Check the glibc floor
+        if: runner.os == 'Linux'
+        run: |
+          floor=GLIBC_2.35
+          binary=libexec/simple_english/languagetool-server
+          highest=$(objdump -T "$binary" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)
+          [ "$(printf '%s\n' "$floor" "$highest" | sort -V | tail -1)" = "$floor" ] ||
+            { echo "error: binary requires $highest, above the $floor floor"; exit 1; }
+          echo "glibc floor ok: $highest"
+
+      - name: Check the macOS floor
+        if: runner.os == 'macOS'
+        run: |
+          floor=12.0
+          binary=libexec/simple_english/languagetool-server
+          minos=$(otool -l "$binary" | grep -A4 LC_BUILD_VERSION | grep minos | awk '{print $NF}')
+          [ -n "$minos" ] || { echo "error: no LC_BUILD_VERSION minos in $binary"; exit 1; }
+          [ "$(printf '%s\n' "$floor" "$minos" | sort -V | tail -1)" = "$floor" ] ||
+            { echo "error: binary requires macOS $minos, above the $floor floor"; exit 1; }
+          echo "macOS floor ok: $minos"
+
       - name: Verify platform gem
         run: |
           gem install --no-document "dist/simple_english-${VERSION}-*.gem"

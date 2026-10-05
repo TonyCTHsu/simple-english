@@ -4,7 +4,6 @@
 require "fileutils"
 require "json"
 require "net/http"
-require "pathname"
 require "socket"
 require "tempfile"
 require "uri"
@@ -23,6 +22,7 @@ module NativeLanguageToolBuild
   MAIN_CLASS = "org.languagetool.server.HTTPServer"
 
   def run
+    pin_deployment_target
     prepare_classes
     FileUtils.rm_f([EXECUTABLE, SBOM])
     FileUtils.rm_f(Dir[BUILD.join("lib*.so")])
@@ -33,6 +33,14 @@ module NativeLanguageToolBuild
     Dir[BUILD.join("lib*.so")].sort.each do |library|
       puts "Built #{Pathname(library).relative_path_from(ROOT)}"
     end
+  end
+
+  def pin_deployment_target
+    # Without a target the linker stamps the build host's SDK version
+    # into the binary, so every newer build machine raises the gem's
+    # floor. The release workflow checks the stamped floor with otool.
+    ENV["MACOSX_DEPLOYMENT_TARGET"] ||= "12.0" if
+      RbConfig::CONFIG["host_os"].include?("darwin")
   end
 
   def prepare_classes

@@ -59,7 +59,11 @@ rake build
 `libexec/simple_english/languagetool-server`, and packages the platform
 gem plus release artifacts under `dist/`. The build host determines the
 platform label, and `rake build` aborts on hosts outside the supported
-set (macOS arm64 and glibc Linux x86-64 or arm64).
+set (macOS arm64 and glibc Linux x86-64 or arm64). The darwin build
+pins the deployment target to macOS 12, so newer build machines do not
+raise the floor. The release workflow checks the stamped floor on the
+built binary: glibc 2.35 through `objdump` on Linux, macOS 12 through
+`otool` on darwin.
 
 ## Compilation pipeline
 

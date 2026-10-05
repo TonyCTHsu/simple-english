@@ -41,8 +41,8 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-**Requirement:** Ruby 3.3 or newer on macOS arm64, or Linux x86-64 or
-Linux arm64 with glibc 2.35 or newer.
+**Requirement:** Ruby 3.3 or newer on macOS 12 or newer (arm64), or Linux
+x86-64 or Linux arm64 with glibc 2.35 or newer.
 
 ### Homebrew (macOS)
 
