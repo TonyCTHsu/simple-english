@@ -9,3 +9,7 @@ ignore:
   - tmp/**
   - vendor/**
   - .changes/**
+  # Verbatim upstream license texts and notices; they cannot be
+  # reworded, so self-lint skips them.
+  - licenses/**
+  - THIRD_PARTY_NOTICES.md
