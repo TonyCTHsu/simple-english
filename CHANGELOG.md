@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0] - 2026-10-05
+
+### Added
+
+- Add `se mcp`, an MCP stdio server with one lint tool. It honors `.simple-english.yml` like the CLI.
+
+### Changed
+
+- Skip `.git`, `node_modules`, and `vendor` when you lint a directory. Files you name directly still lint.
+
+### Fixed
+
+- Fix `ignore:` entries not matching the absolute paths that agent hooks pass, so globs like `docs/**` hold for every surface.
+
 ## [0.4.2] - 2026-10-02
 
 ### Fixed
