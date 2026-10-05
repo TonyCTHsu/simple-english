@@ -22,6 +22,7 @@ class IntegrationsNamesTest < Minitest::Test
       "README.md",
       "docs/RELEASING.md",
       "integrations/pi/package.json",
+      "integrations/pi/README.md",
       "test/simple_english/integrations_pi_test.rb",
       ".github/workflows/release.yml"
     ],
@@ -29,6 +30,7 @@ class IntegrationsNamesTest < Minitest::Test
     "se_lint" => [
       "README.md",
       "integrations/pi/extensions/se-lint.ts",
+      "integrations/pi/README.md",
       "integrations/shared/skills/simple-english-lint/SKILL.md",
       "integrations/claude-code/skills/simple-english-lint/SKILL.md",
       "integrations/codex/skills/simple-english-lint/SKILL.md",
@@ -37,12 +39,14 @@ class IntegrationsNamesTest < Minitest::Test
     ],
     # The development marketplace name.
     "simple-english-dev" => [
-      ".claude-plugin/marketplace.json"
+      ".claude-plugin/marketplace.json",
+      "integrations/claude-code/README.md"
     ],
     # The MCP subcommand wiring.
     "se mcp" => [
       "README.md",
-      "docs/DEVELOPMENT.md"
+      "docs/DEVELOPMENT.md",
+      "integrations/codex/README.md"
     ]
   }.freeze
 

@@ -208,6 +208,7 @@ pi install integrations/pi -l                  # the se_lint tool, from a checko
 se mcp                                         # an MCP server, for any MCP client
 ```
 
+Each adapter has its own README in its directory under `integrations/`.
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
 
 ## Develop
