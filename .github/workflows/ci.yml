@@ -141,7 +141,7 @@ jobs:
         run: |
           bundle exec rake test
           bundle exec ruby test/examples_check.rb
-          PATH="$PWD/bin:$PATH" bin/e2e-story
+          PATH="$PWD/bin:$PATH" bundle exec bin/e2e-story
 
   native:
     needs: changes
