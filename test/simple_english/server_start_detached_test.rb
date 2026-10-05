@@ -7,17 +7,18 @@ require "socket"
 
 class ServerStartDetachedTest < Minitest::Test
   def test_spawns_a_plain_serve_and_returns_the_handshake
-    port = free_port
     spawned = nil
-    SimpleEnglish::Server.stub :takeover, nil do
-      SimpleEnglish::Client.stub :spawn_daemon, ->(*args) { spawned = args } do
-        SimpleEnglish::Client.stub :wait_for, ->(seconds: 90, &block) { block.call } do
-          SimpleEnglish::Client.stub :info, {"pid" => 4242} do
-            in_tmpdir do |dir|
-              daemon = SimpleEnglish::Server.start_detached(port: port,
-                install: fake_install(dir))
-              assert_equal 4242, daemon["pid"]
-              assert_equal ["--port", port.to_s], spawned
+    with_free_port do |port|
+      SimpleEnglish::Server.stub :takeover, nil do
+        SimpleEnglish::Client.stub :spawn_daemon, ->(*args) { spawned = args } do
+          SimpleEnglish::Client.stub :wait_for, ->(seconds: 90, &block) { block.call } do
+            SimpleEnglish::Client.stub :info, {"pid" => 4242} do
+              in_tmpdir do |dir|
+                daemon = SimpleEnglish::Server.start_detached(port: port,
+                  install: fake_install(dir))
+                assert_equal 4242, daemon["pid"]
+                assert_equal ["--port", port.to_s], spawned
+              end
             end
           end
         end
@@ -26,16 +27,17 @@ class ServerStartDetachedTest < Minitest::Test
   end
 
   def test_forwards_the_dev_log_to_the_child_serve
-    port = free_port
     spawned = nil
-    SimpleEnglish::Server.stub :takeover, nil do
-      SimpleEnglish::Client.stub :spawn_daemon, ->(*args) { spawned = args } do
-        SimpleEnglish::Client.stub :wait_for, ->(seconds: 90, &block) { block.call } do
-          SimpleEnglish::Client.stub :info, {"pid" => 4242} do
-            in_tmpdir do |dir|
-              SimpleEnglish::Server.start_detached(port: port,
-                install: fake_install(dir), dev_log: "daemon.log")
-              assert_equal ["--port", port.to_s, "--dev-log", "daemon.log"], spawned
+    with_free_port do |port|
+      SimpleEnglish::Server.stub :takeover, nil do
+        SimpleEnglish::Client.stub :spawn_daemon, ->(*args) { spawned = args } do
+          SimpleEnglish::Client.stub :wait_for, ->(seconds: 90, &block) { block.call } do
+            SimpleEnglish::Client.stub :info, {"pid" => 4242} do
+              in_tmpdir do |dir|
+                SimpleEnglish::Server.start_detached(port: port,
+                  install: fake_install(dir), dev_log: "daemon.log")
+                assert_equal ["--port", port.to_s, "--dev-log", "daemon.log"], spawned
+              end
             end
           end
         end
@@ -88,8 +90,10 @@ class ServerStartDetachedTest < Minitest::Test
           false
         } do
           in_tmpdir do |dir|
-            assert_nil SimpleEnglish::Server.start_detached(port: free_port,
-              install: fake_install(dir))
+            with_free_port do |port|
+              assert_nil SimpleEnglish::Server.start_detached(port: port,
+                install: fake_install(dir))
+            end
           end
         end
       end
@@ -107,6 +111,17 @@ class ServerStartDetachedTest < Minitest::Test
     FileUtils.mkdir_p(lt)
     FileUtils.touch(File.join(lt, "languagetool-server.jar"))
     SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
+  end
+
+  # The runner can reassign an ephemeral port between the pick and the
+  # probe inside start_detached. Retry with a fresh port when that race
+  # loses, so a busy host does not flake the suite.
+  def with_free_port(attempts: 5)
+    yield free_port
+  rescue SimpleEnglish::Server::PortInUse
+    attempts -= 1
+    retry if attempts.positive?
+    raise
   end
 
   def free_port
