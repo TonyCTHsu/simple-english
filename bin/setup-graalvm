@@ -2,11 +2,13 @@
 # frozen_string_literal: true
 
 # Install the GraalVM the CI uses, without admin rights. CI resolves
-# GraalVM version 25.0 to this exact artifact through Oracle's download
-# service. The script downloads the artifact, checks its published
+# CI resolves GraalVM version 25.4 to this exact artifact through Oracle's
+# download service. The script downloads the artifact, checks its published
 # SHA256, and unpacks it under GRAALVM_HOME (default ~/graalvm). An
 # existing install is reused, so the script is safe to rerun. Bump
-# VERSION when CI moves to a new 25.0 patch.
+# VERSION when CI moves to a new patch. The 25.4 train drops the
+# "jdk-" prefix from the unpacked directory name, so the glob matches
+# both layouts.
 
 require "digest"
 require "fileutils"
@@ -15,7 +17,7 @@ require "net/http"
 require "rbconfig"
 
 module GraalvmSetup
-  VERSION = "25.0.4.1.1"
+  VERSION = "25.4.4.1.1"
   PRODUCT_ID = "D53FAE8052773FFAE0530F15000AA6C6"
   GDS = "https://gds.oracle.com/api/20220101"
 
@@ -24,7 +26,7 @@ module GraalvmSetup
   def run
     os, arch = host
     root = File.expand_path(ENV.fetch("GRAALVM_HOME", "~/graalvm"))
-    install = Dir[File.join(root, "graalvm-jdk-#{VERSION}*")].first
+    install = Dir[File.join(root, "graalvm*#{VERSION}*")].first
     install ||= download(os, arch, root)
     clear_quarantine(install) if os == "macos"
     java_home = install

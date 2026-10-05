@@ -64,7 +64,7 @@ rules from disk, and one native build stages the JVM classpath under
 JVM, and the daemon accepts it through `SE_LANGUAGETOOL_EXECUTABLE`:
 
 ```
-JAVA_HOME=/Users/you/graalvm/graalvm-jdk-25.0.4.1.1+1.1/Contents/Home \
+JAVA_HOME=/Users/you/graalvm/graalvm-25.4.4.1.1+1.1/Contents/Home \
   SE_LANGUAGETOOL_EXECUTABLE=bin/dev-server bundle exec ruby test/corpus_check.rb
 ```
 

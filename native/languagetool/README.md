@@ -45,7 +45,7 @@ Native Image does not cross-compile. Build each executable on its target platfor
 
 Prerequisites:
 
-- Oracle GraalVM 25.0.4.1.1 with Native Image
+- Oracle GraalVM 25.4.4.1.1 with Native Image
 - A native C compiler, linker, and zlib development files
 - At least 10 GB of available memory
 

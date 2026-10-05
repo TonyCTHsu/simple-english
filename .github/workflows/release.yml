@@ -7,7 +7,7 @@ on:
 # change together, or release and CI compile with different compilers.
 env:
   GRAALVM_DISTRIBUTION: graalvm
-  GRAALVM_VERSION: "25.0"
+  GRAALVM_VERSION: "25.4"
 
 jobs:
   release:
