@@ -6,6 +6,7 @@ require_relative "lib/simple_english/version"
 
 NATIVE_BUILD = "tmp/native-languagetool"
 NATIVE_EXECUTABLE = "#{NATIVE_BUILD}/languagetool-native"
+SUPPORTED_PLATFORMS = %w[arm64-darwin x86_64-linux aarch64-linux].freeze
 
 # Rake's timestamp comparison decides when to recompile: the native build
 # reruns only when an input is newer than the executable. CI caches the
@@ -16,10 +17,21 @@ file NATIVE_EXECUTABLE =>
   sh "bundle exec ruby native/languagetool/build.rb"
 end
 
-desc "Build the native lint engine and the platform gem. Set PLATFORM=x86_64-linux"
+# The build host is the only source for the platform label. Native Image
+# compiles for the host, so a label that disagrees with the host mislabels
+# the gem. Gem::Platform.local carries a version suffix on some hosts
+# (arm64-darwin-25), so compare the bare cpu-os form.
+def native_platform
+  local = Gem::Platform.local
+  candidate = "#{local.cpu}-#{local.os}"
+  SUPPORTED_PLATFORMS.include?(candidate) or
+    abort "error: unsupported build host #{candidate}. Supported: #{SUPPORTED_PLATFORMS.join(', ')}"
+  candidate
+end
+
+desc "Build the native lint engine and the platform gem"
 task :build => NATIVE_EXECUTABLE do
-  platform = ENV["PLATFORM"] or
-    abort "error: set PLATFORM, for example PLATFORM=x86_64-linux rake build"
+  platform = native_platform
   build = Pathname.new(NATIVE_BUILD)
   executable = build.join("languagetool-native")
   classpath = build.join("classpath").read.strip

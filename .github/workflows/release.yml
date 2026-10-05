@@ -45,13 +45,7 @@ jobs:
     needs: release
     strategy:
       matrix:
-        include:
-          - runner: ubuntu-22.04
-            platform: x86_64-linux
-          - runner: ubuntu-22.04-arm
-            platform: aarch64-linux
-          - runner: macos-15-xlarge
-            platform: arm64-darwin
+        runner: [ubuntu-22.04, ubuntu-22.04-arm, macos-15-xlarge]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     permissions:
@@ -79,14 +73,12 @@ jobs:
         run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
-          PLATFORM: ${{ matrix.platform }}
 
       - name: Verify platform gem
         run: |
-          gem install --no-document "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+          gem install --no-document "dist/simple_english-${VERSION}-*.gem"
           bin/e2e-story
         env:
-          PLATFORM: ${{ matrix.platform }}
           VERSION: ${{ needs.release.outputs.version }}
 
       - name: Attest release artifacts
@@ -111,9 +103,8 @@ jobs:
       - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
 
       - name: Publish platform gem
-        run: gem push "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+        run: gem push "dist/simple_english-${VERSION}-*.gem"
         env:
-          PLATFORM: ${{ matrix.platform }}
           RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
           VERSION: ${{ needs.release.outputs.version }}
 

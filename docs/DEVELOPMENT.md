@@ -51,7 +51,7 @@ ruby test/corpus_check.rb   # corpus pairs
 ```
 
 The last two need the native LanguageTool server. Build it with
-`PLATFORM=arm64-darwin rake build`, then set
+`rake build`, then set
 `SE_LANGUAGETOOL_EXECUTABLE=tmp/native-languagetool/languagetool-native`.
 The unit tests do not need the native server.
 

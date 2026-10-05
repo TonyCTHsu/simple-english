@@ -80,11 +80,7 @@ jobs:
   native:
     strategy:
       matrix:
-        include:
-          - runner: ubuntu-24.04
-            platform: x86_64-linux
-          - runner: ubuntu-24.04-arm
-            platform: aarch64-linux
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     steps:
@@ -110,7 +106,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: tmp/native-languagetool
-          key: native-v2-${{ matrix.runner }}-${{ matrix.platform }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock', '.github/workflows/ci.yml') }}
+          key: native-v2-${{ matrix.runner }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock', '.github/workflows/ci.yml') }}
 
       - name: Mark the cached executable as fresh
         if: steps.native_cache.outputs.cache-hit == 'true'
@@ -120,12 +116,9 @@ jobs:
         run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
-          PLATFORM: ${{ matrix.platform }}
 
       - name: Install the platform gem
-        run: gem install --no-document "./dist/simple_english-*-${PLATFORM}.gem"
-        env:
-          PLATFORM: ${{ matrix.platform }}
+        run: gem install --no-document ./dist/simple_english-*.gem
 
       - name: Verify the installed platform gem
         run: bin/e2e-story
