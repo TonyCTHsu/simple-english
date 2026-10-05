@@ -3,6 +3,12 @@ name: Release
 on:
   workflow_dispatch:
 
+# Mirrors the CI env: when the toolchain changes, both workflows must
+# change together, or release and CI compile with different compilers.
+env:
+  GRAALVM_DISTRIBUTION: graalvm
+  GRAALVM_VERSION: "25.0.4.1.1"
+
 jobs:
   release:
     runs-on: ubuntu-24.04
@@ -59,8 +65,8 @@ jobs:
 
       - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
-          distribution: graalvm
-          version: "25.0"
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: maven
 

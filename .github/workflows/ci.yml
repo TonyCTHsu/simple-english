@@ -5,6 +5,13 @@ on:
     branches: [master]
   pull_request:
 
+# The toolchain facts the native cache keys on. A distribution or version
+# change must invalidate the cached binary, so both live here, next to the
+# cache key that consumes them.
+env:
+  GRAALVM_DISTRIBUTION: graalvm
+  GRAALVM_VERSION: "25.0.4.1.1"
+
 jobs:
   unit:
     runs-on: ${{ matrix.os }}
@@ -89,8 +96,8 @@ jobs:
 
       - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
-          distribution: graalvm
-          version: "25.0"
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: maven
 
@@ -107,7 +114,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: tmp/native-languagetool
-          key: native-v2-${{ matrix.runner }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock', '.github/workflows/ci.yml') }}
+          key: native-v2-${{ matrix.runner }}-${{ env.GRAALVM_DISTRIBUTION }}-${{ env.GRAALVM_VERSION }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock') }}
 
       - name: Mark the cached executable as fresh
         if: steps.native_cache.outputs.cache-hit == 'true'
