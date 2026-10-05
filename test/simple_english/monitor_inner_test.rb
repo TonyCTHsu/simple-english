@@ -28,20 +28,24 @@ class MonitorInnerTest < Minitest::Test
       require "simple_english"
       require "socket"
       # Pick a free port whose successor is free too, so the inner-port
-      # guard passes and the outer server can bind a real port.
-      port = nil
-      50.times do
-        probe = TCPServer.new("localhost", 0)
-        candidate = probe.addr[1]
-        probe.close
-        begin
-          inner = TCPServer.new("localhost", candidate + 1)
-        rescue Errno::EADDRINUSE
-          next
+      # guard passes and the outer server can bind a real port. The
+      # probes close before start runs, so a busy runner's neighbor can
+      # still steal either port in that gap: PortInUse retries with a
+      # fresh pick.
+      def pick_port
+        50.times do
+          probe = TCPServer.new("localhost", 0)
+          candidate = probe.addr[1]
+          probe.close
+          begin
+            inner = TCPServer.new("localhost", candidate + 1)
+          rescue Errno::EADDRINUSE
+            next
+          end
+          inner.close
+          return candidate
         end
-        inner.close
-        port = candidate
-        break
+        nil
       end
       module SimpleEnglish
         module Server
@@ -50,10 +54,15 @@ class MonitorInnerTest < Minitest::Test
           end
         end
       end
+      attempts = 0
       begin
-        SimpleEnglish::Server.start(port: port,
+        SimpleEnglish::Server.start(port: pick_port,
           install: SimpleEnglish::Install.new(executable: RbConfig.ruby),
           log: File::NULL)
+      rescue SimpleEnglish::Server::PortInUse
+        attempts += 1
+        retry if attempts < 5
+        raise
       rescue SimpleEnglish::Server::InnerDied => e
         warn "error: \#{e.message}"
         exit 2
@@ -67,8 +76,9 @@ class MonitorInnerTest < Minitest::Test
     if waiter.join(10)
       _, status = waiter.value
       # Exit 2 (not the sentinel 42) proves the daemon left via the
-      # inner-death path, and the message proves the reason.
-      assert_equal 2, status.exitstatus
+      # inner-death path, and the message proves the reason. The
+      # child's stderr rides along, so a wrong exit shows its cause.
+      assert_equal 2, status.exitstatus, File.read(err.path)
       assert_includes File.read(err.path), "lint engine died. Rerun se serve."
     else
       Process.kill("KILL", pid)

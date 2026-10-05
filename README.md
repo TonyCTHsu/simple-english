@@ -195,6 +195,19 @@ the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 
+## Agent integrations
+
+Pi, Claude Code, and Codex can lint the prose they write. The adapters
+live under `integrations/`, unreleased. Try them from a checkout:
+
+```bash
+claude --plugin-dir integrations/claude-code   # the hook feeds findings back
+pi install integrations/pi -l                  # the se_lint tool
+se mcp                                         # an MCP server, for any MCP client
+```
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+
 ## Develop
 
 To change the linter, add rules, or run the tests, read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

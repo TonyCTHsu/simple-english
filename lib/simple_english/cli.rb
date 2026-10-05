@@ -72,6 +72,12 @@ module SimpleEnglish
       0
     end
 
+    desc "mcp", "Run the MCP stdio server (one JSON-RPC message per line)"
+    def mcp
+      SimpleEnglish::ModelContextProtocol.run
+      0
+    end
+
     desc "serve", "Run the lint daemon in the foreground"
     method_option :port, type: :numeric, default: SimpleEnglish::Client::DEFAULT_PORT,
       desc: "Port to listen on"
@@ -111,11 +117,22 @@ module SimpleEnglish
     # "-" stays as-is for stdin. Directories expand to all lintable files.
     # Glob output keeps a "./" prefix when the argument is ".". Strip it so
     # paths and config ignore globs always see the same form.
+    # These trees hold third-party prose, not the user's. The tool lints
+    # what the user owns. Skipped only during directory expansion. An
+    # explicit path always lints.
+    # Dir.glob never returns dotfiles, so ".git" is inert today. It
+    # guards a future FNM_DOTMATCH from turning git internals back on.
+    # .gitignore is not read. Users put ignore: globs in the config for
+    # build output and generated files.
+    SKIPPED_DIRS = [".git", "node_modules", "vendor"].freeze
+
     def self.expand_paths(argv)
       extensions = (SimpleEnglish::Extractor::EXTENSION_LANGUAGES.keys.map { |e| e.delete_prefix(".") } + ["md"]).uniq.join(",")
       argv.flat_map do |path|
         if File.directory?(path)
-          Dir.glob(File.join(path, "**/*.{#{extensions}}")).sort
+          Dir.glob(File.join(path, "**/*.{#{extensions}}"))
+            .reject { |p| p.split(File::SEPARATOR).any? { |s| SKIPPED_DIRS.include?(s) } }
+            .sort
         else
           path
         end
@@ -158,16 +175,7 @@ module SimpleEnglish
         )
       else
         results.each do |path, finding|
-          location = "#{path}:#{finding.line}"
-          if finding.column
-            location += ":#{finding.column}"
-            if finding.end_line && finding.end_column
-              finish = (finding.end_line == finding.line) ? finding.end_column :
-                "#{finding.end_line}:#{finding.end_column}"
-              location += "-#{finish}"
-            end
-          end
-          puts "#{location}: [#{finding.rule}] #{finding.message}"
+          puts finding.to_line(path)
         end
       end
     end

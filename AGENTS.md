@@ -25,24 +25,21 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   Do not bypass a template by passing `--body` to `gh`.
 - `CONTRIBUTING.md` holds the process: false findings get an issue
   first, not a direct fix. Pull requests are drafts.
-- Changelog: run `changie new` and commit the fragment under `.changes/unreleased/`
+- A pull request that touches `.github/workflows/` follows the action
+  pinning rules in `.github/AGENTS.md`.
+- Changelog: run `changie new -k <Kind> -b "BODY"` and commit the fragment
+  under `.changes/unreleased/`
   only when the tool's behavior changes. Documentation-only changes get no entry.
+  Pass the kind and body as flags: bare `changie new` prompts
+  interactively, which hangs a non-interactive session.
+  Unsure of the kind? Ask the user, do not guess it.
+  Pull requests add fragments, not changelog lines, so they never conflict.
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
   a major bump in `changie next auto`. Breaking means the change breaks
   the CLI, the config, or an output format.
-  Write the body as one line. `changeFormat` prefixes `- ` once, so a
-  multi-line body falls out of the list. Preview the entry with
-  `changie batch <kind> --dry-run` before the pull request. `rake lint`
-  lints the fragment bodies.
-
-## GitHub Actions
-
-- Pin every action to the commit SHA of its latest release. Comment
-  the release next to the pin: `uses: owner/action@<sha> # vX.Y.Z`.
-  Resolve the latest with `gh api repos/OWNER/ACTION/releases/latest`.
-  A moving major tag (`v2`) names only the newest release inside
-  that major. It can sit behind the true latest. A bump that crosses
-  a major needs a diff of the action's inputs first.
+  Write the body as one line, per the rules in `.changes/AGENTS.md`.
+  Preview the entry with `--dry-run` on the same `changie new` command
+  before the pull request. `rake lint` lints the fragment bodies.
 
 ## Layout
 
@@ -50,6 +47,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   `lint_file`. `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
   is the only change that belongs in it. `cli.rb` is the Thor CLI
+- `lib/simple_english/model_context_protocol.rb` is the MCP stdio front
+  door (`SimpleEnglish::ModelContextProtocol`). It is a client of the
+  daemon, not a part of it
 - The tree groups files by domain: `setup/`, `lint/`, `client/`,
   `daemon/`
 - `setup/` resolves the environment once, at the process edge. It
@@ -98,6 +98,18 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 - Ruby 3.3 minimum. CI enforces it. The
   gemspec declares no floor.
 
+## Changes
+
+Default to no comment. A comment earns its place only when it says
+what the code cannot. It explains why: a non-obvious tradeoff, a
+workaround for an upstream bug, a perf choice that looks wrong. It
+warns of a real hazard: ordering, concurrency, a caller invariant.
+It cites an external source.
+
+Never narration of the nearby code,
+restatement of a good name, or notes about the change itself.
+Prefer a clearer name or a test over a comment.
+
 ## Adding a rule
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and correct
@@ -131,6 +143,8 @@ line the finding reports. Counting findings cite the paragraph's first line.
   and Ruby 4.0's default json gem is 3.x. Bundling it breaks
   `bundle exec` on 4.0
 - `rake test`: unit tests only, no LanguageTool needed
+- `rake lint`: self-lint the repo's own prose, then the changie
+  fragment bodies
 - `ruby test/examples_check.rb` and `ruby test/corpus_check.rb`: need
   the native LanguageTool server. Set `SE_LANGUAGETOOL_EXECUTABLE` for a
   source-tree build

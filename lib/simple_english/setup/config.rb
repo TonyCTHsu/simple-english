@@ -22,8 +22,19 @@ module SimpleEnglish
       raise ConfigError, ".simple-english.yml: #{e.message}"
     end
 
+    # Hooks pass absolute paths while ignore globs are written
+    # relative to the repo root (the CWD). Match both forms.
+    # realpath because CWD may be a symlink-resolved path while the
+    # caller's string still carries the symlink (TMPDIR on macOS).
     def ignore?(config, path)
-      config[:ignore].any? { |pattern| matches?(pattern, path) }
+      candidates = [path, relative_candidate(path)].compact
+      candidates.any? { |candidate| config[:ignore].any? { |pattern| matches?(pattern, candidate) } }
+    end
+
+    def relative_candidate(path)
+      pwd = Dir.pwd + "/"
+      resolved = File.exist?(path) ? File.realpath(path) : File.expand_path(path)
+      resolved.start_with?(pwd) ? resolved.delete_prefix(pwd) : nil
     end
 
     # File.fnmatch has no globstar: `**` never crosses directories.

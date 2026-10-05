@@ -1,0 +1,24 @@
+{
+  "session_id": "b6a0a406-f9bb-41f2-bb0c-52ed4925535c",
+  "transcript_path": "/project/.claude/projects/-project/b6a0a406-f9bb-41f2-bb0c-52ed4925535c.jsonl",
+  "cwd": "/project",
+  "prompt_id": "96b92470-e0f5-4d2e-9d9c-545c5f2780d9",
+  "permission_mode": "acceptEdits",
+  "effort": {"level": "medium"},
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/project/docs/note.md",
+    "content": "hello\n"
+  },
+  "tool_response": {
+    "type": "create",
+    "filePath": "/project/docs/note.md",
+    "content": "hello\n",
+    "structuredPatch": [],
+    "originalFile": null,
+    "userModified": false
+  },
+  "tool_use_id": "toolu_01JFY6gAeVLyt7Tujh7XjeL8",
+  "duration_ms": 2
+}

@@ -122,6 +122,61 @@ Priority order: line and column fidelity first, then failure paths
 (every `exit 2` has a test), then rule correctness. Unit tests run
 without starting the native server.
 
+## Agent integrations
+
+`integrations/` holds one adapter per agent: `pi/` (a native
+extension), `claude-code/` (a hook plugin), and `codex/` (an MCP
+plugin). `integrations/shared/skills/lint/SKILL.md` holds the skill all
+three share. `integrations/verification.md` records the agent facts
+the adapters rely on. `.claude-plugin/marketplace.json` at the repo
+root lists the Claude Code plugin. The adapters ship nothing. Try them
+from local paths:
+
+- pi: `pi install <repo>/integrations/pi -l`
+- Claude Code: `claude --plugin-dir <repo>/integrations/claude-code`
+- Codex: a local marketplace, per `integrations/verification.md`
+
+`se mcp` runs the MCP server behind the Codex plugin. Any MCP client
+can use it.
+
+Testing has two layers. Layer 1 runs in the unit suite
+(`mcp_*_test.rb`, `integrations_*_test.rb`): fixtures replay each
+adapter's wire input, and no tokens are spent. Layer 2 is
+`bin/e2e-agents`: a live agent per adapter answers a seeded question
+in note.md. The gate: the whole file ends clean, the answer was
+appended, and violations the agent was never asked to fix are gone.
+The `e2e-agents.yml` workflow runs it on demand, with credentials.
+`SE_E2E_SKIP=1 bin/e2e-agents` prints the scenarios.
+
+Each agent job also emits its result as a run annotation. The run
+page then lists every agent, its model, and its token usage.
+
+### What the codex failures taught
+
+The codex scenario went red five times before it went green. Three
+bugs stacked, and each hid the next. The codex facts live in
+`integrations/verification.md`. The process lessons live here.
+
+1. A green run proves the whole set of changes. It does not prove
+   each change is needed. Before you remove a fix, rerun without it
+   and nothing else. One run failed because a fix was removed on
+   reasoning that the passing run cannot support.
+2. A config that fails no validation check is not proven unread.
+   The audit confused "not validated" with "not read", and dropped
+   a config the run needed.
+3. Test a stdio server with the client's stdin still open. Closing
+   stdin flushes Ruby's output buffer and hides buffering bugs. The
+   server passed every closed-stdin test, then sat silent for a
+   real client. The regression test keeps stdin open on purpose.
+4. Read the wire, not the outcome. A fake provider captures the
+   request. A logging proxy sits between client and server. Both
+   answered what hours of result logs left open.
+5. Make failures narrate themselves. The `RUST_LOG` lines printed
+   into the job log named the failing mechanism. The agent's own
+   words named the missing tool. Neither needed a local
+   reproduction.
+
+
 ## Adding a rule
 
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and

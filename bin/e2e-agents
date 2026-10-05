@@ -1,0 +1,321 @@
+#!/usr/bin/env ruby
+# Drive one live agent per harness through a lint scenario. note.md
+# opens with a question paragraph that carries seeded violations, and
+# the agent must answer the question in the same file. The agent is
+# never asked to clean prose: a pass means the adapter's feedback made
+# it fix violations it was not asked to touch, and keep its own answer
+# clean.
+#
+# Usage: bin/e2e-agents <pi|claude|codex|all>
+# SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
+# credentials.
+#
+# The model for each agent comes from the environment, with no code
+# default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, or SE_E2E_CODEX_MODEL.
+# The workflow's dispatch inputs carry the current choice, and a human
+# changes it there, never here. A preflight checks the name against the
+# provider's live model list and prints every available name on a miss,
+# so picking a replacement needs no code edit.
+
+require "json"
+require "open3"
+require "tmpdir"
+require "fileutils"
+
+REPO = File.expand_path("..", __dir__)
+
+PROMPT = "The last paragraph of note.md asks a question. " \
+          "Answer it in the same file, as a new paragraph after the question."
+
+# The seeded question. Its first sentence breaks the pattern rules on
+# purpose: passive voice, "in order to", a comma-led -ing phrase, and a
+# run past the sentence cap. The question itself stays clean, so the
+# only violations to fix are in prose the agent was not asked to touch.
+QUESTION = "This note was written by the documentation team in order to " \
+  "explain the release process, which is being followed by every " \
+  "engineer, making the pipeline slower than it needs to be, and any " \
+  "engineer who joins the team must read the whole guide before pushing " \
+  "a single change to the shared repository. What is the difference " \
+  "between a compiler and an interpreter?\n"
+
+MODEL_ENV = {
+  "claude" => "SE_E2E_CLAUDE_MODEL",
+  "pi" => "SE_E2E_PI_MODEL",
+  "codex" => "SE_E2E_CODEX_MODEL"
+}.freeze
+
+# Each provider publishes its live model list on a free endpoint. A
+# retired name fails the preflight cheap, before any agent runs, instead
+# of silently falling back to a pricier default mid-scenario.
+PREFLIGHTS = {
+  "claude" => {
+    keys: ["ANTHROPIC_API_KEY"],
+    url: "https://api.anthropic.com/v1/models",
+    headers: ->(key) { ["-H", "x-api-key: #{key}", "-H", "anthropic-version: 2023-06-01"] }
+  },
+  "codex" => {
+    keys: ["CODEX_API_KEY", "OPENAI_API_KEY"],
+    url: "https://api.openai.com/v1/models",
+    headers: ->(key) { ["-H", "Authorization: Bearer #{key}"] }
+  },
+  "pi" => {
+    keys: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+    url: "https://generativelanguage.googleapis.com/v1beta/models",
+    headers: ->(key) { ["-H", "x-goog-api-key: #{key}"] }
+  }
+}.freeze
+
+def model_for(agent)
+  env = MODEL_ENV.fetch(agent)
+  ENV.fetch(env)
+rescue KeyError
+  var = env.delete_prefix("SE_E2E_")
+  abort "set #{env} to the model for #{agent}. " \
+    "In GitHub this is the Actions variable E2E_#{var}. " \
+    "The provider's names are in the preflight output."
+end
+
+def preflight(agent, model)
+  spec = PREFLIGHTS.fetch(agent)
+  key = spec.fetch(:keys).map { |name| ENV[name] }.compact.first
+  return unless key
+  out, _err, _status = Open3.capture3("curl", "-s", "-w", "\n%{http_code}",
+    *spec.fetch(:headers).call(key), spec.fetch(:url))
+  http = out.lines.last.to_s.strip
+  body = out.lines[0..-2].join
+  unless http == "200"
+    hint = case http
+    when "400", "401", "403" then "the key was rejected. Check the secret value"
+    when "402" then "the account has no credit. Add billing at the provider"
+    when "", "000" then "the request never reached the provider. Check the runner network"
+    else "unexpected answer from the provider"
+    end
+    detail = body.to_s.strip.split("\n").first.to_s[0, 300]
+    abort "#{agent}: preflight got HTTP #{http} from the model list: #{hint}." \
+      "\nprovider said: #{detail}"
+  end
+  parsed = JSON.parse(body)
+  ids = (parsed["data"] || parsed["models"] || []).map do |entry|
+    (entry["id"] || entry["name"]).to_s.sub(/\Amodels\//, "")
+  end
+  return if ids.include?(model)
+  abort "#{agent}: #{model} is not in the provider's list. " \
+    "Pick one and set #{MODEL_ENV.fetch(agent)}:\n#{ids.join("\n")}"
+rescue JSON::ParserError
+  abort "#{agent}: the provider's model list was not valid JSON. Check the preflight URL in this script."
+end
+
+def scenario(name)
+  Dir.mktmpdir("se_e2e_#{name}") do |dir|
+    note = File.join(dir, "note.md")
+    File.write(note, QUESTION)
+    baseline = File.readlines(note).size
+    Dir.chdir(dir) do
+      system("git init -q 2>/dev/null")
+      system("git add -A 2>/dev/null")
+      system("git -c user.email=e2e@se -c user.name=e2e commit -qm e2e 2>/dev/null")
+      yield dir, baseline
+    end
+  end
+end
+
+def clean?(note)
+  _out, status = Open3.capture2e("se", "lint", note)
+  status.exitstatus.zero?
+end
+
+# The gate: the file is clean, and the agent added lines. Cleaning the
+# question alone, or answering without cleaning, both fail.
+def scenario_passed?(note, baseline)
+  clean?(note) && File.readlines(note).size > baseline
+end
+
+# Print what the agent left behind, inside the scenario dir before it
+# vanishes. A FAIL without this shows nothing but the word FAIL.
+def diagnose(note, baseline, agent_output = nil)
+  lines = File.readlines(note).size
+  puts "  note.md has #{lines} lines (started with #{baseline}):" \
+    " #{(lines > baseline) ? "answer appended" : "no answer appended"}"
+  out, _status = Open3.capture2e("se", "lint", note)
+  puts "  findings still in note.md after the run:"
+  out.each_line { |line| puts "  #{line}" }
+  return unless agent_output
+  puts "  last of the agent's output:"
+  agent_output.to_s.lines.last(12).each { |line| puts "  #{line}" }
+end
+
+def binary?(name)
+  ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).any? do |dir|
+    File.executable?(File.join(dir, name))
+  end
+end
+
+# An annotation on the run page, one per agent job. GitHub shows
+# every job's annotations together, so the page lists each agent at
+# a glance. A pass that needed the retry warns: the adapter worked,
+# and the model needed two chances. The guard keeps local runs free
+# of the workflow-command syntax.
+def announce(agent, model, ok, attempts, usage)
+  return unless ENV["GITHUB_ACTIONS"]
+  parts = ["#{ok ? "PASS" : "FAIL"} (attempt #{attempts})", model]
+  parts << usage if usage
+  severity = !ok ? "error" : (attempts > 1 ? "warning" : "notice")
+  puts "::#{severity} title=#{agent}::#{parts.join(", ")}"
+end
+
+def with_retry(agent)
+  attempts = 0
+  ok = false
+  usage = nil
+  2.times do
+    attempts += 1
+    ok, usage = yield
+    note = usage ? " (#{usage})" : ""
+    puts "#{agent}: #{ok ? "PASS" : "FAIL"} (attempt #{attempts})#{note}"
+    break if ok
+  end
+  [ok, attempts, usage]
+end
+
+# Best effort: read the spend each agent reports about itself. Formats
+# drift, so a miss prints nothing rather than a wrong number.
+def claude_usage(out)
+  json = begin
+    JSON.parse(out)
+  rescue JSON::ParserError
+    return nil
+  end
+  return nil unless json.is_a?(Hash)
+  usage = json["usage"]
+  tokens = usage.is_a?(Hash) ? "#{usage["input_tokens"]} in / #{usage["output_tokens"]} out" : nil
+  cost = json["total_cost_usd"]
+  [tokens, cost ? "$#{cost}" : nil].compact.join(", ")
+end
+
+def codex_usage(out, err)
+  match = /tokens used:?\s*([\d,]+)/i.match("#{out}\n#{err}")
+  "#{match[1]} tokens" if match
+end
+
+def run_claude
+  with_retry("claude") do
+    scenario("claude") do |dir, baseline|
+      note = File.join(dir, "note.md")
+      out, _err, status = Open3.capture3("claude",
+        "--plugin-dir", File.join(REPO, "integrations", "claude-code"),
+        "-p", "--permission-mode", "acceptEdits", "--output-format", "json",
+        "--model", model_for("claude"), PROMPT)
+      ok = status.success? && scenario_passed?(note, baseline)
+      diagnose(note, baseline, status.success? ? nil : "exit #{status.exitstatus}") unless ok
+      [ok, claude_usage(out)]
+    end
+  end
+end
+
+def run_pi
+  with_retry("pi") do
+    scenario("pi") do |dir, baseline|
+      # A scratch agent dir: a user-level copy of the same tool would
+      # collide with the package's tool of the same name. The package
+      # installs into the scratch dir's user scope, not with -l into the
+      # project: project scope needs an interactive trust grant, which
+      # headless runs can never answer. Credentials come from the
+      # environment (GEMINI_API_KEY for Google, or SE_E2E_PI_PROVIDER
+      # for a different provider).
+      home = File.join(dir, "pi-home")
+      FileUtils.mkdir_p(home)
+      env = {"PI_CODING_AGENT_DIR" => home}
+      provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
+      ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi")) &&
+        system(env, "pi", "-a", "-p", "--provider", provider, "--model", model_for("pi"), PROMPT) &&
+        scenario_passed?(File.join(dir, "note.md"), baseline)
+      diagnose(File.join(dir, "note.md"), baseline, "no pi output captured") unless ok
+      [ok, nil]
+    end
+  end
+end
+
+def run_codex
+  with_retry("codex") do
+    scenario("codex") do |dir, baseline|
+      marketplace = File.join(dir, "local-marketplace")
+      FileUtils.mkdir_p(File.join(marketplace, "plugins"))
+      FileUtils.cp_r(File.join(REPO, "integrations", "codex"),
+        File.join(marketplace, "plugins", "simple-english"))
+      FileUtils.mkdir_p(File.join(marketplace, ".agents", "plugins"))
+      File.write(File.join(marketplace, ".agents", "plugins", "marketplace.json"),
+        JSON.pretty_generate({
+          "name" => "local-dev",
+          "plugins" => [
+            {"name" => "simple-english",
+             "source" => {"source" => "local", "path" => "./plugins/simple-english"}}
+          ]
+        }))
+      FileUtils.mkdir_p(".codex")
+      # MCP tool calls ask for approval by default, and headless exec
+      # answers every approval with `never` (verified in CI: the call
+      # fails with "MCP tool call requires approval"). Approve the
+      # plugin's server here so the tool call runs.
+      File.write(".codex/config.toml",
+        "[plugins.\"simple-english@local-dev\"]\nenabled = true\n" \
+        "\n[plugins.\"simple-english@local-dev\".mcp_servers.simple-english]\n" \
+        "default_tools_approval_mode = \"approve\"\n")
+      _out, _err, status = Open3.capture3("codex", "plugin", "marketplace", "add", marketplace)
+      setup = status.success?
+      if setup
+        _out, _err, status = Open3.capture3("codex", "plugin", "add", "simple-english@local-dev")
+        setup = status.success?
+      end
+      ran = false
+      usage = nil
+      if setup
+        # RUST_LOG surfaces the MCP connection lines: a tool that never
+        # reached the agent now says why in the log.
+        env = {"RUST_LOG" => "codex_mcp=warn,codex_rmcp_client=info"}
+        out, err, status = Open3.capture3(env, "codex", "exec", "--sandbox", "workspace-write",
+          "-m", model_for("codex"), PROMPT)
+        ran = status.success?
+        usage = codex_usage(out, err)
+        output = out + err
+        (out + err).lines.grep(/mcp|simple-english/i).each { |line| puts "  codex: #{line.strip}" }
+      end
+      ok = ran && scenario_passed?(File.join(dir, "note.md"), baseline)
+      diagnose(File.join(dir, "note.md"), baseline, output) unless ok
+      [ok, usage]
+    end
+  end
+end
+
+AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freeze
+
+if ENV["SE_E2E_SKIP"] == "1"
+  puts "SE_E2E_SKIP=1: print and exit."
+  AGENTS.each_key { |agent| puts "#{agent}: seed the question, prompt, expect a clean note.md with an answer" }
+  exit 0
+end
+
+target = ARGV[0] || "all"
+agents = (target == "all") ? AGENTS.keys : [target]
+abort "usage: bin/e2e-agents <pi|claude|codex|all>" unless (agents - AGENTS.keys).empty?
+
+ran = 0
+failed = 0
+agents.each do |agent|
+  unless binary?(agent)
+    puts "#{agent}: skipped (not installed)"
+    next
+  end
+  model = model_for(agent)
+  # The Google preflight only covers the default provider.
+  unless agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"
+    preflight(agent, model)
+  end
+  ran += 1
+  ok, attempts, usage = send(AGENTS.fetch(agent))
+  announce(agent, model, ok, attempts, usage)
+  failed += 1 unless ok
+end
+
+abort "agent e2e failed" if failed.positive?
+puts "agent e2e passed (#{ran} agent#{"s" unless ran == 1} ran)" if ran.positive?
+exit 0

@@ -1,6 +1,6 @@
 .DS_Store
 .superpowers/
 /tmp/
-<STDERR>
 dist/
 libexec/
+docs/superpowers/
