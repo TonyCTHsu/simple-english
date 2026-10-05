@@ -14,6 +14,20 @@ class CLIExpandPathsTest < Minitest::Test
     end
   end
 
+  def test_skips_vendored_and_git_directories_when_expanding
+    in_tmpdir do |dir|
+      File.write(File.join(dir, "a.md"), "x")
+      [".git", "node_modules", "vendor"].each do |skipped|
+        sub = File.join(dir, skipped)
+        Dir.mkdir(sub)
+        File.write(File.join(sub, "b.md"), "x")
+      end
+
+      expanded = SimpleEnglish::CLI.expand_paths([dir])
+      assert_equal [File.join(dir, "a.md")], expanded
+    end
+  end
+
   def test_expands_directories_to_markdown_files_recursively
     in_tmpdir do |dir|
       File.write(File.join(dir, "a.md"), "x")
