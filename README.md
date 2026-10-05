@@ -197,12 +197,14 @@ service behind it.
 
 ## Agent integrations
 
-Pi, Claude Code, and Codex can lint the prose they write. The adapters
-live under `integrations/`, unreleased. Try them from a checkout:
+Pi, Claude Code, and Codex can lint the prose they write. The pi
+adapter is published on npm as `pi-simple-english`. The other
+adapters are unreleased. Try them from a checkout:
 
 ```bash
+pi install npm:pi-simple-english               # the se_lint tool
 claude --plugin-dir integrations/claude-code   # the hook feeds findings back
-pi install integrations/pi -l                  # the se_lint tool
+pi install integrations/pi -l                  # the se_lint tool, from a checkout
 se mcp                                         # an MCP server, for any MCP client
 ```
 

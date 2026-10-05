@@ -17,6 +17,14 @@ class IntegrationsNamesTest < Minitest::Test
   EXCLUDED_FILES = ["CHANGELOG.md"].freeze
 
   NAMES = {
+    # The npm package name for pi.
+    "pi-simple-english" => [
+      "README.md",
+      "docs/RELEASING.md",
+      "integrations/pi/package.json",
+      "test/simple_english/integrations_pi_test.rb",
+      ".github/workflows/release.yml"
+    ],
     # The pi tool name.
     "se_lint" => [
       "README.md",

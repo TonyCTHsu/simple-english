@@ -37,3 +37,7 @@ installs, and exercises each platform gem before publication. Each native
 executable also has a SHA-256 checksum and signed build-provenance attestation
 on the GitHub release.
 The container image uses the Linux x86-64 gem.
+
+Release also publishes `integrations/pi` to npm as `pi-simple-english`. A
+version that is already on the registry is skipped, so a re-run of the
+workflow stays green.
