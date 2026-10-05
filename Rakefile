@@ -35,6 +35,21 @@ namespace :release do
     sh "changie batch #{version}"
     sh "changie merge"
     File.write(version_file, source.sub(/VERSION = "[^"]+"/, %(VERSION = "#{version}")))
+
+    # The integration manifests pin their own versions, and the unit
+    # tests hold them to SimpleEnglish::VERSION. A release that skips
+    # them fails CI on the release branch.
+    %w[
+      integrations/claude-code/.claude-plugin/plugin.json
+      integrations/codex/.codex-plugin/plugin.json
+      integrations/pi/package.json
+    ].each do |manifest|
+      body = File.read(manifest)
+      rewritten = body.sub(/"version": "[^"]*"/, %("version": "#{version}"))
+      abort "error: #{manifest} declares no version" if rewritten == body
+      File.write(manifest, rewritten)
+    end
+
     sh "bundle lock"
     puts "Release #{version} prepared. Review, then commit."
   end
