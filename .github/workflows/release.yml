@@ -82,3 +82,22 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ghcr.io/tonycthsu/simple-english:latest,ghcr.io/tonycthsu/simple-english:v${{ needs.release.outputs.version }}
+
+  tap:
+    needs: gem
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Fires the bump workflow on TonyCTHsu/homebrew-tap, which
+      # opens a draft PR there. toby-sidekick must stay installed on
+      # the tap with Contents: write.
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: toby
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          owner: TonyCTHsu
+          repositories: homebrew-tap
+      - run: gh api repos/TonyCTHsu/homebrew-tap/dispatches -f event_type=gem-released
+        env:
+          GH_TOKEN: ${{ steps.toby.outputs.token }}
