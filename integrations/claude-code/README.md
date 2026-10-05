@@ -7,7 +7,7 @@ A Claude Code plugin that lints the prose Claude writes.
 A PostToolUse hook runs after every file write or edit. It lints the
 edited file with `se lint` and feeds the findings back to Claude, so
 Claude fixes them in its next turn. The plugin also ships the
-`simple-english-lint` skill and a `/lint` command.
+`simple-english-lint` skill and a `/simple-english:lint` command.
 
 ## Install
 

@@ -6,7 +6,8 @@ A Codex plugin that lints the prose the agent writes.
 
 The plugin ships the `simple-english-lint` skill and an MCP server.
 The server runs `se mcp` from the gem. The skill tells the agent to
-call the `lint` tool and fix every finding.
+call the `lint` tool on the `simple-english` server and fix every
+finding.
 
 ## Install
 
@@ -17,6 +18,10 @@ marketplace:
 codex plugin marketplace add ./local-marketplace
 codex plugin add simple-english@local-dev
 ```
+
+`local-dev` is the `name` field of the marketplace file, from the
+example in `integrations/verification.md`. Name yours whatever you
+like; the install command follows.
 
 `integrations/verification.md` in the repository holds the full
 steps: the marketplace file and the approval settings.
