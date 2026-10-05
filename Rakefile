@@ -4,17 +4,24 @@ require "digest"
 require "fileutils"
 require_relative "lib/simple_english/version"
 
+NATIVE_BUILD = "tmp/native-languagetool"
+NATIVE_EXECUTABLE = "#{NATIVE_BUILD}/languagetool-native"
+
+# Rake's timestamp comparison decides when to recompile: the native build
+# reruns only when an input is newer than the executable. CI caches the
+# build directory and touches the restored executable. Without the touch,
+# a fresh checkout stamps every input with a new mtime and forces a rebuild.
+file NATIVE_EXECUTABLE =>
+      FileList["native/languagetool/**/*", "rules/simple-english.xml", "Gemfile.lock", "mvnw"] do
+  sh "bundle exec ruby native/languagetool/build.rb"
+end
+
 desc "Build the native lint engine and the platform gem. Set PLATFORM=x86_64-linux"
-task :build do
+task :build => NATIVE_EXECUTABLE do
   platform = ENV["PLATFORM"] or
     abort "error: set PLATFORM, for example PLATFORM=x86_64-linux rake build"
-  build = Pathname.new("tmp/native-languagetool")
+  build = Pathname.new(NATIVE_BUILD)
   executable = build.join("languagetool-native")
-  sbom = build.join("languagetool-native.sbom.json")
-  # CI restores a binary cached on the build inputs. Verification, packaging,
-  # and the gem build always rerun against the restored binary.
-  cached = ENV["NATIVE_CACHE_HIT"] == "true" && executable.executable? && sbom.file?
-  sh "bundle exec ruby native/languagetool/build.rb" unless cached
   classpath = build.join("classpath").read.strip
   sh "bundle exec ruby native/languagetool/verify.rb #{classpath} #{executable}"
 
@@ -23,7 +30,8 @@ task :build do
   FileUtils.mkdir_p("dist")
   tar = "dist/languagetool-server-#{platform}.tar.gz"
   sh "tar -C libexec -czf #{tar} simple_english"
-  FileUtils.cp(sbom, "dist/languagetool-server-#{platform}.sbom.json")
+  FileUtils.cp(build.join("languagetool-native.sbom.json"),
+    "dist/languagetool-server-#{platform}.sbom.json")
   checksum = Digest::SHA256.file(tar).hexdigest
   File.write("#{tar}.sha256", "#{checksum}  #{File.basename(tar)}\n")
 

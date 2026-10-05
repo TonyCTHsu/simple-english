@@ -49,7 +49,7 @@ Prerequisites:
 - A native C compiler, linker, and zlib development files
 - At least 10 GB of available memory
 
-The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. CI also caches the compiled executable keyed on the build inputs and reuses it when they do not change. From the repository root, run:
+The Maven Wrapper downloads Maven 3.9.16 and verifies its SHA-256 checksum. CI and release jobs install GraalVM with the official `graalvm/setup-graalvm` action. CI also caches the build directory keyed on the build inputs and touches the restored executable, so Rake reuses it when they do not change. From the repository root, run:
 
 ```sh
 PLATFORM=arm64-darwin rake build
