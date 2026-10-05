@@ -1,35 +1,33 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Install the GraalVM the CI uses, without admin rights. CI resolves
-# GraalVM version 25.0 to this exact artifact through Oracle's download
-# service. The script downloads the artifact, checks its published
+# CI resolves distribution community to this exact GraalVM Community
+# build (GPLv2 with Classpath Exception). The script downloads the
+# release artifact from graalvm/graalvm-ce-builds, checks its published
 # SHA256, and unpacks it under GRAALVM_HOME (default ~/graalvm). An
 # existing install is reused, so the script is safe to rerun. Bump
-# VERSION when CI moves to a new 25.0 patch.
+# VERSION when CI moves to a new CE build.
 
 require "digest"
 require "fileutils"
-require "json"
-require "net/http"
 require "rbconfig"
 
 module GraalvmSetup
-  VERSION = "25.0.4.1.1"
-  PRODUCT_ID = "D53FAE8052773FFAE0530F15000AA6C6"
-  GDS = "https://gds.oracle.com/api/20220101"
+  VERSION = "25.0.2"
+  RELEASES = "https://github.com/graalvm/graalvm-ce-builds/releases/download/#{VERSION.tr(".", '-')}"
+  NAME = "graalvm-community-jdk-#{VERSION}"
 
   module_function
 
   def run
     os, arch = host
     root = File.expand_path(ENV.fetch("GRAALVM_HOME", "~/graalvm"))
-    install = Dir[File.join(root, "graalvm-jdk-#{VERSION}*")].first
+    install = Dir[File.join(root, "graalvm-community-openjdk-#{VERSION}*")].first
     install ||= download(os, arch, root)
     clear_quarantine(install) if os == "macos"
     java_home = install
     java_home = File.join(install, "Contents", "Home") if os == "macos"
-    puts "GraalVM #{VERSION} is at #{java_home}"
+    puts "GraalVM Community #{VERSION} is at #{java_home}"
     puts "Build with:"
     puts %(  JAVA_HOME="#{java_home}" bundle exec rake build)
   end
@@ -49,29 +47,14 @@ module GraalvmSetup
   end
 
   def download(os, arch, root)
-    id, sha256 = artifact_for(os, arch)
     FileUtils.mkdir_p(root)
-    archive = File.join(root, "graalvm-jdk-#{VERSION}_#{os}-#{arch}.tar.gz")
-    system("curl", "-fL", "-H", "accept: application/x-yaml", "-o", archive,
-      "#{GDS}/artifacts/#{id}/content", exception: true)
+    archive = File.join(root, "#{NAME}_#{os}-#{arch}_bin.tar.gz")
+    system("curl", "-fL", "-o", archive, "#{RELEASES}/#{File.basename(archive)}", exception: true)
+    checksum = `curl -fsSL #{RELEASES}/#{File.basename(archive)}.sha256`.strip.split.first
     actual = Digest::SHA256.file(archive).hexdigest
-    abort "error: SHA256 mismatch. Expected #{sha256}, got #{actual}." unless actual == sha256
+    abort "error: SHA256 mismatch. Expected #{checksum}, got #{actual}." unless actual == checksum
     system("tar", "-xzf", archive, "-C", root, exception: true)
-    Dir[File.join(root, "graalvm-jdk-#{VERSION}*")].first
-  end
-
-  def artifact_for(os, arch)
-    query = "artifacts?productId=#{PRODUCT_ID}&metadata=isBase:True&status=PUBLISHED" \
-      "&metadata=edition:ee&metadata=version:#{VERSION}" \
-      "&responseFields=id&responseFields=checksum&responseFields=metadata"
-    items = JSON.parse(Net::HTTP.get(URI("#{GDS}/#{query}"))).fetch("items")
-    items.each do |item|
-      metadata = item.fetch("metadata").to_h { |entry| [entry.fetch("key"), entry.fetch("value")] }
-      next unless metadata.fetch("os") == os && metadata.fetch("arch") == arch
-
-      return item.fetch("id"), item.fetch("checksum")
-    end
-    abort "error: no GraalVM #{VERSION} artifact for #{os}/#{arch}."
+    Dir[File.join(root, "graalvm-community-openjdk-#{VERSION}*")].first
   end
 
   # A downloaded archive carries the quarantine attribute, which

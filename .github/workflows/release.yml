@@ -6,8 +6,8 @@ on:
 # Mirrors the CI env: when the toolchain changes, both workflows must
 # change together, or release and CI compile with different compilers.
 env:
-  GRAALVM_DISTRIBUTION: graalvm
-  GRAALVM_VERSION: "25.0"
+  GRAALVM_DISTRIBUTION: community
+  GRAALVM_VERSION: "25.0.2"
 
 jobs:
   release:
