@@ -16,7 +16,7 @@ binary itself.
 
 | Component | License | Notice |
 |---|---|---|
-| LanguageTool 6.6 (`languagetool-core`, `languagetool-server`, `languagetool-gui-commons`, `language-en`), unmodified except for a build-time copy of `rules/simple-english.xml` into the English rules | LGPL-2.1 | `licenses/LGPL-2.1.txt` |
+| LanguageTool 6.6 (`languagetool-core`, `languagetool-server`, `languagetool-gui-commons`, `language-en`, `language-ca`, `language-es`, `language-pt`), unmodified except for a build-time copy of `rules/simple-english.xml` into the English rules | LGPL-2.1 | `licenses/LGPL-2.1.txt` |
 | English word-list and POS data (12dicts, AGID, Moby/WordNet POS) | upstream terms, public domain | `licenses/languagetool-resource-en/` |
 | `at.favre.lib:bcrypt` 0.10.2 | Apache-2.0 | |
 | `ch.qos.logback:logback-classic` 1.5.18 | EPL-1.0 or LGPL-2.1 | |
