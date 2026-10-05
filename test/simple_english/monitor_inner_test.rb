@@ -18,7 +18,7 @@ class MonitorInnerTest < Minitest::Test
     monitor&.kill if monitor&.alive?
   end
 
-  # Full inner-death path without java: a stubbed spawn_inner starts a
+  # Full inner-death path: a stubbed spawn_inner starts a
   # plain sleep as the "inner server", so when it dies the daemon must
   # stop serving and raise InnerDied with the rerun message. Runs in a
   # subprocess because start() traps INT/TERM.
@@ -49,23 +49,15 @@ class MonitorInnerTest < Minitest::Test
       end
       module SimpleEnglish
         module Server
-          def self.spawn_inner(install:, port:, rules_dir:, log_path:)
+          def self.spawn_inner(install:, port:, log_path:)
             Process.spawn(RbConfig.ruby, "-e", "sleep 0.2")
           end
         end
       end
-      # An install that passes the preflight: the cache on this runner
-      # can be empty, and the inner-death path must not care.
-      require "tmpdir"
-      require "fileutils"
-      cache = Dir.mktmpdir
-      lt = File.join(cache, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
-      FileUtils.mkdir_p(lt)
-      FileUtils.touch(File.join(lt, "languagetool-server.jar"))
       attempts = 0
       begin
         SimpleEnglish::Server.start(port: pick_port,
-          install: SimpleEnglish::Install.new(cache_dir: cache, java: RbConfig.ruby),
+          install: SimpleEnglish::Install.new(executable: RbConfig.ruby),
           log: File::NULL)
       rescue SimpleEnglish::Server::PortInUse
         attempts += 1
@@ -87,7 +79,7 @@ class MonitorInnerTest < Minitest::Test
       # inner-death path, and the message proves the reason. The
       # child's stderr rides along, so a wrong exit shows its cause.
       assert_equal 2, status.exitstatus, File.read(err.path)
-      assert_includes File.read(err.path), "inner LanguageTool server died. Rerun se serve."
+      assert_includes File.read(err.path), "lint engine died. Rerun se serve."
     else
       Process.kill("KILL", pid)
       Process.wait(pid)

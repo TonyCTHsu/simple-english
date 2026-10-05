@@ -19,6 +19,6 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, Ruby version, gem version, or Docker image tag. Leave empty if it does not matter.
+      description: OS, CPU architecture, Ruby version, and gem version. Leave empty if it does not matter.
     validations:
       required: false

@@ -1,6 +1,58 @@
 # frozen_string_literal: true
 
-require "bundler/gem_tasks"
+require "digest"
+require "fileutils"
+require_relative "lib/simple_english/version"
+
+NATIVE_BUILD = "tmp/native-languagetool"
+NATIVE_EXECUTABLE = "#{NATIVE_BUILD}/languagetool-native"
+SUPPORTED_PLATFORMS = %w[arm64-darwin x86_64-linux aarch64-linux].freeze
+
+# Rake's timestamp comparison decides when to recompile: the native build
+# reruns only when an input is newer than the executable. CI caches the
+# build directory and touches the restored executable. Without the touch,
+# a fresh checkout stamps every input with a new mtime and forces a rebuild.
+file NATIVE_EXECUTABLE =>
+      FileList["native/languagetool/**/*", "rules/simple-english.xml", "Gemfile.lock", "mvnw"] do
+  sh "bundle exec ruby native/languagetool/build.rb"
+end
+
+# The build host is the only source for the platform label. Native Image
+# compiles for the host, so a label that disagrees with the host mislabels
+# the gem. Gem::Platform.local carries a version suffix on some hosts
+# (arm64-darwin-25), so compare the bare cpu-os form.
+def native_platform
+  local = Gem::Platform.local
+  candidate = "#{local.cpu}-#{local.os}"
+  SUPPORTED_PLATFORMS.include?(candidate) or
+    abort "error: unsupported build host #{candidate}. Supported: #{SUPPORTED_PLATFORMS.join(", ")}"
+  candidate
+end
+
+desc "Build the native lint engine and the platform gem"
+task build: NATIVE_EXECUTABLE do
+  platform = native_platform
+  build = Pathname.new(NATIVE_BUILD)
+  executable = build.join("languagetool-native")
+  classpath = build.join("classpath").read.strip
+  sh "bundle exec ruby native/languagetool/verify.rb #{classpath} #{executable}"
+
+  FileUtils.mkdir_p("libexec/simple_english")
+  FileUtils.install(executable, "libexec/simple_english/languagetool-server", mode: 0o755)
+  FileUtils.mkdir_p("dist")
+  tar = "dist/languagetool-server-#{platform}.tar.gz"
+  sh "tar -C libexec -czf #{tar} simple_english"
+  sbom = build.join("maven-target/bom.json")
+  FileUtils.cp(sbom, "dist/languagetool-server-#{platform}.sbom.json")
+  checksum = Digest::SHA256.file(tar).hexdigest
+  File.write("#{tar}.sha256", "#{checksum}  #{File.basename(tar)}\n")
+
+  gem = "dist/simple_english-#{SimpleEnglish::VERSION}-#{platform}.gem"
+  Bundler.with_unbundled_env do
+    sh({"SIMPLE_ENGLISH_GEM_PLATFORM" => platform},
+      "gem build simple_english.gemspec --output #{gem}")
+  end
+end
 
 task default: :test
 

@@ -106,14 +106,7 @@ def in_tmpdir(chdir: false)
   end
 end
 
-# An Install whose server jar is an empty file: passes Server.start's
-# preflight with no LanguageTool cache needed.
-# ponytail: fake jar. If the preflight grows checks, grow this too.
+# An Install with an executable file: passes Server.start's preflight.
 def fake_install
-  in_tmpdir do |dir|
-    lt = File.join(dir, "LanguageTool-#{SimpleEnglish::LanguageTool::LT_VERSION}")
-    FileUtils.mkdir_p(lt)
-    FileUtils.touch(File.join(lt, "languagetool-server.jar"))
-    yield SimpleEnglish::Install.new(cache_dir: dir, java: RbConfig.ruby)
-  end
+  yield SimpleEnglish::Install.new(executable: RbConfig.ruby)
 end

@@ -5,6 +5,14 @@ on:
     branches: [master]
   pull_request:
 
+# The toolchain facts the native cache keys on. A distribution or version
+# change must invalidate the cached binary, so both live here, next to the
+# cache key that consumes them. The community distribution pins an exact
+# JDK build from the graalvm-ce-builds releases.
+env:
+  GRAALVM_DISTRIBUTION: graalvm-community
+  GRAALVM_VERSION: "25.0.2"
+
 jobs:
   unit:
     runs-on: ${{ matrix.os }}
@@ -13,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ["3.3", "3.4", "4.0"]
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -77,62 +85,58 @@ jobs:
           validation_level: error
           validation_depth: 100
 
-  rules:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
+        with:
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
 
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: "3.3"
           bundler-cache: true
 
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Check native reachability metadata
+        run: bundle exec ruby native/languagetool/metadata.rb --check
+
+      - name: Restore the native build cache
+        id: native_cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+          path: tmp/native-languagetool
+          key: native-v2-${{ matrix.runner }}-${{ env.GRAALVM_DISTRIBUTION }}-${{ env.GRAALVM_VERSION }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock') }}
 
-      - name: Set up LanguageTool
-        run: bundle exec bin/se setup
+      - name: Mark the cached executable as fresh
+        if: steps.native_cache.outputs.cache-hit == 'true'
+        run: touch tmp/native-languagetool/languagetool-native
 
-      - name: Run the self-lint
-        run: bundle exec rake lint
+      - name: Build, verify, and package the native server and gem
+        run: bundle exec rake build
+        env:
+          NATIVE_IMAGE_PARALLELISM: "4"
 
-      - name: Run the rule examples
-        run: bundle exec ruby test/examples_check.rb
+      - name: Install the platform gem
+        run: gem install --no-document ./dist/simple_english-*.gem
 
-  e2e:
-    # The user story: build and install the gem, set up the
-    # environment, lint files. Everything runs off the installed gem,
-    # not the checkout's bundle. So the shipped package, the se
-    # shim, and the daemon auto-boot are what gets tested.
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
-        with:
-          ruby-version: "3.3"
-
-      - name: Build and install the gem
-        run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/se
-          # Shared with the rules job. Same distro pin, same download.
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
-
-      - name: Set up the environment
-        run: se setup
-
-      - name: Lint as a user
+      - name: Verify the installed platform gem
         run: bin/e2e-story
 
-      - name: Boot the daemon in an empty environment
-        # See the script header for why this exists.
+      - name: Boot the installed daemon in an empty environment
         run: .github/scripts/daemon-empty-env.sh
+
+      - name: Run the Ruby and rules checks
+        run: |
+          bundle exec rake test
+          bundle exec rake lint
+          bundle exec ruby test/examples_check.rb

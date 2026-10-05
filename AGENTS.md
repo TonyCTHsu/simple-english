@@ -9,7 +9,7 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   the daemon HTTP API
 - `docs/RULES.md` lists every rule in prose. Regenerate it with
   `bin/render-rules` after a rule change.
-- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules, container).
+- `docs/DEVELOPMENT.md` is the dev guide (layout, tests, rules).
   `docs/RELEASING.md` holds the release flow (prepare, merge, publish)
 
 ## Branches
@@ -51,21 +51,48 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   door (`SimpleEnglish::ModelContextProtocol`). It is a client of the
   daemon, not a part of it
 - The tree groups files by domain: `setup/`, `lint/`, `client/`,
-  `daemon/`. `setup/` resolves the environment once, at the process
-  edge. `daemon/` is the server tier: its failures raise typed errors
-  (`PortInUse`, `InnerDied`, `InnerTimeout`)
-- One object definition per file. Internals are `private_class_method`
+  `daemon/`
+- `setup/` resolves the environment once, at the process edge. It
+  holds `languagetool.rb` (pinned engine facts), `install.rb`
+  (bundled executable), `config.rb`, and `fingerprint.rb`
+- `lint/` is the pipeline domain: `lint_plan.rb`, `markdown.rb`,
+  `extractor.rb`, `annotated_text.rb`, `counts.rb`, `suppressions.rb`
+- `client/` is the client tier. `language_tool.rb` speaks the
+  LanguageTool wire protocol, used by the daemon's engine.
+  `daemon.rb` probes, trusts, and boots the daemon
+- `daemon/` holds the server tier: `engine.rb` (lint pipeline),
+  `http.rb` (wire framing), `server.rb` (lifecycle). Server failures
+  raise typed errors (`PortInUse`, `InnerDied`, `InnerTimeout`)
+- One object definition per file: value objects live in their own files
+  in `lint/` (`finding.rb`, `paragraph.rb`, `span.rb`, `segment.rb`,
+  `result.rb`, `plain_text.rb`)
+- Internals are `private_class_method`
 
 ## Constraints
 
 - Runtime dependencies stay minimal. The gemspec adds
   `tree_sitter_language_pack` for comment extraction and Markdown
   structure, and `thor` for the CLI. Any further runtime dependency
-  needs a stated reason here first. (Thor was a user-directed
-  refactor, 2026-02-27.)
+  needs a stated reason here first. (Thor was a
+  user-directed refactor, 2026-02-27.) Platform gems bundle a native
+  LanguageTool server. Runtime no longer depends on a JVM (2026-10-01).
+  `rexml` remains dev-only for `bin/render-rules` and
+  `native/languagetool/verify.rb` (2026-10-02).
 - Dev and test tools are the exception. Pick the best tool for the
-  job. Every dev-only dependency states its reason beside its gemspec
-  line. Keep them out of the gemspec runtime list.
+  job even when it adds a dev-only dependency. Record it here with a
+  one-line reason. Keep such tools out of the gemspec runtime list.
+  Current tools, each with its reason: `minitest` for tests. The
+  bundled gem alone is not enough, because `bundle exec` cannot
+  require a bundled gem that the lockfile omits. `minitest-mock`
+  restores `Object#stub` after minitest 6 dropped it. `rake` runs them.
+  Both are dev-only, in the gemspec. `rexml` parses
+  the rule XML in `bin/render-rules` and `verify.rb` extracts rule
+  examples from it for native parity checks. It stopped shipping as a Ruby
+  default gem in 4.x (2026-10-02). `changie` (a brew
+  binary, not
+  a gem) batches change fragments into `CHANGELOG.md` at release
+  time (2026-09-29). Pull requests add fragments, not changelog
+  lines, so they never conflict.
 - `Markdown.strip` must keep the line count identical to the source. Findings cite
   original line numbers, so stripping changes must preserve them.
 - Ruby 3.3 minimum. CI enforces it. The
@@ -104,13 +131,22 @@ line the finding reports. Counting findings cite the paragraph's first line.
 
 ## Tests
 
+- `rake lint`: self-lint the repo's own prose. CI's `native` job runs it,
+  then `ruby test/examples_check.rb` for the rule examples. The
+  `unit` job runs `rake test` on the supported-platform Ruby matrix.
+  CI adds `standardrb`, `actionlint`, and `hadolint` on top. The
+  `native` job installs the built platform gem, then runs
+  `bin/e2e-story` without an executable override. It lints the corpus
+  and a code comment outside the repo. The corpus has that one CI
+  home. standardrb stays out of the bundle.
+  Reason: rubocop pins `json ~> 2.3`,
+  and Ruby 4.0's default json gem is 3.x. Bundling it breaks
+  `bundle exec` on 4.0
 - `rake test`: unit tests only, no LanguageTool needed
 - `rake lint`: self-lint the repo's own prose, then the changie
   fragment bodies
 - `ruby test/examples_check.rb` and `ruby test/corpus_check.rb`: need
-  LanguageTool (run `bin/se setup` first)
-- The corpus has that one CI home. standardrb stays out of the
-  bundle. Reason: rubocop pins `json ~> 2.3`, and Ruby 4.0's default
-  json gem is 3.x. Bundling it breaks `bundle exec` on 4.0
+  the native LanguageTool server. Set `SE_LANGUAGETOOL_EXECUTABLE` for a
+  source-tree build
 
 See `docs/DEVELOPMENT.md` for the full test strategy.

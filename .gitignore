@@ -1,4 +1,6 @@
 .DS_Store
 .superpowers/
 /tmp/
+dist/
+libexec/
 docs/superpowers/

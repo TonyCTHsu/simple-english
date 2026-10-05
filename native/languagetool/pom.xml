@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.simpleenglish</groupId>
+  <artifactId>languagetool-native</artifactId>
+  <version>0.1.0</version>
+
+  <properties>
+    <native.build.directory>${project.basedir}/target</native.build.directory>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>languagetool-server</artifactId>
+      <version>6.6</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.languagetool</groupId>
+          <artifactId>language-all</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-en</artifactId>
+      <version>6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-ca</artifactId>
+      <version>6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-es</artifactId>
+      <version>6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.languagetool</groupId>
+      <artifactId>language-pt</artifactId>
+      <version>6.6</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <directory>${native.build.directory}</directory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.7.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <schemaVersion>1.6</schemaVersion>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

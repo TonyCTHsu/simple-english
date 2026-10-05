@@ -20,9 +20,7 @@ class ServerPortGuardTest < Minitest::Test
   end
 
   def test_serve_refuses_occupied_port
-    # The install is faked: the preflight must pass so the guard, not
-    # the missing cache, decides the outcome on a machine without
-    # LanguageTool.
+    # The install is faked so the occupied-port guard decides the outcome.
     fake_install do |install|
       blocker = TCPServer.new("localhost", 0)
       port = blocker.addr[1]

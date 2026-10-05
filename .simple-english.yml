@@ -1,6 +1,6 @@
 # Self-lint config: `bin/se .` runs over the whole repo.
 # The corpus before files and the rendered rule examples break the
-# rules on purpose, and tmp/ holds the downloaded LanguageTool dist.
+# rules on purpose, and tmp/ holds generated build artifacts.
 # vendor/ holds the bundled gems under CI's bundler-cache.
 # .changes/ holds changie fragments that mirror the entries verbatim.
 ignore:
@@ -9,3 +9,7 @@ ignore:
   - tmp/**
   - vendor/**
   - .changes/**
+  # Verbatim upstream license texts and notices; they cannot be
+  # reworded, so self-lint skips them.
+  - licenses/**
+  - THIRD_PARTY_NOTICES.md
