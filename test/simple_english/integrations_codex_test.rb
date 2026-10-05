@@ -25,11 +25,11 @@ class IntegrationsCodexTest < Minitest::Test
   def test_skills_are_vendored_not_a_symlink
     skills = File.join(PLUGIN, "skills")
     refute File.symlink?(skills)
-    assert File.exist?(File.join(skills, "lint", "SKILL.md"))
+    assert File.exist?(File.join(skills, "simple-english-lint", "SKILL.md"))
   end
 
   def test_vendored_skill_names_the_mcp_tool
-    skill = File.read(File.join(PLUGIN, "skills", "lint", "SKILL.md"))
+    skill = File.read(File.join(PLUGIN, "skills", "simple-english-lint", "SKILL.md"))
     assert_includes skill, "`lint`"
   end
 end
