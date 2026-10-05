@@ -137,7 +137,8 @@ from local paths:
 
 - pi: `pi install <repo>/integrations/pi -l`
 - Claude Code: `claude --plugin-dir <repo>/integrations/claude-code`
-- Codex: a local marketplace, per `integrations/verification.md`
+- Codex: `codex plugin marketplace add TonyCTHsu/simple-english`, or a
+  local marketplace, per `integrations/verification.md`
 
 `se mcp` runs the MCP server behind the Codex plugin. Any MCP client
 can use it.

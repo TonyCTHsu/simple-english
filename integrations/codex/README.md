@@ -11,20 +11,17 @@ finding.
 
 ## Install
 
-Install the gem first. Then install the plugin through a local
-marketplace:
+Install the gem first. Then add this repository as a marketplace
+and install the plugin:
 
 ```bash
-codex plugin marketplace add ./local-marketplace
-codex plugin add simple-english@local-dev
+codex plugin marketplace add TonyCTHsu/simple-english
+codex plugin add simple-english@simple-english
 ```
 
-`local-dev` is the `name` field of the marketplace file, from the
-example in `integrations/verification.md`. Name yours whatever you
-like. The install command follows.
-
-`integrations/verification.md` in the repository holds the full
-steps: the marketplace file and the approval settings.
+MCP tool calls need approval by default. `integrations/verification.md`
+holds the approval settings, and a local-marketplace recipe for a
+development checkout.
 
 ## Versions
 

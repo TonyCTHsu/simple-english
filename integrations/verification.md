@@ -80,8 +80,33 @@ root. Fields:
 The `.mcp.json` top-level key is `mcpServers`. The paths are relative to
 the plugin root and start with `./`.
 
-Local install needs a local marketplace. A directory holds
-`.agents/plugins/marketplace.json`:
+Local install needs a local marketplace. This repository ships one,
+under `.agents/plugins/marketplace.json`:
+
+```json
+{
+  "name": "simple-english",
+  "plugins": [
+    {
+      "name": "simple-english",
+      "source": {
+        "source": "local",
+        "path": "./integrations/codex"
+      }
+    }
+  ]
+}
+```
+
+Users add the repository as the marketplace:
+
+```bash
+codex plugin marketplace add TonyCTHsu/simple-english
+codex plugin add simple-english@simple-english
+```
+
+A development marketplace can hold other plugins too. A directory
+holds `.agents/plugins/marketplace.json`:
 
 ```json
 {
