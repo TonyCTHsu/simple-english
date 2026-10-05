@@ -66,6 +66,13 @@ module NativeLanguageToolBuild
     CLASSPATH_FILE.write(classpath)
   end
 
+  def native_image
+    from_home = File.join(ENV.fetch("JAVA_HOME", ""), "bin", "native-image")
+    return from_home if File.executable?(from_home)
+
+    "native-image"
+  end
+
   def build_executable
     options = ["--no-fallback", "--enable-sbom=embed,export"]
     # -march is an AMD64-only option. AArch64 has a single baseline.
@@ -78,7 +85,7 @@ module NativeLanguageToolBuild
     parallelism = ENV["NATIVE_IMAGE_PARALLELISM"]
     options << "--parallelism=#{parallelism}" if parallelism
     system(
-      "native-image", *options,
+      native_image, *options,
       "-cp", CLASSPATH_FILE.read.strip,
       MAIN_CLASS,
       EXECUTABLE.to_s,
