@@ -10,7 +10,7 @@ on:
 # cache key that consumes them. The community distribution pins an exact
 # JDK build from the graalvm-ce-builds releases.
 env:
-  GRAALVM_DISTRIBUTION: community
+  GRAALVM_DISTRIBUTION: graalvm-community
   GRAALVM_VERSION: "25.0.2"
 
 jobs:
