@@ -65,6 +65,10 @@ raise the floor. The release workflow checks the stamped floor on the
 built binary: glibc 2.35 through `objdump` on Linux, macOS 12 through
 `otool` on darwin.
 
+Run `bin/setup-graalvm` to install the pinned GraalVM under
+`~/graalvm` without admin rights. It downloads the same artifact CI
+installs and prints the `JAVA_HOME` line for the build.
+
 ## Compilation pipeline
 
 `build.rb` performs these steps:

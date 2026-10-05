@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Install the GraalVM the CI uses, without admin rights. CI resolves
+# GraalVM version 25.0 to this exact artifact through Oracle's download
+# service. The script downloads the artifact, checks its published
+# SHA256, and unpacks it under GRAALVM_HOME (default ~/graalvm). An
+# existing install is reused, so the script is safe to rerun. Bump
+# VERSION when CI moves to a new 25.0 patch.
+
+require "digest"
+require "fileutils"
+require "json"
+require "net/http"
+require "rbconfig"
+
+module GraalvmSetup
+  VERSION = "25.0.4.1.1"
+  PRODUCT_ID = "D53FAE8052773FFAE0530F15000AA6C6"
+  GDS = "https://gds.oracle.com/api/20220101"
+
+  module_function
+
+  def run
+    os, arch = host
+    root = File.expand_path(ENV.fetch("GRAALVM_HOME", "~/graalvm"))
+    install = Dir[File.join(root, "graalvm-jdk-#{VERSION}*")].first
+    install ||= download(os, arch, root)
+    clear_quarantine(install) if os == "macos"
+    java_home = install
+    java_home = File.join(install, "Contents", "Home") if os == "macos"
+    puts "GraalVM #{VERSION} is at #{java_home}"
+    puts "Build with:"
+    puts %(  JAVA_HOME="#{java_home}" bundle exec rake build)
+  end
+
+  def host
+    case RbConfig::CONFIG["host_os"]
+    when /darwin/ then ["macos", arch]
+    when /linux/ then ["linux", arch]
+    else abort "error: unsupported host. This script supports macOS and Linux."
+    end
+  end
+
+  def arch
+    return "aarch64" if RbConfig::CONFIG["host_cpu"].match?(/arm|aarch64/)
+
+    "amd64"
+  end
+
+  def download(os, arch, root)
+    id, sha256 = artifact_for(os, arch)
+    FileUtils.mkdir_p(root)
+    archive = File.join(root, "graalvm-jdk-#{VERSION}_#{os}-#{arch}.tar.gz")
+    system("curl", "-fL", "-H", "accept: application/x-yaml", "-o", archive,
+      "#{GDS}/artifacts/#{id}/content", exception: true)
+    actual = Digest::SHA256.file(archive).hexdigest
+    abort "error: SHA256 mismatch. Expected #{sha256}, got #{actual}." unless actual == sha256
+    system("tar", "-xzf", archive, "-C", root, exception: true)
+    Dir[File.join(root, "graalvm-jdk-#{VERSION}*")].first
+  end
+
+  def artifact_for(os, arch)
+    query = "artifacts?productId=#{PRODUCT_ID}&metadata=isBase:True&status=PUBLISHED" \
+      "&metadata=edition:ee&metadata=version:#{VERSION}" \
+      "&responseFields=id&responseFields=checksum&responseFields=metadata"
+    items = JSON.parse(Net::HTTP.get(URI("#{GDS}/#{query}"))).fetch("items")
+    items.each do |item|
+      metadata = item.fetch("metadata").to_h { |entry| [entry.fetch("key"), entry.fetch("value")] }
+      next unless metadata.fetch("os") == os && metadata.fetch("arch") == arch
+
+      return item.fetch("id"), item.fetch("checksum")
+    end
+    abort "error: no GraalVM #{VERSION} artifact for #{os}/#{arch}."
+  end
+
+  # A downloaded archive carries the quarantine attribute, which
+  # blocks the first launch on macOS.
+  def clear_quarantine(install)
+    system("xattr", "-r", "-d", "com.apple.quarantine", install,
+      out: File::NULL, err: File::NULL)
+  end
+end
+
+GraalvmSetup.run
