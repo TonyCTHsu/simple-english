@@ -16,14 +16,14 @@ the agent corrects its own text.
 |---|---|
 | Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime. <!-- se: ignore --> | The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime. |
 
-Markdown prose plus code comments in Python, Ruby, JavaScript,
-TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
-plain text, JSON, or SARIF. The same rules ship as plugins for the
-agents that write your prose.
+The linter covers Markdown prose plus code comments in Python, Ruby,
+JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
+YAML. Findings print as plain text, JSON, or SARIF. The same rules
+ship as plugins for the agents that write your prose.
 
 ## Agent integrations
 
-Agents that write the prose get the rules closer to hand. One skill,
+The plugins put the rules where the agent writes. One skill,
 `simple-english-lint`, ships inside every adapter. It tells the agent
 to lint what it writes and fix every finding.
 
@@ -72,20 +72,11 @@ brew install TonyCTHsu/tap/simple-english
 gem install simple_english
 ```
 
-You need Ruby 3.3 or newer, and glibc 2.35 or newer on Linux. The
-gem suits CI and hosts that already run Ruby.
-
-### Docker (no Ruby needed)
+### Container
 
 ```bash
 docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest .
 ```
-
-The image holds the CLI and the lint engine. It lints the mounted
-directory, then exits. Pin the tag to a version for CI, like
-`ghcr.io/tonycthsu/simple-english:v0.5.0`. The image ships for Linux
-x86-64 and Linux arm64. On an Apple Silicon Mac, Docker runs the arm64
-image. There is no install for Windows or Intel Macs on any channel.
 
 ## Usage
 
