@@ -4,25 +4,36 @@
 
 # simple_english
 
-> Write for human readers, not for reviewers or another AI.
+> Write for human, not for agent.
 
-AI writes your docs and code comments in seconds. This linter cuts
-the slop it leaves behind. Every finding says what to write
-instead.
+You can teach an agent plain-English prose with a skill or a
+prompt. It writes clean prose in the first paragraph and slop again
+by the third. This linter keeps the agent honest: it reads what the
+agent wrote and names every broken rule. Send the findings back, and
+the agent corrects its own text.
 
-```console
-$ printf "The config was written by setup — don't edit it; the daemon caches rules, making the first lint slow." > note.md
-$ se note.md
-note.md:1:12-26: [SE_ACTIVE_VOICE] "was written by" - Use the active voice. Say who does the action.
-note.md:1:73-81: [SE_ING_AFTER_COMMA] ", making" - Start a new sentence instead of the -ing phrase.
-note.md:1:37-40: [SE_NO_CONTRACTIONS] "n't" - Write the words in full. No contractions.
-note.md:1:33-34: [SE_NO_EMDASH] "—" - Write two sentences, or use a comma.
-note.md:1:48-49: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relation.
-```
+| Before | After |
+|---|---|
+| Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime. <!-- se: ignore --> | The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime. |
 
-Markdown prose plus code comments in Python, Ruby, JavaScript,
-TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
-plain text, JSON, or SARIF.
+The linter covers Markdown prose plus code comments in Python, Ruby,
+JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
+YAML. Findings print as plain text, JSON, or SARIF.
+
+If your language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
+
+## Agent integrations
+
+Plug the linter into your coding agent. It checks its own draft
+before you read the file.
+
+| Coding agent | Integration |
+|---|---|
+| pi | [pi-simple-english](integrations/pi/README.md) |
+| Claude Code | [simple-english](integrations/claude-code/README.md) |
+| Codex | [simple-english](integrations/codex/README.md) |
+
+If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
 ## The rules
 
@@ -36,63 +47,27 @@ plain text, JSON, or SARIF.
 - **Code comments:** same pattern rules, with line and column range.
 - **Counts (Markdown only):** 20 words per sentence in list items, 25 in paragraphs, six sentences per paragraph at most.
 
-The full list, with a wrong and a right example for each rule:
-[docs/RULES.md](docs/RULES.md).
-
-## Agent integrations
-
-The linter runs as an MCP server: `se mcp`. It exposes one tool,
-`lint`. Any MCP client can call it.
-
-Agents that write the prose get the rules closer to hand. One skill,
-`simple-english-lint`, ships inside every adapter. It tells the agent
-to lint what it writes and fix every finding.
-
-The adapters:
-
-| Adapter | Install command |
-|---|---|
-| [pi](integrations/pi/README.md) | `pi install npm:pi-simple-english` |
-| [Claude Code](integrations/claude-code/README.md) | `claude plugin marketplace add TonyCTHsu/simple-english` |
-| [Codex](integrations/codex/README.md) | `codex plugin marketplace add TonyCTHsu/simple-english` |
-
-Each adapter has its own README with scopes and prerequisites. See
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+The full list, with a wrong and a right example for each rule [docs/RULES.md](docs/RULES.md).
 
 ## Install
 
-**Requirement:** Ruby 3.3 or newer on macOS 12 or newer (arm64), or Linux
-x86-64 or Linux arm64 with glibc 2.35 or newer.
-
-### Homebrew (macOS)
+### Homebrew (macOS arm64)
 
 ```bash
 brew install TonyCTHsu/tap/simple-english
-brew services start simple-english
 ```
 
-Homebrew installs the CLI as one gem, with the lint engine inside
-it. The service keeps a background daemon running. Run
-`brew services stop simple-english` to stop it.
-
-### Ruby gem (supported platforms and CI)
+### Ruby gem (macOS arm64, Linux x86-64 and arm64)
 
 ```bash
 gem install simple_english
-se README.md
 ```
 
-### Docker (no Ruby needed)
+### Container
 
 ```bash
-docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest .
+docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english .
 ```
-
-The image holds the CLI and the lint engine. It lints the mounted
-directory, then exits. Pin the tag to a version for CI, like
-`ghcr.io/tonycthsu/simple-english:v0.5.0`. The image ships for Linux
-x86-64 and Linux arm64. On an Apple Silicon Mac, Docker runs the arm64
-image. There is no install for Windows or Intel Macs on any channel.
 
 ## Usage
 
@@ -129,6 +104,15 @@ se --format sarif src/ > results.sarif
 - `1`: findings
 - `2`: input, configuration, installation, or daemon error
 
+### MCP server
+
+Start an MCP stdio server with one tool, `lint`. Any MCP
+client can call it.
+
+```
+se mcp
+```
+
 ### CI
 
 Gate the prose in the pull request that changes it. The plain run
@@ -153,12 +137,6 @@ jobs:
           sarif_file: lint.sarif
         if: always()
 ```
-
-### The daemon
-
-The first lint starts a background daemon. Later lints use it. A
-lint after a gem update prints a warning. Run `se serve --detached`
-once. It stops the old daemon and starts the new one.
 
 ## Config and suppressions
 
@@ -198,31 +176,21 @@ In a code comment:
 
 ### Have you thought about an agent skill?
 
-Every adapter in [Agent integrations](#agent-integrations) bundles
-one: the `simple-english-lint` skill rides with the linter, so an
-agent drafts and lints with the same rules. The
-[SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
-ships a standalone skill for hosts without an adapter. If you like,
-use both: the skill helps the first draft, and the linter catches
-what the agent missed.
+This project takes its idea from [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish). If you like, use both: the skill helps the first draft, and the linter catches what the agent missed.
 
 ### Why not Vale?
 
-We ported all 67 rules to Vale and ran the corpus on both engines.
+We ported rules to Vale and ran the corpus on both engines.
 About 60 rules behave the same. Vale has no check for the em-dash
 and semicolon rules: its checks see words, not punctuation. Its
 tagger also mislabels verbs, so the condition-first rule stays
-silent. The rules here include examples that CI verifies. Closing
-the Vale gaps needs scripts or an external
+silent. Closing the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 
 ## Scope
 
-The rule set comes from the Plain-mode rules of the MIT-licensed
-SimpleEnglish project. This tool does not check ASD-STE100 compliance.
-This repo holds no ASD-STE100 text. If you need full compliance, read
-the free standard at <https://www.asd-ste100.org/>.
+This tool does not check ASD-STE100 compliance. This repo holds no ASD-STE100 text. If you need full compliance, read the free standard at <https://www.asd-ste100.org/>.
 
 ## Develop
 
