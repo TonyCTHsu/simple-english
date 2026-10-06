@@ -6,21 +6,13 @@
 
 > Write for human readers, not for reviewers or another AI.
 
-AI writes your docs and code comments in seconds. This linter cuts
-the slop it leaves behind. Every finding says what to write
-instead.
+A skill or a prompt can teach an agent plain English. The agent still
+drifts: it writes clean prose in the first paragraph and slop again
+by the third. Nothing in the loop checks the result.
 
-```console
-$ printf "Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime." > note.md
-$ se note.md
-note.md:1:15-29: [SE_ACTIVE_VOICE] "are rotated by" - Use the active voice. Say who does the action.
-note.md:1:67-89: [SE_CONDITION_FIRST] "need to update them if" - Put the condition first: “If the build fails, read the log.”
-note.md:1:107-110: [SE_NO_CONTRACTIONS] "n't" - Write the words in full. No contractions.
-note.md:1:56-57: [SE_NO_EMDASH] "—" - Write two sentences, or use a comma.
-note.md:1:103-104: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relation.
-note.md:1: [SE_SENTENCE_TOO_LONG] Sentence has more than 25 words. Split it.
-note.md:1:118-124: [SE_SLOP_DELETE_ADVERBS] "simply" - Delete it. It carries no fact.
-```
+This linter is the other side. It reads what the agent wrote, names
+every broken rule, and says what to write instead. Send the findings
+back, and the agent corrects its own text.
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
 TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
