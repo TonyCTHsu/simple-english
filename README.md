@@ -12,20 +12,16 @@ by the third. This linter keeps the agent honest: it reads what the
 agent wrote and names every broken rule. Send the findings back, and
 the agent corrects its own text.
 
-Before and after, where every fix answers one finding:
-
 | Before | After |
 |---|---|
 | Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime. <!-- se: ignore --> | The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime. |
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
 TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
-plain text, JSON, or SARIF.
+plain text, JSON, or SARIF. The same rules ship as plugins for the
+agents that write your prose.
 
 ## Agent integrations
-
-The linter runs as an MCP server: `se mcp`. It exposes one tool,
-`lint`. Any MCP client can call it.
 
 Agents that write the prose get the rules closer to hand. One skill,
 `simple-english-lint`, ships inside every adapter. It tells the agent
@@ -107,6 +103,11 @@ Lint only what changed:
 ```bash
 git diff --name-only --diff-filter=ACM main | xargs -I{} se {}
 ```
+
+### MCP server
+
+`se mcp` starts an MCP stdio server with one tool, `lint`. Any MCP
+client can call it.
 
 ### Outputs
 
