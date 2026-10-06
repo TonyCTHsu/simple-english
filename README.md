@@ -28,9 +28,9 @@ is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/
 Plug the linter into your coding agent. It checks its own draft
 before you read the file.
 
-- **[pi](https://github.com/earendil-works/pi)** — [install](integrations/pi/README.md): a `se_lint` tool and the `simple-english-lint` skill
-- **[Claude Code](https://github.com/anthropics/claude-code)** — [install](integrations/claude-code/README.md): a hook that feeds findings back, plus the skill and a `/lint` command
-- **[Codex](https://github.com/openai/codex)** — [install](integrations/codex/README.md): an MCP server and the skill
+- **[pi](https://github.com/earendil-works/pi)**, [install](integrations/pi/README.md): a `se_lint` tool and the `simple-english-lint` skill
+- **[Claude Code](https://github.com/anthropics/claude-code)**, [install](integrations/claude-code/README.md): a hook that feeds findings back, plus the skill and a `/lint` command
+- **[Codex](https://github.com/openai/codex)**, [install](integrations/codex/README.md): an MCP server and the skill
 
 Each install guide holds the full install, with the gem
 prerequisite, scopes, and commands.
