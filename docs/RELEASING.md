@@ -36,8 +36,8 @@ arm64, and macOS arm64. It builds,
 installs, and exercises each platform gem before publication.
 
 Each gem carries the native server and its SBOM, and the release holds
-a copy of each published gem. Verify a downloaded gem with
-`gh attestation verify`.
+a copy of each published gem. RubyGems holds a signed Sigstore
+attestation for every published gem.
 The container image uses the Linux platform gems, one per
 cpu architecture.
 
