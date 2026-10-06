@@ -2,11 +2,12 @@ name: Measure the macOS release build
 
 # A one-shot measurement of the release gem job's no-cache build on
 # macos-15, the slowest release leg. The matrix release job has never
-# run, so this is the only way to learn its true duration. Dispatch it
-# on this branch, read the build step's seconds, then delete this file.
+# run, so this is the only way to learn its true duration. Pushing this
+# branch fires it; read the build step's seconds, then delete this file.
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [tonyc.t.hsu/measure-macos-build]
 
 env:
   GRAALVM_DISTRIBUTION: graalvm-community
