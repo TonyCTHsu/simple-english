@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name = "simple_english"
   spec.version = SimpleEnglish::VERSION
   spec.authors = ["TonyCTHsu"]
-  spec.summary = "Lint Markdown prose with the SimpleEnglish Plain-mode rules"
+  spec.summary = "Lint Markdown prose and code comments with plain English rules"
   spec.description = "Lints Markdown prose and code comments with pattern " \
     "and counting rules."
   spec.homepage = "https://github.com/TonyCTHsu/simple-english"
