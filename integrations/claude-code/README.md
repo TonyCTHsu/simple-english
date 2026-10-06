@@ -9,13 +9,15 @@ edited file with `se lint` and feeds the findings back to Claude, so
 Claude fixes them in its next turn. The plugin also ships the
 `simple-english-lint` skill and a `/simple-english:lint` command.
 
-## Install
+## Prerequisites
 
-The linter is a Ruby gem. Install the gem first:
+The linter is a Ruby gem. Install it once, before the adapter:
 
 ```bash
 gem install simple_english
 ```
+
+## Install
 
 For yourself, on every project:
 

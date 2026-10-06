@@ -9,10 +9,17 @@ The server runs `se mcp` from the gem. The skill tells the agent to
 call the `lint` tool on the `simple-english` server and fix every
 finding.
 
+## Prerequisites
+
+The linter is a Ruby gem. Install it once, before the adapter:
+
+```bash
+gem install simple_english
+```
+
 ## Install
 
-Install the gem first. Then add this repository as a marketplace and
-install the plugin. Each user runs both commands:
+Each user runs both commands:
 
 ```bash
 codex plugin marketplace add TonyCTHsu/simple-english

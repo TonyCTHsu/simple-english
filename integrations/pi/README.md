@@ -8,15 +8,17 @@ The package adds two things to pi:
 - the `simple-english-lint` skill, which tells the agent to lint the
   prose it writes and fix every finding
 
-## Install
+## Prerequisites
 
-The linter is a Ruby gem. Install the gem, then install the package.
-For yourself, on every project:
+The linter is a Ruby gem. Install it once, before the adapter:
 
 ```bash
 gem install simple_english
-pi install npm:pi-simple-english
 ```
+
+## Install
+
+For yourself, on every project:
 
 For one project, with the team, install into the project instead. Run
 the install with `-l` from the project root:
