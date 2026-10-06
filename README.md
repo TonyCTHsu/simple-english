@@ -64,18 +64,12 @@ linter. The adapters that put the rules inside your agent live in
 
 ```bash
 brew install TonyCTHsu/tap/simple-english
-brew services start simple-english
 ```
-
-Homebrew installs the CLI as one gem, with the lint engine inside
-it. You need no Ruby setup. The service keeps a background daemon
-running. Run `brew services stop simple-english` to stop it.
 
 ### Ruby gem (macOS arm64, Linux x86-64 and arm64)
 
 ```bash
 gem install simple_english
-se README.md
 ```
 
 You need Ruby 3.3 or newer, and glibc 2.35 or newer on Linux. The
