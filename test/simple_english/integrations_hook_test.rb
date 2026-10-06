@@ -115,6 +115,5 @@ class IntegrationsHookTest < Minitest::Test
     context = JSON.parse(out).dig("hookSpecificOutput", "additionalContext")
     assert_includes context, "not linted"
     assert_includes context, "gem install simple_english"
-    assert_includes context, "se setup"
   end
 end

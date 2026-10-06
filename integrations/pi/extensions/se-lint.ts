@@ -1,8 +1,8 @@
 /**
  * se_lint - lint Markdown prose and code comments with simple_english.
  *
- * Shells out to the `se` CLI. Assumes the gem is installed and `se setup`
- * has been run; on a missing binary the tool fails with install steps.
+ * Shells out to the `se` CLI. Assumes the gem is installed; on a
+ * missing binary the tool fails with install steps.
  */
 
 import { execFile } from "node:child_process";

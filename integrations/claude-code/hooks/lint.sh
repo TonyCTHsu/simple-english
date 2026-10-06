@@ -47,7 +47,7 @@ esac
 
 se_bin="${SE_BIN:-se}"
 command -v "$se_bin" >/dev/null 2>&1 || {
-  emit "se is not installed, so the prose was not linted. Install it: gem install simple_english && se setup"
+  emit "se is not installed, so the prose was not linted. Install it: gem install simple_english"
   exit 0
 }
 
