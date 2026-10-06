@@ -1,6 +1,6 @@
 {
   "name": "simple-english",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Lint Markdown prose and code comments with the plain-English rules. One MCP tool, lint, with a skill that tells the agent to fix every finding.",
   "author": {
     "name": "TonyCTHsu"
