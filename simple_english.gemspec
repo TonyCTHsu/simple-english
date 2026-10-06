@@ -11,6 +11,10 @@ Gem::Specification.new do |spec|
     "and counting rules."
   spec.homepage = "https://github.com/TonyCTHsu/simple-english"
   spec.license = "MIT"
+  # Platform gems embed the native engine, so they carry its licenses
+  # too. The plain gem stays MIT only.
+  spec.licenses = ["MIT", "LGPL-2.1-only", "Apache-2.0", "GPL-2.0-only"] if
+    ENV.key?("SIMPLE_ENGLISH_GEM_PLATFORM")
   spec.platform = ENV.fetch("SIMPLE_ENGLISH_GEM_PLATFORM", Gem::Platform::RUBY)
   spec.metadata = {
     "homepage_uri" => spec.homepage,
