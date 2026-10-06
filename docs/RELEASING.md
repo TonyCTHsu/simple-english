@@ -33,13 +33,21 @@ repository.
 Do not push tags by hand. The workflow tags the release commit. It builds
 and verifies native servers on Ubuntu 22.04 x86-64, Ubuntu 22.04
 arm64, and macOS arm64. It builds,
-installs, and exercises each platform gem before publication. Each native
-executable also has a SHA-256 checksum and signed build-provenance attestation
-on the GitHub release.
-The container image uses the Linux x86-64 gem.
+installs, and exercises each platform gem before publication.
 
-Release also publishes `integrations/pi` to npm as `pi-simple-english`. A
-version that is already on the registry is skipped, so a re-run of the
-workflow stays green. The publish uses npm trusted publishing, with no
-npm token. Register the trusted publisher on the npm side before the
-first release: the repository, and the workflow file `release.yml`.
+Each gem carries the native server and its SBOM, and the release holds
+a copy of each published gem. RubyGems holds a signed Sigstore
+attestation for every published gem.
+The container image uses the Linux platform gems, one per
+cpu architecture.
+
+If one platform fails, re-run the failed jobs from the release run. The
+workflow checks RubyGems first. A published platform keeps its gem copy
+from the attempt that pushed it, and the re-run leaves it alone.
+
+Release also publishes `integrations/pi` to npm as `pi-simple-english`.
+A version that is already on the registry is skipped, so a re-run of
+the workflow stays green. The publish uses npm trusted publishing,
+with no npm token. Register the trusted publisher on the npm side
+before the first release: the repository, and the workflow file
+`release.yml`.

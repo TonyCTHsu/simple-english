@@ -71,8 +71,8 @@ brew install TonyCTHsu/tap/simple-english
 brew services start simple-english
 ```
 
-Homebrew installs Ruby and the lint engine alongside the CLI. The
-service keeps a background daemon running. Run
+Homebrew installs the CLI as one gem, with the lint engine inside
+it. The service keeps a background daemon running. Run
 `brew services stop simple-english` to stop it.
 
 ### Ruby gem (supported platforms and CI)
@@ -81,6 +81,18 @@ service keeps a background daemon running. Run
 gem install simple_english
 se README.md
 ```
+
+### Docker (no Ruby needed)
+
+```bash
+docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest .
+```
+
+The image holds the CLI and the lint engine. It lints the mounted
+directory, then exits. Pin the tag to a version for CI, like
+`ghcr.io/tonycthsu/simple-english:v0.5.0`. The image ships for Linux
+x86-64 and Linux arm64. On an Apple Silicon Mac, Docker runs the arm64
+image. There is no install for Windows or Intel Macs on any channel.
 
 ## Usage
 

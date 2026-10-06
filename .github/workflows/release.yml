@@ -50,76 +50,100 @@ jobs:
   gem:
     needs: release
     strategy:
+      # A failed platform must not cancel the others: each leg publishes
+      # independently, and re-running the failed jobs publishes only the
+      # platforms still missing from RubyGems.
+      fail-fast: false
+      # The same runners the CI native job uses, one platform label
+      # each: the only platforms the gem supports.
       matrix:
-        runner: [ubuntu-22.04, ubuntu-22.04-arm, macos-15]
+        include:
+          - runner: ubuntu-22.04
+            platform: x86_64-linux
+          - runner: ubuntu-22.04-arm
+            platform: aarch64-linux
+          - runner: macos-15
+            platform: arm64-darwin
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     permissions:
-      attestations: write
       contents: write
       id-token: write
     steps:
+      # RubyGems rejects re-pushing a published version. A re-run rebuilds,
+      # and its bytes differ from the published gem. A re-run of a published
+      # platform must build nothing: the attempt that pushed already put
+      # its gem copy on the release.
+      - name: Check whether the platform gem is published
+        id: published
+        run: |
+          if curl -fsIL "https://rubygems.org/gems/simple_english-${VERSION}-${PLATFORM}.gem" >/dev/null 2>&1; then
+            echo "${PLATFORM} already published, skipping the build, the upload, and the push"
+            echo "published=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=no" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          PLATFORM: ${{ matrix.platform }}
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.published.outputs.published == 'no'
         with:
           persist-credentials: false
 
       - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
+        if: steps.published.outputs.published == 'no'
         with:
           distribution: ${{ env.GRAALVM_DISTRIBUTION }}
           version: ${{ env.GRAALVM_VERSION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: maven
 
+      # No bundle or Maven caches here: release builds fetch every input
+      # fresh, so the provenance records a complete build, not a cache hit.
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        if: steps.published.outputs.published == 'no'
         with:
           ruby-version: "3.3"
-          bundler-cache: true
+
+      - name: Install the bundle
+        if: steps.published.outputs.published == 'no'
+        run: bundle install
 
       - name: Build, verify, and package the native server and gem
+        if: steps.published.outputs.published == 'no'
         run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
 
-      - name: Check the glibc floor
-        if: runner.os == 'Linux'
-        run: |
-          floor=GLIBC_2.35
-          binary=libexec/simple_english/languagetool-server
-          highest=$(objdump -T "$binary" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)
-          [ "$(printf '%s\n' "$floor" "$highest" | sort -V | tail -1)" = "$floor" ] ||
-            { echo "error: binary requires $highest, above the $floor floor"; exit 1; }
-          echo "glibc floor ok: $highest"
-
-      - name: Check the macOS floor
-        if: runner.os == 'macOS'
-        run: |
-          floor=12.0
-          binary=libexec/simple_english/languagetool-server
-          minos=$(otool -l "$binary" | grep -A4 LC_BUILD_VERSION | grep minos | awk '{print $NF}')
-          [ -n "$minos" ] || { echo "error: no LC_BUILD_VERSION minos in $binary"; exit 1; }
-          [ "$(printf '%s\n' "$floor" "$minos" | sort -V | tail -1)" = "$floor" ] ||
-            { echo "error: binary requires macOS $minos, above the $floor floor"; exit 1; }
-          echo "macOS floor ok: $minos"
+      - name: Check the binary floors
+        if: steps.published.outputs.published == 'no'
+        run: .github/scripts/check-floors.sh
 
       - name: Verify platform gem
+        if: steps.published.outputs.published == 'no'
         run: |
-          gem install --no-document "dist/simple_english-${VERSION}-*.gem"
+          gem install --no-document "dist/simple_english-${VERSION}-${PLATFORM}.gem"
           bin/e2e-story
         env:
           VERSION: ${{ needs.release.outputs.version }}
+          PLATFORM: ${{ matrix.platform }}
 
-      - name: Attest release artifacts
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-path: ${{ github.workspace }}/dist/*
-
-      - name: Upload release artifacts
-        run: gh release upload "v${VERSION}" dist/* --clobber
+      # A copy of the published gem, as a convenience download. RubyGems
+      # stays the canonical source. The upload runs before the push, so a
+      # published gem always has its copy here.
+      - name: Upload the gem to the release
+        if: steps.published.outputs.published == 'no'
+        run: gh release upload "v${VERSION}" "dist/simple_english-${VERSION}-${PLATFORM}.gem" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.release.outputs.version }}
+          PLATFORM: ${{ matrix.platform }}
 
+      # The Sigstore certificate names the job that signs, so the gem must
+      # be signed in the same job that built it. This is that job.
       - name: Check out the RubyGems attestation patch
+        if: steps.published.outputs.published == 'no'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: rubygems/release-gem
@@ -128,12 +152,17 @@ jobs:
           persist-credentials: false
 
       - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+        if: steps.published.outputs.published == 'no'
 
-      - name: Publish platform gem
-        run: gem push "dist/simple_english-${VERSION}-*.gem"
+      - name: Publish the platform gem
+        if: steps.published.outputs.published == 'no'
+        run: |
+          gem push "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+          gem exec rubygems-await "dist/simple_english-${VERSION}-${PLATFORM}.gem"
         env:
           RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
           VERSION: ${{ needs.release.outputs.version }}
+          PLATFORM: ${{ matrix.platform }}
 
   image:
     needs: [release, gem]
@@ -150,15 +179,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           push: true
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           build-args: |
             VERSION=${{ needs.release.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ghcr.io/tonycthsu/simple-english:latest,ghcr.io/tonycthsu/simple-english:v${{ needs.release.outputs.version }}
+
+      # The image is a one-shot CLI. This proves the gem installed, the
+      # engine boots, and a lint exits clean on this README.
+      - name: Smoke-test the image
+        run: |
+          docker run --rm -v "$PWD":/work:ro \
+            "ghcr.io/tonycthsu/simple-english:v${VERSION}" README.md
+          test "$(docker run --rm "ghcr.io/tonycthsu/simple-english:v${VERSION}" version)" = "${VERSION}"
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
 
   npm:
     needs: release

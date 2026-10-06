@@ -1,3 +1,3 @@
 kind: Changed
-body: The gem now includes its lint engine on supported platforms. The se setup command is a no-op that prints a notice. Java downloads, SE_JAVA, and SE_CACHE_DIR are no longer supported. Builds target macOS 12 or newer on arm64, and Linux x86-64 or Linux arm64 with glibc 2.35 or newer.
+body: The gem now includes its lint engine on supported platforms, with the engine's SBOM beside the binary. The se setup command is a no-op that prints a notice. Java downloads, SE_JAVA, and SE_CACHE_DIR are no longer supported. The container image is a one-shot CLI. It lints a mounted directory and exits. Builds target macOS 12 or newer on arm64, and Linux x86-64 or Linux arm64 with glibc 2.35 or newer.
 time: 2026-10-01T19:39:30.502609-07:00
