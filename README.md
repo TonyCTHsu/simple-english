@@ -29,9 +29,9 @@ before you read the file.
 
 | Coding agent | Integration |
 |---|---|
-| pi | [integrations/pi/README.md](integrations/pi/README.md) |
-| Claude Code | [integrations/claude-code/README.md](integrations/claude-code/README.md) |
-| Codex | [integrations/codex/README.md](integrations/codex/README.md) |
+| pi | [pi-simple-english](integrations/pi/README.md) |
+| Claude Code | [simple-english](integrations/claude-code/README.md) |
+| Codex | [simple-english](integrations/codex/README.md) |
 
 If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
