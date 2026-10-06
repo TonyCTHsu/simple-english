@@ -11,38 +11,31 @@ the slop it leaves behind. Every finding says what to write
 instead.
 
 ```console
-$ printf "The config was written by setup — don't edit it; the daemon caches rules, making the first lint slow." > note.md
+$ printf "Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime." > note.md
 $ se note.md
-note.md:1:12-26: [SE_ACTIVE_VOICE] "was written by" - Use the active voice. Say who does the action.
-note.md:1:73-81: [SE_ING_AFTER_COMMA] ", making" - Start a new sentence instead of the -ing phrase.
-note.md:1:37-40: [SE_NO_CONTRACTIONS] "n't" - Write the words in full. No contractions.
-note.md:1:33-34: [SE_NO_EMDASH] "—" - Write two sentences, or use a comma.
-note.md:1:48-49: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relation.
+note.md:1:15-29: [SE_ACTIVE_VOICE] "are rotated by" - Use the active voice. Say who does the action.
+note.md:1:67-89: [SE_CONDITION_FIRST] "need to update them if" - Put the condition first: “If the build fails, read the log.”
+note.md:1:107-110: [SE_NO_CONTRACTIONS] "n't" - Write the words in full. No contractions.
+note.md:1:56-57: [SE_NO_EMDASH] "—" - Write two sentences, or use a comma.
+note.md:1:103-104: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relation.
+note.md:1: [SE_SENTENCE_TOO_LONG] Sentence has more than 25 words. Split it.
+note.md:1:118-124: [SE_SLOP_DELETE_ADVERBS] "simply" - Delete it. It carries no fact.
 ```
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
 TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
 plain text, JSON, or SARIF.
 
-## The rules
-
-- **Voice:** say who does the action.
-- **Tense:** simple tenses only, no present perfect.
-- **Modals:** `can`, `will`, `must` only.
-- **Punctuation:** no em-dashes, no semicolons.
-- **Contractions:** write every word in full.
-- **Sentence shape:** condition before command, no `-ing` phrase after a comma.
-- **Word choice:** about 50 substitution rules, from `leverage` to `in conclusion`. `make sure that` keeps its "that".
-- **Code comments:** same pattern rules, with line and column range.
-- **Counts (Markdown only):** 20 words per sentence in list items, 25 in paragraphs, six sentences per paragraph at most.
-
-The full list, with a wrong and a right example for each rule:
-[docs/RULES.md](docs/RULES.md).
-
 ## Agent integrations
 
 The linter runs as an MCP server: `se mcp`. It exposes one tool,
 `lint`. Any MCP client can call it.
+
+Before and after, where every fix answers one finding:
+
+| Before | After |
+|---|---|
+| Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime. <!-- se: ignore --> | The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime. |
 
 Agents that write the prose get the rules closer to hand. One skill,
 `simple-english-lint`, ships inside every adapter. It tells the agent
@@ -58,6 +51,21 @@ The adapters:
 
 Each adapter has its own README with scopes and prerequisites. See
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+
+## The rules
+
+- **Voice:** say who does the action.
+- **Tense:** simple tenses only, no present perfect.
+- **Modals:** `can`, `will`, `must` only.
+- **Punctuation:** no em-dashes, no semicolons.
+- **Contractions:** write every word in full.
+- **Sentence shape:** condition before command, no `-ing` phrase after a comma.
+- **Word choice:** about 50 substitution rules, from `leverage` to `in conclusion`. `make sure that` keeps its "that".
+- **Code comments:** same pattern rules, with line and column range.
+- **Counts (Markdown only):** 20 words per sentence in list items, 25 in paragraphs, six sentences per paragraph at most.
+
+The full list, with a wrong and a right example for each rule:
+[docs/RULES.md](docs/RULES.md).
 
 ## Install
 
