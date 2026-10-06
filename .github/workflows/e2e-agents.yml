@@ -8,6 +8,11 @@ name: Agent e2e
 #   OPENAI_API_KEY:    the Codex headless runs
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
 #
+# GitHub shows workflow_run checks in the Actions tab only, never in
+# the commit Checks UI, so the report job posts an agent-e2e commit
+# status on the triggering commit. That status is the master-commit
+# health signal for releases.
+#
 # The build job compiles the platform gem once per run. The agent jobs
 # download and install it, so one run pays the build once. The engine
 # binary comes from the CI native cache whenever the inputs have not
@@ -193,3 +198,43 @@ jobs:
           CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SE_E2E_CODEX_MODEL: ${{ vars.E2E_CODEX_MODEL }}
         run: bin/e2e-agents codex
+
+  # A commit status is the only way a workflow_run result reaches the
+  # commit Checks UI: GitHub filters workflow_run checks out of that
+  # view, but plain statuses show. One status, not one per agent; the
+  # failing job names ride in the description, the run has the detail.
+  report:
+    needs: [build, claude, pi, codex]
+    # PR-triggered CI completions skip build, which skips the agents;
+    # a skipped build means this run must post nothing.
+    if: always() && needs.build.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      statuses: write
+    steps:
+      - name: Publish the commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULTS: ${{ toJSON(needs) }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          failed=$(jq -r 'to_entries[]
+            | select(.value.result != "success" and .value.result != "skipped")
+            | .key' <<<"$RESULTS")
+          if [ -z "$failed" ]; then
+            state=success
+            description="claude, pi, codex on the built gem"
+          else
+            state=failure
+            description="failed: $failed"
+          fi
+          curl -sf -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/$SHA" \
+            -d "$(jq -nc \
+              --arg state "$state" \
+              --arg description "$description" \
+              --arg target_url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+              '{state: $state, context: "agent-e2e", description: $description, target_url: $target_url}')"
