@@ -224,6 +224,7 @@ jobs:
             exit 0
           fi
           cd integrations/pi
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
           npm publish
 
   tap:
