@@ -182,8 +182,8 @@ Every adapter in [Agent integrations](#agent-integrations) bundles
 one: the `simple-english-lint` skill rides with the linter, so an
 agent drafts and lints with the same rules. The
 [SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
-ships a standalone skill for hosts without an adapter. Use both if
-you like: the skill helps the first draft, and the linter catches
+ships a standalone skill for hosts without an adapter. If you like,
+use both: the skill helps the first draft, and the linter catches
 what the agent missed.
 
 ### Why not Vale?
