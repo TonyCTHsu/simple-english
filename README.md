@@ -19,9 +19,8 @@ the agent corrects its own text.
 The linter covers Markdown prose plus code comments in Python, Ruby,
 JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
 YAML. Findings print as plain text, JSON, or SARIF. The same rules
-ship as plugins for the agents that write your prose. An agent that
-speaks MCP can call `se mcp` directly. If your language or your agent
-is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
+ship as plugins for the agents that write your prose. If your
+language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
 ## Agent integrations
 
@@ -33,9 +32,8 @@ before you read the file.
 - **[Codex](https://github.com/openai/codex)**, [install](integrations/codex/README.md): an MCP server and the skill
 
 Each install guide holds the full install, with the gem
-prerequisite, scopes, and commands.
-
-If your language or your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
+prerequisite, scopes, and commands. An agent that speaks MCP can
+call `se mcp` directly. If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
 ## The rules
 
