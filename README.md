@@ -70,7 +70,9 @@ docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest .
 
 The image holds the CLI and the lint engine. It lints the mounted
 directory, then exits. Pin the tag to a version for CI, like
-`ghcr.io/tonycthsu/simple-english:v0.5.0`.
+`ghcr.io/tonycthsu/simple-english:v0.5.0`. The image ships for Linux
+x86-64 and Linux arm64. On an Apple Silicon Mac, Docker runs the arm64
+image. There is no install for Windows or Intel Macs on any channel.
 
 ## Usage
 
