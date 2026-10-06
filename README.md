@@ -27,9 +27,15 @@ language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple
 Plug the linter into your coding agent. It checks its own draft
 before you read the file.
 
-- **[pi](https://github.com/earendil-works/pi)**, [install](integrations/pi/README.md): a `se_lint` tool and the `simple-english-lint` skill
-- **[Claude Code](https://github.com/anthropics/claude-code)**, [install](integrations/claude-code/README.md): a hook that feeds findings back, plus the skill and a `/lint` command
-- **[Codex](https://github.com/openai/codex)**, [install](integrations/codex/README.md): an MCP server and the skill
+Every integration carries the `simple-english-lint` skill. The glue
+fits the host: a `se_lint` tool in pi, a feedback hook in Claude
+Code, an MCP server in Codex.
+
+| Coding agent | Integration |
+|---|---|
+| [pi](https://github.com/earendil-works/pi) | [pi-simple-english](integrations/pi/README.md) |
+| [Claude Code](https://github.com/anthropics/claude-code) | [simple-english](integrations/claude-code/README.md) |
+| [Codex](https://github.com/openai/codex) | [simple-english](integrations/codex/README.md) |
 
 Each install guide holds the full install, with the gem
 prerequisite, scopes, and commands. An agent that speaks MCP can
