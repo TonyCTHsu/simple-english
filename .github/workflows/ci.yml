@@ -149,7 +149,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
+        # The same runners the release workflow builds on, so CI tests the
+        # binary the release ships, floors included.
+        runner: [ubuntu-22.04, ubuntu-22.04-arm, macos-15]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
@@ -185,6 +187,9 @@ jobs:
         run: bundle exec rake build
         env:
           NATIVE_IMAGE_PARALLELISM: "4"
+
+      - name: Check the binary floors
+        run: .github/scripts/check-floors.sh
 
       - name: Install the platform gem
         run: gem install --no-document ./dist/simple_english-*.gem
