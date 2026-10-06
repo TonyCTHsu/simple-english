@@ -1,8 +1,9 @@
 name: Agent e2e
 
 # Layer 2 of the integrations test strategy: drive a live agent per
-# harness through the lint scenario. Manual dispatch only, it spends
-# tokens. The maintainer adds the secrets below in the repo settings.
+# harness through the lint scenario. It runs when CI passes on a push
+# to master, or by manual dispatch on demand; it spends tokens either
+# way. The maintainer adds the secrets below in the repo settings.
 #   ANTHROPIC_API_KEY: the Claude Code headless runs
 #   OPENAI_API_KEY:    the Codex headless runs
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
@@ -30,9 +31,22 @@ on:
         description: "Run the Codex scenario"
         type: boolean
         default: true
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
 
 jobs:
   build:
+    # PR CI runs also fire workflow_run on completion, and the
+    # workflow_run context has no dispatch inputs, so every clause
+    # below matters: push events only, master only, green CI only,
+    # or an explicit manual run.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'master')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -79,7 +93,9 @@ jobs:
     permissions:
       contents: read
     needs: build
-    if: inputs.run_claude
+    # inputs.* is empty on workflow_run, so a chained run runs all
+    # three scenarios; a dispatch run honors the checkboxes.
+    if: github.event_name == 'workflow_run' || inputs.run_claude
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -111,7 +127,7 @@ jobs:
     permissions:
       contents: read
     needs: build
-    if: inputs.run_pi
+    if: github.event_name == 'workflow_run' || inputs.run_pi
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -143,7 +159,7 @@ jobs:
     permissions:
       contents: read
     needs: build
-    if: inputs.run_codex
+    if: github.event_name == 'workflow_run' || inputs.run_codex
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
