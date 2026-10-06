@@ -50,6 +50,10 @@ jobs:
   gem:
     needs: release
     strategy:
+      # A failed platform must not cancel the others: each leg publishes
+      # independently, and re-running the failed jobs publishes only the
+      # platforms still missing from RubyGems.
+      fail-fast: false
       matrix:
         runner: [ubuntu-22.04, ubuntu-22.04-arm, macos-15]
     runs-on: ${{ matrix.runner }}
@@ -68,12 +72,15 @@ jobs:
           distribution: ${{ env.GRAALVM_DISTRIBUTION }}
           version: ${{ env.GRAALVM_VERSION }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          cache: maven
 
+      # No bundle or Maven caches here: release builds fetch every input
+      # fresh, so the provenance records a complete build, not a cache hit.
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: "3.3"
-          bundler-cache: true
+
+      - name: Install the bundle
+        run: bundle install
 
       - name: Build, verify, and package the native server and gem
         run: bundle exec rake build
@@ -113,12 +120,8 @@ jobs:
         with:
           subject-path: ${{ github.workspace }}/dist/*
 
-      - name: Upload release artifacts
-        run: gh release upload "v${VERSION}" dist/* --clobber
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.release.outputs.version }}
-
+      # The Sigstore certificate names the job that signs, so the gem must
+      # be signed in the same job that built it. This is that job.
       - name: Check out the RubyGems attestation patch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -129,10 +132,29 @@ jobs:
 
       - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
 
-      - name: Publish platform gem
-        run: gem push "dist/simple_english-${VERSION}-*.gem"
+      # RubyGems rejects re-pushing a published version, so a re-run of a
+      # failed release must skip the platforms that already published.
+      - name: Publish the platform gem
+        run: |
+          gem_files=(dist/simple_english-"${VERSION}"-*.gem)
+          gem_file="${gem_files[0]}"
+          platform="$(basename "${gem_file}")"
+          platform="${platform#simple_english-"${VERSION}"-}"
+          platform="${platform%.gem}"
+          if curl -fsIL "https://rubygems.org/gems/simple_english-${VERSION}-${platform}.gem" >/dev/null 2>&1; then
+            echo "${platform} already published, skipping push"
+          else
+            gem push "${gem_file}"
+            gem exec rubygems-await "${gem_file}"
+          fi
         env:
           RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
+          VERSION: ${{ needs.release.outputs.version }}
+
+      - name: Upload release artifacts
+        run: gh release upload "v${VERSION}" dist/* --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.release.outputs.version }}
 
   image:

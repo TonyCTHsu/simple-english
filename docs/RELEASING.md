@@ -37,3 +37,7 @@ installs, and exercises each platform gem before publication. Each native
 executable also has a SHA-256 checksum and signed build-provenance attestation
 on the GitHub release.
 The container image uses the Linux x86-64 gem.
+
+If one platform fails after the others published, re-run the failed jobs
+from the release run. The publish step checks RubyGems first and skips the
+platforms that are already there.
