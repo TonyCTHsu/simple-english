@@ -197,19 +197,17 @@ service behind it.
 
 ## Agent integrations
 
-Pi, Claude Code, and Codex can lint the prose they write. The pi
-adapter is published on npm as `pi-simple-english`. The other
-adapters are unreleased. Try them from a checkout:
+Pi, Claude Code, and Codex can lint the prose they write. Each adapter
+installs in its host's native way. Each has its own README:
 
-```bash
-pi install npm:pi-simple-english               # the se_lint tool
-claude --plugin-dir integrations/claude-code   # the hook feeds findings back
-pi install integrations/pi -l                  # the se_lint tool, from a checkout
-se mcp                                         # an MCP server, for any MCP client
-```
+| Adapter | Installs as | Install command |
+|---|---|---|
+| [pi](integrations/pi/README.md) | npm package `pi-simple-english`, the `se_lint` tool | `pi install npm:pi-simple-english` |
+| [Claude Code](integrations/claude-code/README.md) | plugin: hook plus skill | `claude plugin marketplace add TonyCTHsu/simple-english` |
+| [Codex](integrations/codex/README.md) | plugin: skill plus MCP server | `codex plugin marketplace add TonyCTHsu/simple-english` |
 
-Each adapter has its own README in its directory under `integrations/`.
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+Any MCP client can also use the server directly: `se mcp`. See
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
 
 ## Develop
 
