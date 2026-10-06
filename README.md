@@ -21,21 +21,24 @@ JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
 YAML. Findings print as plain text, JSON, or SARIF. The same rules
 ship as plugins for the agents that write your prose.
 
-## Agent integrations
+## Agent plugins
 
-The plugins put the rules where the agent writes. One skill,
-`simple-english-lint`, ships inside every adapter. It tells the agent
-to lint what it writes and fix every finding.
+A plugin puts the whole loop inside your coding agent. Every plugin
+carries the `simple-english-lint` skill, so the agent lints the
+prose it writes and fixes every finding. The wiring fits the host:
+a feedback hook in Claude Code, a `se_lint` tool in pi, an MCP
+server in Codex. Install one, and the agent checks its own draft
+before you read the file.
 
-The adapters:
+Install the plugin for your agent:
 
-| Adapter | Install command |
+| Plugin | Install command |
 |---|---|
 | [pi](integrations/pi/README.md) | `pi install npm:pi-simple-english` |
 | [Claude Code](integrations/claude-code/README.md) | `claude plugin marketplace add TonyCTHsu/simple-english` |
 | [Codex](integrations/codex/README.md) | `codex plugin marketplace add TonyCTHsu/simple-english` |
 
-Each adapter has its own README with scopes and prerequisites. See
+Each plugin has its own README with scopes and prerequisites. See
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
 
 ## The rules
@@ -57,8 +60,8 @@ The full list, with a wrong and a right example for each rule:
 
 This page installs the linter on its own, without the agent
 integrations. Pick one channel. Every channel ships the same
-linter. The adapters that put the rules inside your agent live in
-[Agent integrations](#agent-integrations).
+linter. The plugins that put the rules inside your agent live in
+[Agent plugins](#agent-plugins).
 
 ### Homebrew (macOS arm64)
 
@@ -187,11 +190,11 @@ In a code comment:
 
 ### Have you thought about an agent skill?
 
-Every adapter in [Agent integrations](#agent-integrations) bundles
+Every plugin in [Agent plugins](#agent-plugins) bundles
 one: the `simple-english-lint` skill rides with the linter, so an
 agent drafts and lints with the same rules. The
 [SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
-ships a standalone skill for hosts without an adapter. If you like,
+ships a standalone skill for hosts without a plugin. If you like,
 use both: the skill helps the first draft, and the linter catches
 what the agent missed.
 
