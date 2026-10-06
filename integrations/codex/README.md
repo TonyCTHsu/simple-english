@@ -11,17 +11,21 @@ finding.
 
 ## Install
 
-Install the gem first. Then add this repository as a marketplace
-and install the plugin:
+Install the gem first. Then add this repository as a marketplace and
+install the plugin. Each user runs both commands:
 
 ```bash
 codex plugin marketplace add TonyCTHsu/simple-english
 codex plugin add simple-english@simple-english
 ```
 
-MCP tool calls need approval by default. `integrations/verification.md`
-holds the approval settings, and a local-marketplace recipe for a
-development checkout.
+Codex holds plugin enablement in global state, so there is no
+project-scope install. The project-level piece is the approval. MCP
+tool calls need approval by default. Put the approval in the
+project's `.codex/config.toml` and commit it, so every teammate
+starts with the server approved. `integrations/verification.md` holds
+the settings, and a local-marketplace recipe for a development
+checkout.
 
 ## Versions
 
