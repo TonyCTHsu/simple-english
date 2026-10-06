@@ -197,8 +197,14 @@ service behind it.
 
 ## Agent integrations
 
-Pi, Claude Code, and Codex can lint the prose they write. Each adapter
-installs in its host's native way. Each has its own README:
+The linter runs as an MCP server: `se mcp`. It exposes one tool,
+`lint`. Any MCP client can call it.
+
+Agents that write the prose get the rules closer to hand. One skill,
+`simple-english-lint`, ships inside every adapter. It tells the agent
+to lint what it writes and fix every finding.
+
+The adapters:
 
 | Adapter | Install command |
 |---|---|
@@ -206,7 +212,7 @@ installs in its host's native way. Each has its own README:
 | [Claude Code](integrations/claude-code/README.md) | `claude plugin marketplace add TonyCTHsu/simple-english` |
 | [Codex](integrations/codex/README.md) | `codex plugin marketplace add TonyCTHsu/simple-english` |
 
-Any MCP client can also use the server directly: `se mcp`. See
+Each adapter has its own README with scopes and prerequisites. See
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
 
 ## Develop
