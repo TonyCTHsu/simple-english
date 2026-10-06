@@ -55,7 +55,10 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-Pick one channel. Every channel ships the same linter.
+This page installs the linter on its own, without the agent
+integrations. Pick one channel. Every channel ships the same
+linter. The adapters that put the rules inside your agent live in
+[Agent integrations](#agent-integrations).
 
 ### Homebrew (macOS arm64)
 
