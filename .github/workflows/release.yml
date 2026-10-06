@@ -133,6 +133,9 @@ jobs:
           RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
           VERSION: ${{ needs.release.outputs.version }}
 
+      # dist/* from this leg: the platform gem, the native server tar,
+      # its sha256, and the Maven SBOM. The gem duplicates RubyGems; the
+      # other three live only on the release.
       - name: Upload release artifacts
         run: gh release upload "v${VERSION}" dist/* --clobber
         env:
