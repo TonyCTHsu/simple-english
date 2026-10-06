@@ -29,7 +29,6 @@ class IntegrationsNamesTest < Minitest::Test
     ],
     # The pi tool name.
     "se_lint" => [
-      "README.md",
       "integrations/pi/extensions/se-lint.ts",
       "integrations/pi/README.md",
       "integrations/shared/skills/simple-english-lint/SKILL.md",
