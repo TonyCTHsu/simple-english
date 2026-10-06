@@ -191,6 +191,16 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ghcr.io/tonycthsu/simple-english:latest,ghcr.io/tonycthsu/simple-english:v${{ needs.release.outputs.version }}
 
+      # The image is a one-shot CLI. This proves the gem installed, the
+      # engine boots, and a lint exits clean on this README.
+      - name: Smoke-test the image
+        run: |
+          docker run --rm -v "$PWD":/work:ro \
+            "ghcr.io/tonycthsu/simple-english:v${VERSION}" README.md
+          test "$(docker run --rm "ghcr.io/tonycthsu/simple-english:v${VERSION}" version)" = "${VERSION}"
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+
   tap:
     needs: gem
     runs-on: ubuntu-24.04
