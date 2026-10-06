@@ -6,6 +6,15 @@ name: Agent e2e
 #   ANTHROPIC_API_KEY: the Claude Code headless runs
 #   OPENAI_API_KEY:    the Codex headless runs
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
+#
+# The build job compiles the platform gem once per run. The agent jobs
+# download and install it, so one run pays the build once. The engine
+# binary comes from the CI native cache whenever the inputs have not
+# changed.
+env:
+  GRAALVM_DISTRIBUTION: graalvm-community
+  GRAALVM_VERSION: "25.0.2"
+
 on:
   workflow_dispatch:
     inputs:
@@ -23,11 +32,53 @@ on:
         default: true
 
 jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
+        with:
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Restore the native build cache
+        id: native_cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tmp/native-languagetool
+          key: native-v2-ubuntu-24.04-${{ env.GRAALVM_DISTRIBUTION }}-${{ env.GRAALVM_VERSION }}-${{ hashFiles('native/languagetool/**', 'rules/simple-english.xml', 'Gemfile.lock') }}
+
+      - name: Mark the cached executable as fresh
+        if: steps.native_cache.outputs.cache-hit == 'true'
+        run: touch tmp/native-languagetool/languagetool-native
+
+      - name: Build the platform gem
+        run: bundle exec rake build
+        env:
+          NATIVE_IMAGE_PARALLELISM: "4"
+
+      - name: Upload the platform gem
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: platform-gem
+          path: dist/simple_english-*.gem
+          if-no-files-found: error
+
   claude:
     # Three agents with shell access and auto-approved edits run here on
     # provider keys. Read-only token: nothing they generate may push.
     permissions:
       contents: read
+    needs: build
     if: inputs.run_claude
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -38,18 +89,14 @@ jobs:
         with:
           ruby-version: "3.3"
 
-      - name: Build and install the gem
-        run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Download the platform gem
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+          name: platform-gem
+          path: dist
 
-      - name: Set up the environment
-        run: se setup
+      - name: Install the gem
+        run: gem install --no-document ./dist/simple_english-*.gem
 
       - name: Install the agent
         run: npm install -g @anthropic-ai/claude-code@2.1.288
@@ -63,6 +110,7 @@ jobs:
   pi:
     permissions:
       contents: read
+    needs: build
     if: inputs.run_pi
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -73,18 +121,14 @@ jobs:
         with:
           ruby-version: "3.3"
 
-      - name: Build and install the gem
-        run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Download the platform gem
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+          name: platform-gem
+          path: dist
 
-      - name: Set up the environment
-        run: se setup
+      - name: Install the gem
+        run: gem install --no-document ./dist/simple_english-*.gem
 
       - name: Install the agent
         run: npm install -g @earendil-works/pi-coding-agent@1.0.1
@@ -98,6 +142,7 @@ jobs:
   codex:
     permissions:
       contents: read
+    needs: build
     if: inputs.run_codex
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -108,18 +153,14 @@ jobs:
         with:
           ruby-version: "3.3"
 
-      - name: Build and install the gem
-        run: |
-          gem build simple_english.gemspec
-          gem install --no-document ./simple_english-*.gem
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Download the platform gem
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          path: ~/.cache/se
-          key: languagetool-${{ hashFiles('lib/simple_english/setup/languagetool.rb') }}
+          name: platform-gem
+          path: dist
 
-      - name: Set up the environment
-        run: se setup
+      - name: Install the gem
+        run: gem install --no-document ./dist/simple_english-*.gem
 
       - name: Install the agent
         run: npm install -g @openai/codex@0.160.0
