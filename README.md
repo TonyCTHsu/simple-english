@@ -6,11 +6,11 @@
 
 > Write for human readers, not for reviewers or another AI.
 
-A skill or a prompt can teach an agent plain-English prose. It
-writes clean prose in the first paragraph and slop again by the
-third. This linter keeps the agent honest: it reads what the agent
-wrote and names every broken rule. Send the findings back, and the
-agent corrects its own text.
+You can teach an agent plain-English prose with a skill or a
+prompt. It writes clean prose in the first paragraph and slop again
+by the third. This linter keeps the agent honest: it reads what the
+agent wrote and names every broken rule. Send the findings back, and
+the agent corrects its own text.
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
 TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
