@@ -9,9 +9,10 @@ name: Agent e2e
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
 #
 # GitHub shows workflow_run checks in the Actions tab only, never in
-# the commit Checks UI, so the report job posts an agent-e2e commit
-# status on the triggering commit. That status is the master-commit
-# health signal for releases.
+# the commit Checks UI, so the report job posts agent-e2e commit
+# statuses on the triggering commit, one context per leg. Those
+# statuses are the master-commit health signal for releases; a
+# missing context means that leg did not run.
 #
 # The build job compiles the platform gem once per run. The agent jobs
 # download and install it, so one run pays the build once. The engine
@@ -201,8 +202,10 @@ jobs:
 
   # A commit status is the only way a workflow_run result reaches the
   # commit Checks UI: GitHub filters workflow_run checks out of that
-  # view, but plain statuses show. One status, not one per agent; the
-  # failing job names ride in the description, the run has the detail.
+  # view, but plain statuses show. One context per leg (build, claude,
+  # pi, codex); a skipped leg posts nothing so the commit never claims
+  # a scenario it did not run. The agents themselves keep a read-only
+  # token; only this job can write statuses.
   report:
     needs: [build, claude, pi, codex]
     # PR-triggered CI completions skip build, which skips the agents;
@@ -213,28 +216,29 @@ jobs:
     permissions:
       statuses: write
     steps:
-      - name: Publish the commit status
+      - name: Publish the per-leg commit statuses
         env:
           GH_TOKEN: ${{ github.token }}
           RESULTS: ${{ toJSON(needs) }}
           SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          failed=$(jq -r 'to_entries[]
-            | select(.value.result != "success" and .value.result != "skipped")
-            | .key' <<<"$RESULTS")
-          if [ -z "$failed" ]; then
-            state=success
-            description="claude, pi, codex on the built gem"
-          else
-            state=failure
-            description="failed: $failed"
-          fi
-          curl -sf -X POST \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/$SHA" \
-            -d "$(jq -nc \
-              --arg state "$state" \
-              --arg description "$description" \
-              --arg target_url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
-              '{state: $state, context: "agent-e2e", description: $description, target_url: $target_url}')"
+          while read -r job result; do
+            [ "$result" = "skipped" ] && continue
+            if [ "$result" = "success" ]; then
+              state=success
+              description="passed"
+            else
+              state=failure
+              description="$result"
+            fi
+            curl -sf -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/$SHA" \
+              -d "$(jq -nc \
+                --arg state "$state" \
+                --arg description "$description" \
+                --arg context "agent-e2e/$job" \
+                --arg target_url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+                '{state: $state, context: $context, description: $description, target_url: $target_url}')"
+          done < <(jq -r 'to_entries[] | "\(.key) \(.value.result)"' <<<"$RESULTS")
