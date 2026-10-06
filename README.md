@@ -55,10 +55,9 @@ The full list, with a wrong and a right example for each rule:
 
 ## Install
 
-**Requirement:** Ruby 3.3 or newer on macOS 12 or newer (arm64), or Linux
-x86-64 or Linux arm64 with glibc 2.35 or newer.
+Pick one channel. Every channel ships the same linter.
 
-### Homebrew (macOS)
+### Homebrew (macOS arm64)
 
 ```bash
 brew install TonyCTHsu/tap/simple-english
@@ -66,15 +65,18 @@ brew services start simple-english
 ```
 
 Homebrew installs the CLI as one gem, with the lint engine inside
-it. The service keeps a background daemon running. Run
-`brew services stop simple-english` to stop it.
+it. You need no Ruby setup. The service keeps a background daemon
+running. Run `brew services stop simple-english` to stop it.
 
-### Ruby gem (supported platforms and CI)
+### Ruby gem (macOS arm64, Linux x86-64 and arm64)
 
 ```bash
 gem install simple_english
 se README.md
 ```
+
+You need Ruby 3.3 or newer, and glibc 2.35 or newer on Linux. The
+gem suits CI and hosts that already run Ruby.
 
 ### Docker (no Ruby needed)
 
