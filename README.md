@@ -25,7 +25,7 @@ the agent corrects its own text.
 </td>
 <td valign="top">
 
-> The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime. <!-- se: ignore -->
+> The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime.
 
 </td>
 </tr>
