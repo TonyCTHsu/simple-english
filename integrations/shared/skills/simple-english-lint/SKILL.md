@@ -1,5 +1,5 @@
 ---
-name: lint
+name: simple-english-lint
 description: Lint prose with simple_english after writing or editing documentation,
   READMEs, or code comments. Use when the agent writes prose, when asked to lint
   or simplify text, or when a doc change lands.
@@ -15,7 +15,7 @@ The tool names differ by agent:
 - MCP clients expose the tool `lint`.
 
 If the lint tool is missing or unavailable, the engine is not installed.
-Run `gem install simple_english`, then `se setup`, then retry.
+Run `gem install simple_english`, then retry.
 
 Fixing the findings is part of writing the prose. A draft with findings
 is not done.

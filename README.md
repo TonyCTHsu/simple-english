@@ -39,6 +39,26 @@ plain text, JSON, or SARIF.
 The full list, with a wrong and a right example for each rule:
 [docs/RULES.md](docs/RULES.md).
 
+## Agent integrations
+
+The linter runs as an MCP server: `se mcp`. It exposes one tool,
+`lint`. Any MCP client can call it.
+
+Agents that write the prose get the rules closer to hand. One skill,
+`simple-english-lint`, ships inside every adapter. It tells the agent
+to lint what it writes and fix every finding.
+
+The adapters:
+
+| Adapter | Install command |
+|---|---|
+| [pi](integrations/pi/README.md) | `pi install npm:pi-simple-english` |
+| [Claude Code](integrations/claude-code/README.md) | `claude plugin marketplace add TonyCTHsu/simple-english` |
+| [Codex](integrations/codex/README.md) | `codex plugin marketplace add TonyCTHsu/simple-english` |
+
+Each adapter has its own README with scopes and prerequisites. See
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+
 ## Install
 
 **Requirement:** Ruby 3.3 or newer on macOS 12 or newer (arm64), or Linux
@@ -134,6 +154,12 @@ jobs:
         if: always()
 ```
 
+### The daemon
+
+The first lint starts a background daemon. Later lints use it. A
+lint after a gem update prints a warning. Run `se serve --detached`
+once. It stops the old daemon and starts the new one.
+
 ## Config and suppressions
 
 ### Config file
@@ -168,33 +194,17 @@ In a code comment:
 # Don't touch this constant. se: ignore=SE_NO_CONTRACTIONS
 ```
 
-## The background daemon
-
-The first lint starts the daemon automatically. Later lints use the
-running daemon.
-
-The first lint after a gem update prints a warning. Run
-`se serve --detached` then.
-It stops the old daemon and starts the new one in the
-background. You never talk to the daemon directly. Its HTTP
-interface is internal and can change in any release.
-
-## Scope
-
-The rule set comes from the Plain-mode rules of the MIT-licensed
-SimpleEnglish project. This tool does not check ASD-STE100 compliance.
-This repo holds no ASD-STE100 text. If you need full compliance, read
-the free standard at <https://www.asd-ste100.org/>.
-
 ## FAQ
 
 ### Have you thought about an agent skill?
 
-The [SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
-ships one. Its skill guides an agent while it writes. This tool does
-the other half of the work. It checks the result against fixed
-rules. Use both: the skill helps the first draft, and the linter
-catches what the agent missed.
+Every adapter in [Agent integrations](#agent-integrations) bundles
+one: the `simple-english-lint` skill rides with the linter, so an
+agent drafts and lints with the same rules. The
+[SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
+ships a standalone skill for hosts without an adapter. If you like,
+use both: the skill helps the first draft, and the linter catches
+what the agent missed.
 
 ### Why not Vale?
 
@@ -207,18 +217,12 @@ the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 
-## Agent integrations
+## Scope
 
-Pi, Claude Code, and Codex can lint the prose they write. The adapters
-live under `integrations/`, unreleased. Try them from a checkout:
-
-```bash
-claude --plugin-dir integrations/claude-code   # the hook feeds findings back
-pi install integrations/pi -l                  # the se_lint tool
-se mcp                                         # an MCP server, for any MCP client
-```
-
-See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+The rule set comes from the Plain-mode rules of the MIT-licensed
+SimpleEnglish project. This tool does not check ASD-STE100 compliance.
+This repo holds no ASD-STE100 text. If you need full compliance, read
+the free standard at <https://www.asd-ste100.org/>.
 
 ## Develop
 

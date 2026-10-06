@@ -4,7 +4,8 @@ require_relative "test_helper"
 
 # The name audit from the spec's Names section. It covers the three
 # distinctive exposed names, listed in NAMES. The shared plugin name
-# "simple-english" is not distinctive, so the audit leaves it out.
+# "simple-english" is not distinctive, and the marketplace now shares
+# it, so the audit leaves both out.
 # Each audited name may appear only in its recorded places. A rename
 # updates those places and this list together. New places need a spec
 # change first.
@@ -17,24 +18,30 @@ class IntegrationsNamesTest < Minitest::Test
   EXCLUDED_FILES = ["CHANGELOG.md"].freeze
 
   NAMES = {
+    # The npm package name for pi.
+    "pi-simple-english" => [
+      "README.md",
+      "docs/RELEASING.md",
+      "integrations/pi/package.json",
+      "integrations/pi/README.md",
+      "test/simple_english/integrations_pi_test.rb",
+      ".github/workflows/release.yml"
+    ],
     # The pi tool name.
     "se_lint" => [
-      "README.md",
       "integrations/pi/extensions/se-lint.ts",
-      "integrations/shared/skills/lint/SKILL.md",
-      "integrations/claude-code/skills/lint/SKILL.md",
-      "integrations/codex/skills/lint/SKILL.md",
-      "integrations/pi/skills/lint/SKILL.md",
+      "integrations/pi/README.md",
+      "integrations/shared/skills/simple-english-lint/SKILL.md",
+      "integrations/claude-code/skills/simple-english-lint/SKILL.md",
+      "integrations/codex/skills/simple-english-lint/SKILL.md",
+      "integrations/pi/skills/simple-english-lint/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
-    ],
-    # The development marketplace name.
-    "simple-english-dev" => [
-      ".claude-plugin/marketplace.json"
     ],
     # The MCP subcommand wiring.
     "se mcp" => [
       "README.md",
-      "docs/DEVELOPMENT.md"
+      "docs/DEVELOPMENT.md",
+      "integrations/codex/README.md"
     ]
   }.freeze
 

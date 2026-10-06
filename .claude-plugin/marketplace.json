@@ -1,6 +1,6 @@
 {
-  "name": "simple-english-dev",
-  "description": "Development marketplace for the simple-english Claude Code plugin",
+  "name": "simple-english",
+  "description": "Marketplace for the simple-english Claude Code plugin",
   "owner": {
     "name": "TonyCTHsu"
   },

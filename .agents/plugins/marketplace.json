@@ -1,0 +1,12 @@
+{
+  "name": "simple-english",
+  "plugins": [
+    {
+      "name": "simple-english",
+      "source": {
+        "source": "local",
+        "path": "./integrations/codex"
+      }
+    }
+  ]
+}

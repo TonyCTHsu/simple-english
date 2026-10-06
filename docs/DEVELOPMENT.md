@@ -129,7 +129,7 @@ without starting the native server.
 
 `integrations/` holds one adapter per agent: `pi/` (a native
 extension), `claude-code/` (a hook plugin), and `codex/` (an MCP
-plugin). `integrations/shared/skills/lint/SKILL.md` holds the skill all
+plugin). `integrations/shared/skills/simple-english-lint/SKILL.md` holds the skill all
 three share. `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo
 root lists the Claude Code plugin. The adapters ship nothing. Try them
@@ -137,7 +137,8 @@ from local paths:
 
 - pi: `pi install <repo>/integrations/pi -l`
 - Claude Code: `claude --plugin-dir <repo>/integrations/claude-code`
-- Codex: a local marketplace, per `integrations/verification.md`
+- Codex: `codex plugin marketplace add TonyCTHsu/simple-english`, or a
+  local marketplace, per `integrations/verification.md`
 
 `se mcp` runs the MCP server behind the Codex plugin. Any MCP client
 can use it.

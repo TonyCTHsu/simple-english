@@ -4,6 +4,17 @@ require_relative "test_helper"
 
 class IntegrationsCodexTest < Minitest::Test
   PLUGIN = File.expand_path("../../integrations/codex", __dir__)
+  MARKETPLACE = File.expand_path("../../.agents/plugins/marketplace.json", __dir__)
+
+  def test_marketplace_lists_the_plugin_from_the_repo_root
+    manifest = JSON.parse(File.read(MARKETPLACE))
+    plugin = manifest.fetch("plugins").first
+    assert_equal "simple-english", plugin.fetch("name")
+    source = plugin.fetch("source")
+    assert_equal "local", source.fetch("source")
+    repo_root = File.expand_path("../..", File.dirname(MARKETPLACE))
+    assert File.exist?(File.expand_path(source.fetch("path"), repo_root))
+  end
 
   def test_manifest_declares_the_plugin
     manifest = JSON.parse(File.read(File.join(PLUGIN, ".codex-plugin", "plugin.json")))
@@ -25,11 +36,11 @@ class IntegrationsCodexTest < Minitest::Test
   def test_skills_are_vendored_not_a_symlink
     skills = File.join(PLUGIN, "skills")
     refute File.symlink?(skills)
-    assert File.exist?(File.join(skills, "lint", "SKILL.md"))
+    assert File.exist?(File.join(skills, "simple-english-lint", "SKILL.md"))
   end
 
   def test_vendored_skill_names_the_mcp_tool
-    skill = File.read(File.join(PLUGIN, "skills", "lint", "SKILL.md"))
+    skill = File.read(File.join(PLUGIN, "skills", "simple-english-lint", "SKILL.md"))
     assert_includes skill, "`lint`"
   end
 end

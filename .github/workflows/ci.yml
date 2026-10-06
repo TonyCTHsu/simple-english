@@ -55,6 +55,13 @@ jobs:
           fi
           PATH="$HOME/.standard-gems/bin:$PATH" GEM_PATH="$HOME/.standard-gems" standardrb
 
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+
+      - name: Package the pi integration
+        run: cd integrations/pi && npm pack --dry-run
+
       - name: Actionlint
         run: |
           bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.7

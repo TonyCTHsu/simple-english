@@ -44,3 +44,10 @@ cpu architecture.
 If one platform fails, re-run the failed jobs from the release run. The
 workflow checks RubyGems first. A published platform keeps its gem copy
 from the attempt that pushed it, and the re-run leaves it alone.
+
+Release also publishes `integrations/pi` to npm as `pi-simple-english`.
+A version that is already on the registry is skipped, so a re-run of
+the workflow stays green. The publish uses npm trusted publishing,
+with no npm token. Register the trusted publisher on the npm side
+before the first release: the repository, and the workflow file
+`release.yml`.

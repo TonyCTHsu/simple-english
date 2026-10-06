@@ -1,8 +1,8 @@
 /**
  * se_lint - lint Markdown prose and code comments with simple_english.
  *
- * Shells out to the `se` CLI. Assumes the gem is installed and `se setup`
- * has been run; on a missing binary the tool fails with install steps.
+ * Shells out to the `se` CLI. Assumes the gem is installed; on a
+ * missing binary the tool fails with install steps.
  */
 
 import { execFile } from "node:child_process";
@@ -50,7 +50,7 @@ export default function (pi: ExtensionAPI) {
 				const e = err as NodeJS.ErrnoException;
 				if (e.code === "ENOENT") {
 					throw new Error(
-						"`se` not found. Install it first: `gem install simple_english`, then `se setup`, then retry.",
+						"`se` not found. Install it first: `gem install simple_english`, then retry.",
 					);
 				}
 				throw new Error(`se lint failed: ${e.message}`);
