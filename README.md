@@ -18,18 +18,14 @@ the agent corrects its own text.
 
 The linter covers Markdown prose plus code comments in Python, Ruby,
 JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
-YAML. Findings print as plain text, JSON, or SARIF. The same rules
-ship as plugins for the agents that write your prose. If your
-language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
+YAML. Findings print as plain text, JSON, or SARIF.
+
+If your language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
 ## Agent integrations
 
 Plug the linter into your coding agent. It checks its own draft
 before you read the file.
-
-Every integration carries the `simple-english-lint` skill. The glue
-fits the host: a `se_lint` tool in pi, a feedback hook in Claude
-Code, an MCP server in Codex.
 
 | Coding agent | Integration |
 |---|---|
@@ -37,9 +33,7 @@ Code, an MCP server in Codex.
 | [Claude Code](https://github.com/anthropics/claude-code) | [simple-english](integrations/claude-code/README.md) |
 | [Codex](https://github.com/openai/codex) | [simple-english](integrations/codex/README.md) |
 
-Each install guide holds the full install, with the gem
-prerequisite, scopes, and commands. An agent that speaks MCP can
-call `se mcp` directly. If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
+If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
 ## The rules
 
@@ -53,15 +47,9 @@ call `se mcp` directly. If your agent is not on the list, [open an issue](https:
 - **Code comments:** same pattern rules, with line and column range.
 - **Counts (Markdown only):** 20 words per sentence in list items, 25 in paragraphs, six sentences per paragraph at most.
 
-The full list, with a wrong and a right example for each rule:
-[docs/RULES.md](docs/RULES.md).
+The full list, with a wrong and a right example for each rule [docs/RULES.md](docs/RULES.md).
 
 ## Install
-
-This page installs the linter on its own, without the agent
-integrations. Pick one channel. Every channel ships the same
-linter. The integrations that put the linter inside your agent live
-in [Agent integrations](#agent-integrations).
 
 ### Homebrew (macOS arm64)
 
@@ -78,7 +66,7 @@ gem install simple_english
 ### Container
 
 ```bash
-docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english:latest .
+docker run --rm -v "$PWD":/work ghcr.io/tonycthsu/simple-english .
 ```
 
 ## Usage
@@ -96,11 +84,6 @@ Lint only what changed:
 ```bash
 git diff --name-only --diff-filter=ACM main | xargs -I{} se {}
 ```
-
-### MCP server
-
-`se mcp` starts an MCP stdio server with one tool, `lint`. Any MCP
-client can call it.
 
 ### Outputs
 
@@ -120,6 +103,15 @@ se --format sarif src/ > results.sarif
 - `0`: no findings
 - `1`: findings
 - `2`: input, configuration, installation, or daemon error
+
+### MCP server
+
+Start an MCP stdio server with one tool, `lint`. Any MCP
+client can call it.
+
+```
+se mcp
+```
 
 ### CI
 
@@ -145,12 +137,6 @@ jobs:
           sarif_file: lint.sarif
         if: always()
 ```
-
-### The daemon
-
-The first lint starts a background daemon. Later lints use it. A
-lint after a gem update prints a warning. Run `se serve --detached`
-once. It stops the old daemon and starts the new one.
 
 ## Config and suppressions
 
@@ -190,31 +176,21 @@ In a code comment:
 
 ### Have you thought about an agent skill?
 
-Every integration in [Agent integrations](#agent-integrations) bundles
-one: the `simple-english-lint` skill rides with the linter, so an
-agent drafts and lints with the same rules. The
-[SimpleEnglish project](https://github.com/AminBlg/SimpleEnglish)
-ships a standalone skill for hosts without an integration. If you like,
-use both: the skill helps the first draft, and the linter catches
-what the agent missed.
+This linter takes its rules from [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish). If you like, use both: the skill helps the first draft, and the linter catches what the agent missed.
 
 ### Why not Vale?
 
-We ported all 67 rules to Vale and ran the corpus on both engines.
+We ported rules to Vale and ran the corpus on both engines.
 About 60 rules behave the same. Vale has no check for the em-dash
 and semicolon rules: its checks see words, not punctuation. Its
 tagger also mislabels verbs, so the condition-first rule stays
-silent. The rules here include examples that CI verifies. Closing
-the Vale gaps needs scripts or an external
+silent. Closing the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 
 ## Scope
 
-The rule set comes from the Plain-mode rules of the MIT-licensed
-SimpleEnglish project. This tool does not check ASD-STE100 compliance.
-This repo holds no ASD-STE100 text. If you need full compliance, read
-the free standard at <https://www.asd-ste100.org/>.
+This tool does not check ASD-STE100 compliance. This repo holds no ASD-STE100 text. If you need full compliance, read the free standard at <https://www.asd-ste100.org/>.
 
 ## Develop
 
