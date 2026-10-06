@@ -4,7 +4,7 @@
 
 # simple_english
 
-> Write for human readers, not for reviewers or another AI.
+> Write for human, not for agent.
 
 You can teach an agent plain-English prose with a skill or a
 prompt. It writes clean prose in the first paragraph and slop again
@@ -29,9 +29,9 @@ before you read the file.
 
 | Coding agent | Integration |
 |---|---|
-| [pi](https://github.com/earendil-works/pi) | [pi-simple-english](integrations/pi/README.md) |
-| [Claude Code](https://github.com/anthropics/claude-code) | [simple-english](integrations/claude-code/README.md) |
-| [Codex](https://github.com/openai/codex) | [simple-english](integrations/codex/README.md) |
+| pi | [integrations/pi/README.md](integrations/pi/README.md) |
+| Claude Code | [integrations/claude-code/README.md](integrations/claude-code/README.md) |
+| Codex | [integrations/codex/README.md](integrations/codex/README.md) |
 
 If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
@@ -176,7 +176,7 @@ In a code comment:
 
 ### Have you thought about an agent skill?
 
-This linter takes its rules from [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish). If you like, use both: the skill helps the first draft, and the linter catches what the agent missed.
+This project takes its idea from [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish). If you like, use both: the skill helps the first draft, and the linter catches what the agent missed.
 
 ### Why not Vale?
 
