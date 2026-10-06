@@ -6,12 +6,9 @@
 
 > Write for human readers, not for reviewers or another AI.
 
-A skill or a prompt can teach an agent plain English. The agent still
-drifts: it writes clean prose in the first paragraph and slop again
-by the third. Nothing in the loop checks the result.
-
-This linter is the other side. It reads what the agent wrote, names
-every broken rule, and says what to write instead. Send the findings
+A skill or a prompt can teach an agent plain English, but you
+never know whether it follows. This linter is the check: it reads
+what the agent wrote and names every broken rule. Send the findings
 back, and the agent corrects its own text.
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
