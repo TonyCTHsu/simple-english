@@ -1,0 +1,43 @@
+name: Measure the macOS release build
+
+# A one-shot measurement of the release gem job's no-cache build on
+# macos-15, the slowest release leg. The matrix release job has never
+# run, so this is the only way to learn its true duration. Dispatch it
+# on this branch, read the build step's seconds, then delete this file.
+
+on:
+  workflow_dispatch:
+
+env:
+  GRAALVM_DISTRIBUTION: graalvm-community
+  GRAALVM_VERSION: "25.0.2"
+
+jobs:
+  measure:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
+        with:
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          version: ${{ env.GRAALVM_VERSION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Install the bundle
+        run: bundle install
+
+      - name: Build, verify, and package the native server and gem
+        run: |
+          bundle exec rake build
+          echo "BUILD_SECONDS=$SECONDS"
+        env:
+          NATIVE_IMAGE_PARALLELISM: "4"
+
+      - name: Check the binary floors
+        run: .github/scripts/check-floors.sh
