@@ -19,8 +19,9 @@ the agent corrects its own text.
 The linter covers Markdown prose plus code comments in Python, Ruby,
 JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
 YAML. Findings print as plain text, JSON, or SARIF. The same rules
-ship as plugins for the agents that write your prose. If your
-language or your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
+ship as plugins for the agents that write your prose. An agent that
+speaks MCP can call `se mcp` directly. If your language or your agent
+is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
 ## Agent integrations
 
