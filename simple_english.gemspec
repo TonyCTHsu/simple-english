@@ -10,11 +10,13 @@ Gem::Specification.new do |spec|
   spec.description = "Lints Markdown prose and code comments with pattern " \
     "and counting rules."
   spec.homepage = "https://github.com/TonyCTHsu/simple-english"
-  spec.license = "MIT"
-  # Platform gems embed the native engine, so they carry its licenses
-  # too. The plain gem stays MIT only.
-  spec.licenses = ["MIT", "LGPL-2.1-only", "Apache-2.0", "GPL-2.0-only"] if
-    ENV.key?("SIMPLE_ENGLISH_GEM_PLATFORM")
+  # Platform gems embed the native engine, so they carry its licenses.
+  # Local builds without the engine stay MIT only.
+  spec.licenses = if ENV.key?("SIMPLE_ENGLISH_GEM_PLATFORM")
+    ["MIT", "LGPL-2.1-only", "Apache-2.0", "GPL-2.0-only"]
+  else
+    ["MIT"]
+  end
   spec.platform = ENV.fetch("SIMPLE_ENGLISH_GEM_PLATFORM", Gem::Platform::RUBY)
   spec.metadata = {
     "homepage_uri" => spec.homepage,
