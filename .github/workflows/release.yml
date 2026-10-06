@@ -102,9 +102,46 @@ jobs:
         with:
           subject-path: ${{ github.workspace }}/dist/*
 
+      # RubyGems rejects re-pushing a published version. A re-run
+      # rebuilds, and the rebuilt gem differs from the published bytes.
+      # This step gates the upload and the push below. A re-run leaves a
+      # published platform alone.
+      - name: Check whether the platform gem is published
+        id: published
+        run: |
+          gem_files=(dist/simple_english-"${VERSION}"-*.gem)
+          gem_file="${gem_files[0]}"
+          platform="$(basename "${gem_file}")"
+          platform="${platform#simple_english-"${VERSION}"-}"
+          platform="${platform%.gem}"
+          if curl -fsIL "https://rubygems.org/gems/simple_english-${VERSION}-${platform}.gem" >/dev/null 2>&1; then
+            echo "${platform} already published, skipping the upload and the push"
+            echo "published=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=no" >> "$GITHUB_OUTPUT"
+          fi
+          echo "gem_file=${gem_file}" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+
+      # dist/* from this leg, four files per platform:
+      # - the platform gem, a copy of the RubyGems gem
+      # - the native server tar
+      # - the tar's sha256
+      # - the Maven SBOM
+      # The last three live only on the release. The upload runs before
+      # the push, so a published gem always has its assets here.
+      - name: Upload release artifacts
+        if: steps.published.outputs.published == 'no'
+        run: gh release upload "v${VERSION}" dist/* --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release.outputs.version }}
+
       # The Sigstore certificate names the job that signs, so the gem must
       # be signed in the same job that built it. This is that job.
       - name: Check out the RubyGems attestation patch
+        if: steps.published.outputs.published == 'no'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: rubygems/release-gem
@@ -113,37 +150,25 @@ jobs:
           persist-credentials: false
 
       - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+        if: steps.published.outputs.published == 'no'
 
-      # RubyGems rejects re-pushing a published version, so a re-run of a
-      # failed release must skip the platforms that already published.
       - name: Publish the platform gem
+        if: steps.published.outputs.published == 'no'
         run: |
-          gem_files=(dist/simple_english-"${VERSION}"-*.gem)
-          gem_file="${gem_files[0]}"
-          platform="$(basename "${gem_file}")"
-          platform="${platform#simple_english-"${VERSION}"-}"
-          platform="${platform%.gem}"
-          if curl -fsIL "https://rubygems.org/gems/simple_english-${VERSION}-${platform}.gem" >/dev/null 2>&1; then
-            echo "${platform} already published, skipping push"
-          else
-            gem push "${gem_file}"
-            gem exec rubygems-await "${gem_file}"
-          fi
+          gem push "$GEM_FILE"
+          gem exec rubygems-await "$GEM_FILE"
         env:
+          GEM_FILE: ${{ steps.published.outputs.gem_file }}
           RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
           VERSION: ${{ needs.release.outputs.version }}
 
-      # dist/* from this leg, four files per platform:
-      # - the platform gem, a copy of the RubyGems gem
-      # - the native server tar
-      # - the tar's sha256
-      # - the Maven SBOM
-      # The last three live only on the release.
-      - name: Upload release artifacts
-        run: gh release upload "v${VERSION}" dist/* --clobber
+      # A published platform skips the push. This wait still guards the
+      # image job below against RubyGems propagation lag.
+      - name: Await the published gem
+        if: steps.published.outputs.published == 'yes'
+        run: gem exec rubygems-await "$GEM_FILE"
         env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.release.outputs.version }}
+          GEM_FILE: ${{ steps.published.outputs.gem_file }}
 
   image:
     needs: [release, gem]
