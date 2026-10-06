@@ -7,9 +7,9 @@
 > Write for human readers, not for reviewers or another AI.
 
 A skill or a prompt can teach an agent plain English, but you
-never know whether it follows. This linter is the check: it reads
-what the agent wrote and names every broken rule. Send the findings
-back, and the agent corrects its own text.
+never know whether it follows. This linter keeps the agent honest:
+it reads what the agent wrote and names every broken rule. Send the
+findings back, and the agent corrects its own text.
 
 Markdown prose plus code comments in Python, Ruby, JavaScript,
 TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and YAML. Output as
