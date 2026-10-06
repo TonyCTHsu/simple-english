@@ -1,3 +1,0 @@
-kind: Changed
-body: Bundle the lint engine in the gem on supported platforms, with the engine's SBOM beside the binary.
-time: 2026-10-06T19:08:01.000000-07:00
