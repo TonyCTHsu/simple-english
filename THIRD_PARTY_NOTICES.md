@@ -32,6 +32,9 @@ binary is the CycloneDX SBOM published with each release
 | `org.slf4j:slf4j-api` 2.0.16 | MIT | |
 | GraalVM and OpenJDK runtime code | GPLv2 with the Classpath Exception | `licenses/OpenJDK-LICENSE.txt` |
 
+The engine uses logback under its LGPL-2.1 option, not its EPL-1.0
+option.
+
 ## LGPL 2.1 obligations
 
 LanguageTool is licensed under the GNU Lesser General Public License
@@ -48,3 +51,22 @@ study, modify, and rebuild the LGPL part:
   the version in `native/languagetool/pom.xml` and follow the
   rebuild steps in `native/languagetool/README.md` under "Changing
   the native engine".
+
+Written offer under section 6(c): we give any recipient the
+machine-readable materials that section 6(a) names, for at least three
+years after each release, at no charge. Ask in an issue at
+https://github.com/TonyCTHsu/simple-english/issues. The materials are
+the LanguageTool `v6.6` source, the resolved classpath of
+`native/languagetool/pom.xml` as Maven Central artifacts, the
+reachability metadata under `native/languagetool/config/`, and the
+build scripts `native/languagetool/build.rb` and `Rakefile` with the
+`rules/simple-english.xml` overlay. You need them to modify
+LanguageTool and relink a working engine.
+
+## OpenJDK and GraalVM source
+
+The binary embeds OpenJDK and GraalVM Community runtime code under
+GPLv2 with the Classpath Exception. The corresponding source is
+public: https://github.com/openjdk/jdk and
+https://github.com/oracle/graal. The release SBOM names the versions
+the binary embeds.
