@@ -23,8 +23,6 @@ ship as plugins for the agents that write your prose.
 
 ## Agent integrations
 
-## Agent integrations
-
 Plug the linter into your coding agent: [pi](integrations/pi/README.md), [Claude Code](integrations/claude-code/README.md), or [Codex](integrations/codex/README.md). Each README holds the full install, with the gem prerequisite, scopes, and commands. The agent checks its own draft before you read the file.
 
 ## The rules
