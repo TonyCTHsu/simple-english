@@ -23,22 +23,9 @@ ship as plugins for the agents that write your prose.
 
 ## Agent integrations
 
-Plug the linter into your coding agent. Every integration carries
-the `simple-english-lint` skill, so the agent lints the prose it
-writes and fixes every finding. The wiring fits the host: a
-feedback hook in Claude Code, a `se_lint` tool in pi, an MCP server
-in Codex. The agent checks its own draft before you read the file.
+## Agent integrations
 
-Plug it into your agent:
-
-| Integration | Install command |
-|---|---|
-| [pi](integrations/pi/README.md) | `pi install npm:pi-simple-english` |
-| [Claude Code](integrations/claude-code/README.md) | `claude plugin marketplace add TonyCTHsu/simple-english` |
-| [Codex](integrations/codex/README.md) | `codex plugin marketplace add TonyCTHsu/simple-english` |
-
-Each integration has its own README with scopes and prerequisites. See
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full story.
+Plug the linter into your coding agent: [pi](integrations/pi/README.md), [Claude Code](integrations/claude-code/README.md), or [Codex](integrations/codex/README.md). Each README holds the full install, with the gem prerequisite, scopes, and commands. The agent checks its own draft before you read the file.
 
 ## The rules
 
