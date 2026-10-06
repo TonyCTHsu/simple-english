@@ -97,10 +97,10 @@ jobs:
         env:
           VERSION: ${{ needs.release.outputs.version }}
 
-      - name: Attest release artifacts
+      - name: Attest the platform gem
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: ${{ github.workspace }}/dist/*
+          subject-path: ${{ github.workspace }}/dist/simple_english-*.gem
 
       # RubyGems rejects re-pushing a published version. A re-run
       # rebuilds, and the rebuilt gem differs from the published bytes.
@@ -124,16 +124,12 @@ jobs:
         env:
           VERSION: ${{ needs.release.outputs.version }}
 
-      # dist/* from this leg, four files per platform:
-      # - the platform gem, a copy of the RubyGems gem
-      # - the native server tar
-      # - the tar's sha256
-      # - the Maven SBOM
-      # The last three live only on the release. The upload runs before
-      # the push, so a published gem always has its assets here.
-      - name: Upload release artifacts
+      # A copy of the published gem, as a convenience download. RubyGems
+      # stays the canonical source. The upload runs before the push, so a
+      # published gem always has its copy here.
+      - name: Upload the gem to the release
         if: steps.published.outputs.published == 'no'
-        run: gh release upload "v${VERSION}" dist/* --clobber
+        run: gh release upload "v${VERSION}" dist/simple_english-*.gem --clobber
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.release.outputs.version }}

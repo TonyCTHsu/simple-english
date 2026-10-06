@@ -33,11 +33,13 @@ repository.
 Do not push tags by hand. The workflow tags the release commit. It builds
 and verifies native servers on Ubuntu 22.04 x86-64, Ubuntu 22.04
 arm64, and macOS arm64. It builds,
-installs, and exercises each platform gem before publication. Each native
-executable also has a SHA-256 checksum and signed build-provenance attestation
-on the GitHub release.
+installs, and exercises each platform gem before publication.
+
+Each gem carries the native server and its SBOM, and the release holds
+a copy of each published gem. Verify a downloaded gem with
+`gh attestation verify`.
 The container image uses the Linux x86-64 gem.
 
 If one platform fails, re-run the failed jobs from the release run. The
-workflow checks RubyGems first. A published platform keeps the assets from
-the attempt that pushed it, and the re-run leaves it alone.
+workflow checks RubyGems first. A published platform keeps its gem copy
+from the attempt that pushed it, and the re-run leaves it alone.

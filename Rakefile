@@ -39,10 +39,13 @@ task build: NATIVE_EXECUTABLE do
 
   FileUtils.mkdir_p("libexec/simple_english")
   FileUtils.install(executable, "libexec/simple_english/languagetool-server", mode: 0o755)
+  # The SBOM ships beside the binary, so the gemspec glob carries it in
+  # the gem and the tar.
+  sbom = build.join("maven-target/bom.json")
+  FileUtils.install(sbom, "libexec/simple_english/languagetool-server.sbom.json")
   FileUtils.mkdir_p("dist")
   tar = "dist/languagetool-server-#{platform}.tar.gz"
   sh "tar -C libexec -czf #{tar} simple_english"
-  sbom = build.join("maven-target/bom.json")
   FileUtils.cp(sbom, "dist/languagetool-server-#{platform}.sbom.json")
   checksum = Digest::SHA256.file(tar).hexdigest
   File.write("#{tar}.sha256", "#{checksum}  #{File.basename(tar)}\n")
