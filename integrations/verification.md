@@ -188,11 +188,31 @@ adds an MCP server and `.cursor/skills/` adds skills, or the same
 paths under `~/.cursor/` serve every project. A plugin installs
 both at once.
 
-Recorded 2026-10-07 against the live Cursor docs and the Agent
-Plugins specification. No live session yet.
+The Cursor CLI, `agent`, drives the same agent headless. Its
+install script is `curl https://cursor.com/install -fsS | bash`.
+A person authenticates with `agent login`. CI sets `CURSOR_API_KEY`.
+`agent --list-models` names the models, and a free plan may use
+only `auto`.
 
-Source: the plugin docs at `https://cursor.com/docs/plugins` and
-the specification at `https://agent-plugins.org/specification`.
+A headless run uses `-p` with `--output-format json`. `--plugin-dir`
+loads the plugin directory for one run. `--approve-mcps` alone does
+not clear MCP tool calls: each call dies with "User rejected MCP",
+and `--force` allows them. `--trust` skips the workspace prompt.
+The plugin's MCP tool reaches the agent as
+`plugin-<name>-<server>-<tool>`, and the agent reads the skill on
+its own. `agent mcp list` shows only the `mcp.json` servers, never
+a plugin's.
+
+Verified 2026-10-07 with agent 2026.10.01-e373342 in live
+sessions. The seeded scenario passed: the agent fixed the
+violations it was not asked to touch and answered clean. One run
+of four died mid-session with `RetriableError: WritableIterable
+closed` after connection retries, so the e2e leg keeps its second
+attempt.
+
+Source: the plugin docs at `https://cursor.com/docs/plugins`, the
+CLI docs at `https://cursor.com/docs/cli/overview`, and the
+specification at `https://agent-plugins.org/specification`.
 
 ## local-install
 
