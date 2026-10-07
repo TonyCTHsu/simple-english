@@ -128,8 +128,9 @@ without starting the native server.
 ## Agent integrations
 
 `integrations/` holds one adapter per agent. `pi/` is a native
-extension, `claude-code/` a hook plugin, `codex/` a Codex plugin, and
-`cursor/` an Agent Plugin.
+extension, `claude-code/` a hook plugin, and `codex/` and `cursor/`
+Agent Plugins: the same portable manifest, wired to each agent's
+install flow.
 `integrations/shared/skills/simple-english-lint/SKILL.md` holds the skill all
 four share, and `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo

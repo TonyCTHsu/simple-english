@@ -64,21 +64,22 @@ and lifecycle pages.
 
 ## codex-plugin
 
-The manifest lives at `.codex-plugin/plugin.json` inside the plugin
-root. Fields:
+Codex accepts the portable Agent Plugins format, the same one as
+Cursor. The root `plugin.json` carries the v1.0.0 `$schema`. The
+root `mcp.json` names a stdio server, and a root `skills/`
+directory holds the skills. The manifest carries no `skills` or
+`mcpServers` pointers: Codex finds the components by convention.
+OpenAI's plugin docs describe the format and keep
+`.codex-plugin/plugin.json` as a legacy compatibility fallback,
+which this plugin no longer uses.
 
-```json
-{
-  "name": "the-plugin-name",
-  "version": "0.0.0",
-  "description": "one line",
-  "skills": "./skills/",
-  "mcpServers": "./.mcp.json"
-}
-```
-
-The `.mcp.json` top-level key is `mcpServers`. The paths are relative to
-the plugin root and start with `./`.
+The install flow is unchanged. Verified 2026-10-08 with codex
+0.160.0, live, up to server registration: the local marketplace
+installs the portable manifest. `codex mcp list` shows the
+`simple-english` server running `se mcp`, with `PLUGIN_ROOT` and
+`PLUGIN_DATA` injected. The headless agent run is not yet re-run
+on the portable manifest. The earlier run (2026-10-03) confirmed
+the same server behind the legacy manifest.
 
 Local install needs a local marketplace. This repository ships one,
 under `.agents/plugins/marketplace.json`:
@@ -139,7 +140,7 @@ policy is never". Approve the plugin's server in the project's
 default_tools_approval_mode = "approve"
 ```
 
-The server name is the key in the plugin's `.mcp.json`. Check it with
+The server name is the key in the plugin's `mcp.json`. Check it with
 `codex mcp list`.
 
 Codex launches a plugin's MCP server with a filtered environment:

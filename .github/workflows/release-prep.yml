@@ -61,7 +61,8 @@ jobs:
             Gemfile.lock
             lib/simple_english/version.rb
             integrations/claude-code/.claude-plugin/plugin.json
-            integrations/codex/.codex-plugin/plugin.json
+            integrations/codex/plugin.json
+            integrations/cursor/plugin.json
             integrations/pi/package.json
           body-path: .changes/${{ steps.version.outputs.version }}.md
           sign-commits: true

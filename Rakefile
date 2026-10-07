@@ -96,7 +96,8 @@ namespace :release do
     # them fails CI on the release branch.
     %w[
       integrations/claude-code/.claude-plugin/plugin.json
-      integrations/codex/.codex-plugin/plugin.json
+      integrations/codex/plugin.json
+      integrations/cursor/plugin.json
       integrations/pi/package.json
     ].each do |manifest|
       body = File.read(manifest)

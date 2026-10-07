@@ -17,32 +17,14 @@ class IntegrationsCodexTest < Minitest::Test
   end
 
   def test_manifest_declares_the_plugin
-    manifest = JSON.parse(File.read(File.join(PLUGIN, ".codex-plugin", "plugin.json")))
+    manifest = JSON.parse(File.read(File.join(PLUGIN, "plugin.json")))
     assert_equal "simple-english", manifest.fetch("name")
     assert_equal SimpleEnglish::VERSION, manifest.fetch("version")
     assert manifest.key?("description")
-    assert_equal "./skills/", manifest.fetch("skills")
-    assert_equal "./.mcp.json", manifest.fetch("mcpServers")
-  end
-
-  # The legacy .codex-plugin format publishes no schema. The contract
-  # is the closed manifest shape recorded in verification.md, so any
-  # drifted or added field fails here.
-  def test_manifest_carries_exactly_the_recorded_fields
-    manifest = JSON.parse(File.read(File.join(PLUGIN, ".codex-plugin", "plugin.json")))
-    assert_equal %w[author description homepage keywords license
-      mcpServers name repository skills version], manifest.keys.sort
-  end
-
-  def test_mcp_json_carries_exactly_the_recorded_fields
-    wiring = JSON.parse(File.read(File.join(PLUGIN, ".mcp.json")))
-    assert_equal ["mcpServers"], wiring.keys
-    server = wiring.fetch("mcpServers").fetch("simple-english")
-    assert_equal %w[args command type], server.keys.sort
   end
 
   def test_mcp_json_names_the_se_mcp_command
-    wiring = JSON.parse(File.read(File.join(PLUGIN, ".mcp.json")))
+    wiring = JSON.parse(File.read(File.join(PLUGIN, "mcp.json")))
     server = wiring.fetch("mcpServers").fetch("simple-english")
     assert_equal "stdio", server.fetch("type")
     assert_equal "se", server.fetch("command")

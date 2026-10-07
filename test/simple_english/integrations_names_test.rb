@@ -43,7 +43,8 @@ class IntegrationsNamesTest < Minitest::Test
       "README.md",
       "docs/DEVELOPMENT.md",
       "integrations/codex/README.md",
-      "integrations/cursor/README.md"
+      "integrations/cursor/README.md",
+      "integrations/verification.md"
     ]
   }.freeze
 
