@@ -1,0 +1,3 @@
+kind: Added
+body: Add a Cursor adapter. Copy `integrations/cursor/.cursor` into a project for the lint tool and skill.
+time: 2026-10-07T16:58:52.488188+02:00

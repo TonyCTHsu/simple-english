@@ -164,6 +164,29 @@ Source: the OpenAI plugin docs at
 `https://developers.openai.com/plugins/build/plugins` and the Codex
 non-interactive docs.
 
+## cursor
+
+Cursor has no plugin system and no marketplace. Two primitives cover
+the adapter: MCP servers and skills.
+
+MCP servers load from `.cursor/mcp.json` in the project, or
+`~/.cursor/mcp.json` for every project. A local stdio server carries
+`command`, `args`, and an optional `env` object. There is no `type`
+field. A server named in both places resolves to the project file.
+
+Skills auto-load from `.cursor/skills/<name>/SKILL.md` in the project,
+or `~/.cursor/skills/` for every project. The frontmatter carries
+`name` and `description`. The agent picks a skill by its description
+and the task, with no wiring file. Cursor also loads skills from
+Claude and Codex directories, so the Codex plugin carries the skill
+into a project that installs it.
+
+Recorded 2026-10-07 against the live Cursor docs. No live session
+yet.
+
+Source: the MCP docs at `https://cursor.com/docs/mcp` and the skills
+docs at `https://cursor.com/docs/skills`.
+
 ## local-install
 
 Claude Code offers two local paths. Development loads the plugin root
