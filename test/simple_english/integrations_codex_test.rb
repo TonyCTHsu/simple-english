@@ -38,7 +38,7 @@ class IntegrationsCodexTest < Minitest::Test
     wiring = JSON.parse(File.read(File.join(PLUGIN, ".mcp.json")))
     assert_equal ["mcpServers"], wiring.keys
     server = wiring.fetch("mcpServers").fetch("simple-english")
-    assert_equal %w[args command], server.keys.sort
+    assert_equal %w[args command type], server.keys.sort
   end
 
   def test_mcp_json_names_the_se_mcp_command
