@@ -190,7 +190,9 @@ both at once.
 
 The Cursor CLI, `agent`, drives the same agent headless. Its
 install script is `curl https://cursor.com/install -fsS | bash`.
-A person authenticates with `agent login`. CI sets `CURSOR_API_KEY`.
+A person authenticates with `agent login`. A CI run needs
+`CURSOR_API_KEY`, but the dashboard sells that key only on a paid
+plan, so the e2e leg stays local-only (checked 2026-10-07).
 `agent --list-models` names the models, and a free plan may use
 only `auto`.
 

@@ -10,6 +10,9 @@
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
 # credentials.
 #
+# The cursor leg runs locally on a browser login. CI has no cursor job:
+# the dashboard sells a CURSOR_API_KEY only on a paid plan.
+#
 # The model for each agent comes from the environment, with no code
 # default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, SE_E2E_CODEX_MODEL, or
 # SE_E2E_CURSOR_MODEL. The workflow's dispatch inputs carry the current
