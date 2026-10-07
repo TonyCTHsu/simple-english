@@ -12,7 +12,7 @@ class IntegrationsSkillTest < Minitest::Test
     File.expand_path("../../integrations/claude-code/skills/simple-english-lint/SKILL.md", __dir__),
     File.expand_path("../../integrations/codex/skills/simple-english-lint/SKILL.md", __dir__),
     File.expand_path("../../integrations/pi/skills/simple-english-lint/SKILL.md", __dir__),
-    File.expand_path("../../integrations/cursor/.cursor/skills/simple-english-lint/SKILL.md", __dir__)
+    File.expand_path("../../integrations/cursor/skills/simple-english-lint/SKILL.md", __dir__)
   ].freeze
 
   def test_every_vendored_copy_matches_the_shared_skill

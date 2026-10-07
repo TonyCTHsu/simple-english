@@ -128,9 +128,9 @@ without starting the native server.
 ## Agent integrations
 
 `integrations/` holds one adapter per agent. `pi/` is a native
-extension, `claude-code/` a hook plugin, and `codex/` an MCP plugin.
-`cursor/` carries MCP wiring and a skill, because Cursor has no
-plugin system. `integrations/shared/skills/simple-english-lint/SKILL.md` holds the skill all
+extension, `claude-code/` a hook plugin, `codex/` a Codex plugin, and
+`cursor/` an Agent Plugin.
+`integrations/shared/skills/simple-english-lint/SKILL.md` holds the skill all
 four share, and `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo
 root lists the Claude Code plugin, and the adapters ship nothing. Try
@@ -141,8 +141,8 @@ from local paths:
 - Claude Code: `claude --plugin-dir <repo>/integrations/claude-code`
 - Codex: `codex plugin marketplace add TonyCTHsu/simple-english`, or a
   local marketplace, per `integrations/verification.md`
-- Cursor: copy `integrations/cursor/.cursor` into the project, or
-  `~/.cursor` for every project
+- Cursor: copy `integrations/cursor` into
+  `~/.cursor/plugins/local`
 
 `se mcp` runs the MCP server behind the Codex plugin. Any MCP client
 can use it.

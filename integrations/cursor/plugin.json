@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "simple-english",
+  "version": "0.6.0",
+  "description": "Lint Markdown prose and code comments with the plain-English rules. One MCP tool, lint, with a skill that tells the agent to fix every finding.",
+  "author": {
+    "name": "TonyCTHsu"
+  },
+  "homepage": "https://github.com/TonyCTHsu/simple-english",
+  "repository": "https://github.com/TonyCTHsu/simple-english",
+  "license": "MIT",
+  "keywords": [
+    "lint",
+    "prose",
+    "plain-english"
+  ]
+}

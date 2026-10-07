@@ -166,26 +166,33 @@ non-interactive docs.
 
 ## cursor
 
-Cursor has no plugin system and no marketplace. Two primitives cover
-the adapter: MCP servers and skills.
+Cursor supports two plugin formats. A Cursor Plugin puts its
+manifest at `.cursor-plugin/plugin.json` and covers
+Cursor-specific parts: rules, agents, commands, and hooks. An Agent
+Plugin follows the open Agent Plugins standard, v1.0.0, with its
+`plugin.json` manifest at the plugin root. The `skills/`
+directory and the root `mcp.json` complete the bundle, and
+`mcp.json` allows only `$schema` and `mcpServers` at the top level.
+The manifest is closed. Client-specific data belongs
+under `extensions`.
 
-MCP servers load from `.cursor/mcp.json` in the project, or
-`~/.cursor/mcp.json` for every project. A local stdio server carries
-`command`, `args`, and an optional `env` object. There is no `type`
-field. A server named in both places resolves to the project file.
+Install happens in the Customize pane, at project or user scope.
+Local testing drops the plugin directory into
+`~/.cursor/plugins/local`, then a window reload. The Cursor
+Marketplace distributes plugins as Git repositories, manually
+reviewed, submitted through the Cursor team. Teams and Enterprise
+plans add private team marketplaces.
 
-Skills auto-load from `.cursor/skills/<name>/SKILL.md` in the project,
-or `~/.cursor/skills/` for every project. The frontmatter carries
-`name` and `description`. The agent picks a skill by its description
-and the task, with no wiring file. Cursor also loads skills from
-Claude and Codex directories, so the Codex plugin carries the skill
-into a project that installs it.
+Cursor also accepts the unwired project files. `.cursor/mcp.json`
+adds an MCP server and `.cursor/skills/` adds skills, or the same
+paths under `~/.cursor/` serve every project. A plugin installs
+both at once.
 
-Recorded 2026-10-07 against the live Cursor docs. No live session
-yet.
+Recorded 2026-10-07 against the live Cursor docs and the Agent
+Plugins specification. No live session yet.
 
-Source: the MCP docs at `https://cursor.com/docs/mcp` and the skills
-docs at `https://cursor.com/docs/skills`.
+Source: the plugin docs at `https://cursor.com/docs/plugins` and
+the specification at `https://agent-plugins.org/specification`.
 
 ## local-install
 
