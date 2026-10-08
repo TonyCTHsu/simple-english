@@ -2,13 +2,21 @@
 <rules lang="en">
   <category id="SIMPLE_ENGLISH" name="Simple English">
 
+    <!-- LanguageTool splits "you're" into "you" + "'re", so the
+         regex matches the apostrophe-initial tokens: "'re", "'ve",
+         "'ll", "'d", "'m", and the "n't" token of "don't". The
+         apostrophe-s form stays out: it is both the contraction
+         "it is" and the possessive, and the tagger does not tell
+         them apart reliably. -->
     <rule id="SE_NO_CONTRACTIONS" name="No contractions">
       <pattern>
-        <token regexp="yes">[a-z]+['’](s|t|re|ve|ll|d|m)</token>
+        <token regexp="yes">[a-z]*['’](t|re|ve|ll|d|m)</token>
       </pattern>
       <message>Write the words in full. No contractions.</message>
       <example type="incorrect">You <marker>don't</marker> need this file.</example>
+      <example type="incorrect">If <marker>you're</marker> connecting, use TCP.</example>
       <example type="correct">You do not need this file.</example>
+      <example type="correct">sqlpipe's IP is in the config.</example>
     </rule>
 
     <rule id="SE_NO_SEMICOLON" name="No semicolons">
@@ -45,6 +53,11 @@
       <example type="correct">The worker wrote the log.</example>
     </rule>
 
+    <!-- A passive agent changes the finding, not the rule match:
+         "has been read by X" also matches SE_ACTIVE_VOICE, and
+         LanguageTool reports only the first of two overlapping
+         matches, so this rule stays silent there. The active-voice
+         finding names the fix. -->
     <rule id="SE_PRESENT_PERFECT" name="Simple tenses only">
       <pattern>
         <token regexp="yes">have|has|had</token>
