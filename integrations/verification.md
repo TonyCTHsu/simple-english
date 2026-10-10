@@ -217,6 +217,36 @@ Source: the plugin docs at `https://cursor.com/docs/plugins`, the
 CLI docs at `https://cursor.com/docs/cli/overview`, and the
 specification at `https://agent-plugins.org/specification`.
 
+## opencode
+
+opencode has no Agent Plugins support (open feature request,
+anomalyco/opencode#40993). The integration is config wiring: an
+`mcp` block in the project's `opencode.json`, and the skill under
+`.opencode/skills/`. A local MCP server takes `type: "local"` and
+`command` as an array. MCP tools are permission-keyed
+`<server>_<tool>`, and a headless run can never answer an approval,
+so the config allows `simple-english_lint` and `edit` up front.
+
+`opencode run` ignores the process cwd and picks the enclosing git
+repo, so a headless run in another directory needs `--dir`.
+Verified live 2026-10-10, run 38094528402: without `--dir` the agent
+searched the repository, not the scenario directory, and never found
+the seeded file.
+
+The Google provider reads `GOOGLE_GENERATIVE_AI_API_KEY`, not
+`GEMINI_API_KEY`. Verified live, run 38094380373: the model call dies
+with ProviderAuthError naming the variable. `opencode mcp list`
+confirms a project's config, and the MCP tool reaches the model as
+`simple-english_lint`.
+
+The e2e leg passed 2026-10-10 with opencode 1.18.35 and
+`openai/gpt-6-luna`, pass on attempt 2. `google/gemini-3.1-flash-lite`
+called the lint tool but did not fix the findings, so it fails the
+gate. Weak models are the first suspect on a red opencode leg.
+
+Source: the opencode docs at `https://docs.opencode.ai/docs/config`,
+the tools and MCP pages, and the runs named above.
+
 ## local-install
 
 Claude Code offers two local paths. Development loads the plugin root
