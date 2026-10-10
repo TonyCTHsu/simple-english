@@ -38,6 +38,10 @@ on:
         description: "Run the Codex scenario"
         type: boolean
         default: true
+      run_opencode:
+        description: "Run the opencode scenario"
+        type: boolean
+        default: true
       # Off by default: the leg needs a CURSOR_API_KEY secret, and the
       # dashboard sells that key only on a paid plan. A dispatch run
       # checks this box once the key exists. A chained workflow_run
@@ -247,14 +251,52 @@ jobs:
           SE_E2E_CURSOR_MODEL: ${{ vars.E2E_CURSOR_MODEL }}
         run: bin/e2e-agents cursor
 
+  opencode:
+    permissions:
+      contents: read
+    needs: build
+    if: github.event_name == 'workflow_run' || inputs.run_opencode
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Download the platform gem
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: platform-gem
+          path: dist
+
+      - name: Install the gem
+        run: gem install --no-document ./dist/simple_english-*.gem
+
+      - name: Install the agent
+        run: npm install -g opencode-ai@1.18.35
+
+      - name: Run the scenario
+        env:
+          # The model var picks the provider: anthropic/name uses the
+          # Anthropic key, openai/name the OpenAI key, google/name the
+          # Google key.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          SE_E2E_OPENCODE_MODEL: ${{ vars.E2E_OPENCODE_MODEL }}
+        run: bin/e2e-agents opencode
+
   # A commit status is the only way a workflow_run result reaches the
   # commit Checks UI: GitHub filters workflow_run checks out of that
   # view, but plain statuses show. One context per leg (build, claude,
-  # pi, codex, cursor); a skipped leg posts nothing so the commit never
+  # pi, codex, cursor, opencode); a skipped leg posts nothing so the
+  # commit never
   # claims a scenario it did not run. The agents themselves keep a
   # read-only token; only this job can write statuses.
   report:
-    needs: [build, claude, pi, codex, cursor]
+    needs: [build, claude, pi, codex, cursor, opencode]
     # PR-triggered CI completions skip build, which skips the agents;
     # a skipped build means this run must post nothing.
     if: always() && needs.build.result != 'skipped'

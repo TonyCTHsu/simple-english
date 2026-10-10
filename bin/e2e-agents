@@ -6,13 +6,13 @@
 # it fix violations it was not asked to touch, and keep its own answer
 # clean.
 #
-# Usage: bin/e2e-agents <pi|claude|codex|cursor|all>
+# Usage: bin/e2e-agents <pi|claude|codex|cursor|opencode|all>
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
 # credentials.
 #
 # The model for each agent comes from the environment, with no code
-# default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, SE_E2E_CODEX_MODEL, or
-# SE_E2E_CURSOR_MODEL. The workflow's dispatch inputs carry the current
+# default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, SE_E2E_CODEX_MODEL,
+# SE_E2E_CURSOR_MODEL, or SE_E2E_OPENCODE_MODEL. The workflow's dispatch inputs carry the current
 # choice, and a human changes it there, never here. A preflight checks
 # the name against the provider's live model list and prints every
 # available name on a miss, so picking a replacement needs no code
@@ -43,7 +43,8 @@ MODEL_ENV = {
   "claude" => "SE_E2E_CLAUDE_MODEL",
   "pi" => "SE_E2E_PI_MODEL",
   "codex" => "SE_E2E_CODEX_MODEL",
-  "cursor" => "SE_E2E_CURSOR_MODEL"
+  "cursor" => "SE_E2E_CURSOR_MODEL",
+  "opencode" => "SE_E2E_OPENCODE_MODEL"
 }.freeze
 
 # Each provider publishes its live model list on a free endpoint. A
@@ -79,6 +80,20 @@ def preflight_cursor(model)
   return if ids.include?(model)
   abort "cursor: #{model} is not in the provider's list. " \
     "Pick one and set SE_E2E_CURSOR_MODEL:\n#{ids.join("\n")}"
+end
+
+# opencode names its models provider/name. The preflight strips the
+# prefix and reuses that provider's list, so the model rides an API key
+# the workflow already holds.
+def preflight_opencode(model)
+  provider, name = model.split("/", 2)
+  abort "opencode: #{model} is not provider/name. " \
+    "Pick one and set SE_E2E_OPENCODE_MODEL." unless name
+  agent = {"anthropic" => "claude", "openai" => "codex", "google" => "pi"}.fetch(provider) do
+    abort "opencode: no preflight for #{provider}. The preflight covers " \
+      "anthropic, openai, and google models."
+  end
+  preflight(agent, name)
 end
 
 def model_for(agent)
@@ -333,7 +348,49 @@ def run_cursor
   end
 end
 
-AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex, "cursor" => :run_cursor}.freeze
+def run_opencode
+  with_retry("opencode") do
+    scenario("opencode") do |dir, baseline|
+      # No plugin unit: opencode reads the project's opencode.json and
+      # .opencode/skills from the working directory, and the scenario
+      # dir is the project. A headless run can never answer an approval,
+      # so the config allows edits and the lint tool call.
+      File.write("opencode.json", JSON.pretty_generate({
+        "$schema" => "https://opencode.ai/config.json",
+        "mcp" => {
+          "simple-english" => {"type" => "local", "command" => ["se", "mcp"]}
+        },
+        "permission" => {
+          "edit" => "allow",
+          "simple-english_lint" => "allow"
+        }
+      }))
+      FileUtils.mkdir_p(".opencode/skills")
+      FileUtils.cp_r(File.join(REPO, "integrations", "opencode", "skills", "simple-english-lint"),
+        ".opencode/skills/")
+      # opencode's Google provider reads GOOGLE_GENERATIVE_AI_API_KEY,
+      # not the GEMINI_API_KEY the other legs use. Verified live,
+      # e2e-agents run 38094380373, opencode 1.18.35.
+      env = {}
+      if model_for("opencode").start_with?("google/")
+        key = ENV["GEMINI_API_KEY"] || ENV["GOOGLE_API_KEY"]
+        env["GOOGLE_GENERATIVE_AI_API_KEY"] = key if key
+      end
+      # --dir pins the project: without it, opencode run ignores the
+      # cwd and picks the enclosing git repo, so the agent never sees
+      # the scenario dir. Verified live, run 38094528402, opencode 1.18.35.
+      out, err, status = Open3.capture3(env, "opencode", "run",
+        "--dir", dir,
+        "--model", model_for("opencode"), "--format", "json", PROMPT)
+      note = File.join(dir, "note.md")
+      ok = status.success? && scenario_passed?(note, baseline)
+      diagnose(note, baseline, out + err) unless ok
+      [ok, nil]
+    end
+  end
+end
+
+AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex, "cursor" => :run_cursor, "opencode" => :run_opencode}.freeze
 
 # The scenario binary differs from the agent name only for cursor: its
 # CLI is `agent`, not `cursor`.
@@ -347,7 +404,7 @@ end
 
 target = ARGV[0] || "all"
 agents = (target == "all") ? AGENTS.keys : [target]
-abort "usage: bin/e2e-agents <pi|claude|codex|cursor|all>" unless (agents - AGENTS.keys).empty?
+abort "usage: bin/e2e-agents <pi|claude|codex|cursor|opencode|all>" unless (agents - AGENTS.keys).empty?
 
 ran = 0
 failed = 0
@@ -359,6 +416,8 @@ agents.each do |agent|
   model = model_for(agent)
   if agent == "cursor"
     preflight_cursor(model)
+  elsif agent == "opencode"
+    preflight_opencode(model)
   else
     # The Google preflight only covers the default provider.
     alt_provider = agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"

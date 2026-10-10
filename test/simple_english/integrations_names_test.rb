@@ -36,6 +36,7 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/codex/skills/simple-english-lint/SKILL.md",
       "integrations/pi/skills/simple-english-lint/SKILL.md",
       "integrations/cursor/skills/simple-english-lint/SKILL.md",
+      "integrations/opencode/skills/simple-english-lint/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
     ],
     # The MCP subcommand wiring.
@@ -44,6 +45,7 @@ class IntegrationsNamesTest < Minitest::Test
       "docs/DEVELOPMENT.md",
       "integrations/codex/README.md",
       "integrations/cursor/README.md",
+      "integrations/opencode/README.md",
       "integrations/verification.md"
     ]
   }.freeze
