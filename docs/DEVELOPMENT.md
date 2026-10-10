@@ -130,9 +130,11 @@ without starting the native server.
 `integrations/` holds one adapter per agent. `pi/` is a native
 extension, `claude-code/` a hook plugin, and `codex/` and `cursor/`
 Agent Plugins: the same portable manifest, wired to each agent's
-install flow.
+install flow. `opencode/` has no plugin unit: the README holds config
+snippets, and the user pastes them into `opencode.json` and
+`.opencode/skills/`.
 `integrations/shared/skills/simple-english-lint/SKILL.md` holds the skill all
-four share, and `integrations/verification.md` records the agent facts
+five share, and `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo
 root lists the Claude Code plugin, and the adapters ship nothing. Try
 them
@@ -144,6 +146,8 @@ from local paths:
   local marketplace, per `integrations/verification.md`
 - Cursor: copy `integrations/cursor` into
   `~/.cursor/plugins/local`
+- opencode: paste the `mcp` block from `integrations/opencode/README.md`
+  into `opencode.json`, and copy its skill dir into `.opencode/skills/`
 
 `se mcp` runs the MCP server behind the Codex plugin. Any MCP client
 can use it.
