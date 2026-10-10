@@ -28,11 +28,17 @@ codex plugin add simple-english@simple-english
 
 Codex holds plugin enablement in global state, so there is no
 project-scope install. The project-level piece is the approval. MCP
-tool calls need approval by default. Put the approval in the
-project's `.codex/config.toml` and commit it, so every teammate
-starts with the server approved. `integrations/verification.md` holds
-the settings, and a local-marketplace recipe for a development
-checkout.
+tool calls need approval by default. Put this in the project's
+`.codex/config.toml` and commit it, so every teammate starts with the
+server approved:
+
+```toml
+[plugins."simple-english@simple-english".mcp_servers.simple-english]
+default_tools_approval_mode = "approve"
+```
+
+A development checkout installs from a local marketplace instead. The
+recipe is in `integrations/verification.md` in this repository.
 
 ## Versions
 

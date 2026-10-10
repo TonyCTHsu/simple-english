@@ -35,8 +35,14 @@ Add the MCP server to `opencode.json` in the project root, or to
 }
 ```
 
-Copy the skill to `.opencode/skills/` in the project, or to
-`~/.config/opencode/skills/` for every project:
+Copy the skill to `.opencode/skills/` in the project:
+
+```bash
+mkdir -p .opencode/skills
+cp -R integrations/opencode/skills/simple-english-lint .opencode/skills/
+```
+
+Or to `~/.config/opencode/skills/` for every project:
 
 ```bash
 mkdir -p ~/.config/opencode/skills
