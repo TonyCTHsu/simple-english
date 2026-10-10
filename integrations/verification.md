@@ -318,3 +318,48 @@ Two consequences, both release decisions, not bugs in pi:
    carries it. An earlier symlink to `../shared/skills` dangled in any
    install that copied a package dir alone. A test now pins every
    vendored copy to the shared skill.
+
+## docs-walkthrough
+
+Recorded 2026-10-11 on macOS. Every integration README's install
+instructions ran as written, against the released gem 0.6.0 from
+RubyGems and the published npm package 0.6.0. Each run used an
+isolated home: scratch `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, and
+`PI_CODING_AGENT_DIR`, a redirected `HOME` for the Cursor copy, and a
+temporary project directory for opencode. No real agent config was
+touched. The e2e workflow stays the functional gate. This walkthrough
+checks that the written instructions work.
+
+claude-code: `gem install simple_english` pulls 0.6.0 from RubyGems.
+`claude plugin marketplace add TonyCTHsu/simple-english` and
+`claude plugin install simple-english@simple-english` succeed in a
+scratch config dir. `claude plugin list` shows the plugin at 0.6.0,
+user scope, enabled. The project-scope variants are not exercised
+yet.
+
+codex: `codex plugin marketplace add TonyCTHsu/simple-english`
+clones the repo as a marketplace. `codex plugin add
+simple-english@simple-english` caches 0.6.0. `codex mcp list` shows
+the server: command `se`, args `mcp`, status enabled. The approval
+config from the README did not run here. The e2e leg proves the same
+shape with local-marketplace names.
+
+cursor: copying `integrations/cursor` to
+`~/.cursor/plugins/local/simple-english` lands `plugin.json`,
+`mcp.json`, and `skills/` as the README says. The reload and the
+Customize check are GUI steps, so they stay manual. The cursor CLI
+was not installed on this host, so its headless path did not run
+here either.
+
+opencode: the README's `opencode.json` block plus the skill copy into
+`.opencode/skills/`. `opencode mcp list` reports simple-english
+connected. The server runs `se mcp`. The README does not mention the
+`permission` allow block that headless runs need. The e2e leg writes
+it.
+
+pi: `pi install npm:pi-simple-english` into a scratch agent dir
+installs the package. It lands with `extensions/se-lint.ts` and
+`skills/simple-english-lint/SKILL.md` beside `package.json`, the
+layout pi's loader reads. The npm path had no recorded run before
+this date. The e2e leg tests the local checkout by design, and the
+published tarball matches the dev directory.

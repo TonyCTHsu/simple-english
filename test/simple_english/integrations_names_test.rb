@@ -24,6 +24,7 @@ class IntegrationsNamesTest < Minitest::Test
       "docs/RELEASING.md",
       "integrations/pi/package.json",
       "integrations/pi/README.md",
+      "integrations/verification.md",
       "test/simple_english/integrations_pi_test.rb",
       ".github/workflows/release.yml"
     ],
