@@ -368,7 +368,15 @@ def run_opencode
       FileUtils.mkdir_p(".opencode/skills")
       FileUtils.cp_r(File.join(REPO, "integrations", "opencode", "skills", "simple-english-lint"),
         ".opencode/skills/")
-      out, err, status = Open3.capture3("opencode", "run",
+      # opencode's Google provider reads GOOGLE_GENERATIVE_AI_API_KEY,
+      # not the GEMINI_API_KEY the other legs use. Verified live,
+      # e2e-agents run 38094380373, opencode 1.18.35.
+      env = {}
+      if model_for("opencode").start_with?("google/")
+        key = ENV["GEMINI_API_KEY"] || ENV["GOOGLE_API_KEY"]
+        env["GOOGLE_GENERATIVE_AI_API_KEY"] = key if key
+      end
+      out, err, status = Open3.capture3(env, "opencode", "run",
         "--model", model_for("opencode"), "--format", "json", PROMPT)
       note = File.join(dir, "note.md")
       ok = status.success? && scenario_passed?(note, baseline)
