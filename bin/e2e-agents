@@ -376,7 +376,11 @@ def run_opencode
         key = ENV["GEMINI_API_KEY"] || ENV["GOOGLE_API_KEY"]
         env["GOOGLE_GENERATIVE_AI_API_KEY"] = key if key
       end
+      # --dir pins the project: without it, opencode run ignores the
+      # cwd and picks the enclosing git repo, so the agent never sees
+      # the scenario dir. Verified live, run 38094528402, opencode 1.18.35.
       out, err, status = Open3.capture3(env, "opencode", "run",
+        "--dir", dir,
         "--model", model_for("opencode"), "--format", "json", PROMPT)
       note = File.join(dir, "note.md")
       ok = status.success? && scenario_passed?(note, baseline)
