@@ -89,9 +89,9 @@ def preflight_opencode(model)
   provider, name = model.split("/", 2)
   abort "opencode: #{model} is not provider/name. " \
     "Pick one and set SE_E2E_OPENCODE_MODEL." unless name
-  agent = {"anthropic" => "claude", "openai" => "codex"}.fetch(provider) do
+  agent = {"anthropic" => "claude", "openai" => "codex", "google" => "pi"}.fetch(provider) do
     abort "opencode: no preflight for #{provider}. The preflight covers " \
-      "anthropic and openai models."
+      "anthropic, openai, and google models."
   end
   preflight(agent, name)
 end

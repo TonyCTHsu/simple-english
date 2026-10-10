@@ -280,9 +280,11 @@ jobs:
       - name: Run the scenario
         env:
           # The model var picks the provider: anthropic/name uses the
-          # Anthropic key, openai/name the OpenAI key.
+          # Anthropic key, openai/name the OpenAI key, google/name the
+          # Google key.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           SE_E2E_OPENCODE_MODEL: ${{ vars.E2E_OPENCODE_MODEL }}
         run: bin/e2e-agents opencode
 
