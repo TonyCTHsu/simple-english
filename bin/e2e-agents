@@ -6,16 +6,17 @@
 # it fix violations it was not asked to touch, and keep its own answer
 # clean.
 #
-# Usage: bin/e2e-agents <pi|claude|codex|all>
+# Usage: bin/e2e-agents <pi|claude|codex|cursor|all>
 # SE_E2E_SKIP=1 prints the scenarios and exits 0, for machines without
 # credentials.
 #
 # The model for each agent comes from the environment, with no code
-# default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, or SE_E2E_CODEX_MODEL.
-# The workflow's dispatch inputs carry the current choice, and a human
-# changes it there, never here. A preflight checks the name against the
-# provider's live model list and prints every available name on a miss,
-# so picking a replacement needs no code edit.
+# default: SE_E2E_CLAUDE_MODEL, SE_E2E_PI_MODEL, SE_E2E_CODEX_MODEL, or
+# SE_E2E_CURSOR_MODEL. The workflow's dispatch inputs carry the current
+# choice, and a human changes it there, never here. A preflight checks
+# the name against the provider's live model list and prints every
+# available name on a miss, so picking a replacement needs no code
+# edit.
 
 require "json"
 require "open3"
@@ -41,7 +42,8 @@ QUESTION = "This note was written by the documentation team in order to " \
 MODEL_ENV = {
   "claude" => "SE_E2E_CLAUDE_MODEL",
   "pi" => "SE_E2E_PI_MODEL",
-  "codex" => "SE_E2E_CODEX_MODEL"
+  "codex" => "SE_E2E_CODEX_MODEL",
+  "cursor" => "SE_E2E_CURSOR_MODEL"
 }.freeze
 
 # Each provider publishes its live model list on a free endpoint. A
@@ -64,6 +66,20 @@ PREFLIGHTS = {
     headers: ->(key) { ["-H", "x-goog-api-key: #{key}"] }
   }
 }.freeze
+
+# Cursor publishes no free model-list endpoint, so its own CLI is the
+# preflight: `agent --list-models` prints one name per line.
+def preflight_cursor(model)
+  out, _err, status = Open3.capture3("agent", "--list-models")
+  unless status.success?
+    abort "cursor: agent --list-models failed with exit #{status.exitstatus}. " \
+      "Check the login or the CURSOR_API_KEY secret."
+  end
+  ids = out.scan(/^(\S+) - /).flatten
+  return if ids.include?(model)
+  abort "cursor: #{model} is not in the provider's list. " \
+    "Pick one and set SE_E2E_CURSOR_MODEL:\n#{ids.join("\n")}"
+end
 
 def model_for(agent)
   env = MODEL_ENV.fetch(agent)
@@ -197,6 +213,18 @@ def codex_usage(out, err)
   "#{match[1]} tokens" if match
 end
 
+def cursor_usage(out)
+  json = begin
+    JSON.parse(out)
+  rescue JSON::ParserError
+    return nil
+  end
+  return nil unless json.is_a?(Hash)
+  usage = json["usage"]
+  return nil unless usage.is_a?(Hash) && usage["inputTokens"] && usage["outputTokens"]
+  "#{usage["inputTokens"]} in / #{usage["outputTokens"]} out"
+end
+
 def run_claude
   with_retry("claude") do
     scenario("claude") do |dir, baseline|
@@ -286,7 +314,30 @@ def run_codex
   end
 end
 
-AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex}.freeze
+def run_cursor
+  with_retry("cursor") do
+    scenario("cursor") do |dir, baseline|
+      note = File.join(dir, "note.md")
+      # --approve-mcps alone does not clear headless MCP calls: each
+      # call dies with "User rejected MCP". --force allows them
+      # (verified 2026-10-07, agent 2026.10.01-e373342).
+      out, _err, status = Open3.capture3("agent",
+        "-p", "--plugin-dir", File.join(REPO, "integrations", "cursor"),
+        "--approve-mcps", "--trust", "--force",
+        "--model", model_for("cursor"),
+        "--output-format", "json", PROMPT)
+      ok = status.success? && scenario_passed?(note, baseline)
+      diagnose(note, baseline, status.success? ? nil : "exit #{status.exitstatus}") unless ok
+      [ok, cursor_usage(out)]
+    end
+  end
+end
+
+AGENTS = {"claude" => :run_claude, "pi" => :run_pi, "codex" => :run_codex, "cursor" => :run_cursor}.freeze
+
+# The scenario binary differs from the agent name only for cursor: its
+# CLI is `agent`, not `cursor`.
+BINARY = {"cursor" => "agent"}.freeze
 
 if ENV["SE_E2E_SKIP"] == "1"
   puts "SE_E2E_SKIP=1: print and exit."
@@ -296,19 +347,22 @@ end
 
 target = ARGV[0] || "all"
 agents = (target == "all") ? AGENTS.keys : [target]
-abort "usage: bin/e2e-agents <pi|claude|codex|all>" unless (agents - AGENTS.keys).empty?
+abort "usage: bin/e2e-agents <pi|claude|codex|cursor|all>" unless (agents - AGENTS.keys).empty?
 
 ran = 0
 failed = 0
 agents.each do |agent|
-  unless binary?(agent)
+  unless binary?(BINARY.fetch(agent, agent))
     puts "#{agent}: skipped (not installed)"
     next
   end
   model = model_for(agent)
-  # The Google preflight only covers the default provider.
-  unless agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"
-    preflight(agent, model)
+  if agent == "cursor"
+    preflight_cursor(model)
+  else
+    # The Google preflight only covers the default provider.
+    alt_provider = agent == "pi" && ENV["SE_E2E_PI_PROVIDER"] && ENV["SE_E2E_PI_PROVIDER"] != "google"
+    preflight(agent, model) unless alt_provider
   end
   ran += 1
   ok, attempts, usage = send(AGENTS.fetch(agent))

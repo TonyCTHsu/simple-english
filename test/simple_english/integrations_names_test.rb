@@ -35,13 +35,16 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/claude-code/skills/simple-english-lint/SKILL.md",
       "integrations/codex/skills/simple-english-lint/SKILL.md",
       "integrations/pi/skills/simple-english-lint/SKILL.md",
+      "integrations/cursor/skills/simple-english-lint/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
     ],
     # The MCP subcommand wiring.
     "se mcp" => [
       "README.md",
       "docs/DEVELOPMENT.md",
-      "integrations/codex/README.md"
+      "integrations/codex/README.md",
+      "integrations/cursor/README.md",
+      "integrations/verification.md"
     ]
   }.freeze
 

@@ -64,21 +64,22 @@ and lifecycle pages.
 
 ## codex-plugin
 
-The manifest lives at `.codex-plugin/plugin.json` inside the plugin
-root. Fields:
+Codex accepts the portable Agent Plugins format, the same one as
+Cursor. The root `plugin.json` carries the v1.0.0 `$schema`. The
+root `mcp.json` names a stdio server, and a root `skills/`
+directory holds the skills. The manifest carries no `skills` or
+`mcpServers` pointers: Codex finds the components by convention.
+OpenAI's plugin docs describe the format and keep
+`.codex-plugin/plugin.json` as a legacy compatibility fallback,
+which this plugin no longer uses.
 
-```json
-{
-  "name": "the-plugin-name",
-  "version": "0.0.0",
-  "description": "one line",
-  "skills": "./skills/",
-  "mcpServers": "./.mcp.json"
-}
-```
-
-The `.mcp.json` top-level key is `mcpServers`. The paths are relative to
-the plugin root and start with `./`.
+The install flow is unchanged. Verified 2026-10-08 with codex
+0.160.0, live, up to server registration: the local marketplace
+installs the portable manifest. `codex mcp list` shows the
+`simple-english` server running `se mcp`, with `PLUGIN_ROOT` and
+`PLUGIN_DATA` injected. The headless agent run is not yet re-run
+on the portable manifest. The earlier run (2026-10-03) confirmed
+the same server behind the legacy manifest.
 
 Local install needs a local marketplace. This repository ships one,
 under `.agents/plugins/marketplace.json`:
@@ -139,7 +140,7 @@ policy is never". Approve the plugin's server in the project's
 default_tools_approval_mode = "approve"
 ```
 
-The server name is the key in the plugin's `.mcp.json`. Check it with
+The server name is the key in the plugin's `mcp.json`. Check it with
 `codex mcp list`.
 
 Codex launches a plugin's MCP server with a filtered environment:
@@ -163,6 +164,58 @@ Two more codex 0.160.0 facts, same date:
 Source: the OpenAI plugin docs at
 `https://developers.openai.com/plugins/build/plugins` and the Codex
 non-interactive docs.
+
+## cursor
+
+Cursor supports two plugin formats. A Cursor Plugin puts its
+manifest at `.cursor-plugin/plugin.json` and covers
+Cursor-specific parts: rules, agents, commands, and hooks. An Agent
+Plugin follows the open Agent Plugins standard, v1.0.0, with its
+`plugin.json` manifest at the plugin root. The `skills/`
+directory and the root `mcp.json` complete the bundle, and
+`mcp.json` allows only `$schema` and `mcpServers` at the top level.
+The manifest is closed. Client-specific data belongs
+under `extensions`.
+
+Install happens in the Customize pane, at project or user scope.
+Local testing drops the plugin directory into
+`~/.cursor/plugins/local`, then a window reload. The Cursor
+Marketplace distributes plugins as Git repositories, manually
+reviewed, submitted through the Cursor team. Teams and Enterprise
+plans add private team marketplaces.
+
+Cursor also accepts the unwired project files. `.cursor/mcp.json`
+adds an MCP server and `.cursor/skills/` adds skills, or the same
+paths under `~/.cursor/` serve every project. A plugin installs
+both at once.
+
+The Cursor CLI, `agent`, drives the same agent headless. Its
+install script is `curl https://cursor.com/install -fsS | bash`.
+A person authenticates with `agent login`. A CI run needs
+`CURSOR_API_KEY`, but the dashboard sells that key only on a paid
+plan (checked 2026-10-07). The workflow therefore keeps the cursor
+job dispatch-only. `agent --list-models` names the models, and a
+free plan may use only `auto`.
+
+A headless run uses `-p` with `--output-format json`. `--plugin-dir`
+loads the plugin directory for one run. `--approve-mcps` alone does
+not clear MCP tool calls: each call dies with "User rejected MCP",
+and `--force` allows them. `--trust` skips the workspace prompt.
+The plugin's MCP tool reaches the agent as
+`plugin-<name>-<server>-<tool>`, and the agent reads the skill on
+its own. `agent mcp list` shows only the `mcp.json` servers, never
+a plugin's.
+
+Verified 2026-10-07 with agent 2026.10.01-e373342 in live
+sessions. The seeded scenario passed: the agent fixed the
+violations it was not asked to touch and answered clean. One run
+of four died mid-session with `RetriableError: WritableIterable
+closed` after connection retries, so the e2e leg keeps its second
+attempt.
+
+Source: the plugin docs at `https://cursor.com/docs/plugins`, the
+CLI docs at `https://cursor.com/docs/cli/overview`, and the
+specification at `https://agent-plugins.org/specification`.
 
 ## local-install
 

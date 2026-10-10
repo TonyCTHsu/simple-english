@@ -7,6 +7,7 @@ name: Agent e2e
 #   ANTHROPIC_API_KEY: the Claude Code headless runs
 #   OPENAI_API_KEY:    the Codex headless runs
 #   GOOGLE_API_KEY:    the pi headless runs (default provider)
+#   CURSOR_API_KEY:    the Cursor CLI headless runs
 #
 # GitHub shows workflow_run checks in the Actions tab only, never in
 # the commit Checks UI, so the report job posts agent-e2e commit
@@ -37,6 +38,14 @@ on:
         description: "Run the Codex scenario"
         type: boolean
         default: true
+      # Off by default: the leg needs a CURSOR_API_KEY secret, and the
+      # dashboard sells that key only on a paid plan. A dispatch run
+      # checks this box once the key exists. A chained workflow_run
+      # carries no inputs, so the job also never runs on those.
+      run_cursor:
+        description: "Run the Cursor scenario"
+        type: boolean
+        default: false
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -200,14 +209,52 @@ jobs:
           SE_E2E_CODEX_MODEL: ${{ vars.E2E_CODEX_MODEL }}
         run: bin/e2e-agents codex
 
+  cursor:
+    permissions:
+      contents: read
+    needs: build
+    # Dispatch only: a chained workflow_run runs all legs but has no
+    # inputs, which would run this leg without the paid-plan key.
+    if: github.event_name == 'workflow_dispatch' && inputs.run_cursor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      - name: Download the platform gem
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: platform-gem
+          path: dist
+
+      - name: Install the gem
+        run: gem install --no-document ./dist/simple_english-*.gem
+
+      # No npm package: the install script is the documented path, and
+      # it drops the binary in ~/.local/bin.
+      - name: Install the Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run the scenario
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          SE_E2E_CURSOR_MODEL: ${{ vars.E2E_CURSOR_MODEL }}
+        run: bin/e2e-agents cursor
+
   # A commit status is the only way a workflow_run result reaches the
   # commit Checks UI: GitHub filters workflow_run checks out of that
   # view, but plain statuses show. One context per leg (build, claude,
-  # pi, codex); a skipped leg posts nothing so the commit never claims
-  # a scenario it did not run. The agents themselves keep a read-only
-  # token; only this job can write statuses.
+  # pi, codex, cursor); a skipped leg posts nothing so the commit never
+  # claims a scenario it did not run. The agents themselves keep a
+  # read-only token; only this job can write statuses.
   report:
-    needs: [build, claude, pi, codex]
+    needs: [build, claude, pi, codex, cursor]
     # PR-triggered CI completions skip build, which skips the agents;
     # a skipped build means this run must post nothing.
     if: always() && needs.build.result != 'skipped'

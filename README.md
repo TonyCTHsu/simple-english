@@ -47,6 +47,7 @@ before you read the file.
 | pi | [pi-simple-english](integrations/pi/README.md) |
 | Claude Code | [simple-english](integrations/claude-code/README.md) |
 | Codex | [simple-english](integrations/codex/README.md) |
+| Cursor | [simple-english](integrations/cursor/README.md) |
 
 If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 

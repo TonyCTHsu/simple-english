@@ -40,6 +40,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest", "~> 6.0"
   # minitest-mock restores `Object#stub` after minitest 6 dropped it.
   spec.add_development_dependency "minitest-mock", "~> 5.27"
+  # json_schemer validates the Cursor plugin against the vendored
+  # Agent Plugins schema (draft 2020-12).
+  spec.add_development_dependency "json_schemer", "~> 2.4"
 
   # Bundled gems the suite requires under `bundle exec`: the require
   # shim refuses bundled gems that the lockfile omits.

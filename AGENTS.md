@@ -91,7 +91,9 @@ on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
   default gem in 4.x (2026-10-02). `changie` (a brew
   binary, not
   a gem) batches change fragments into `CHANGELOG.md` at release
-  time (2026-09-29). Pull requests add fragments, not changelog
+  time (2026-09-29). `json_schemer` validates the Cursor plugin
+  against the vendored Agent Plugins schema, in the contract tests
+  (2026-10-08). Pull requests add fragments, not changelog
   lines, so they never conflict.
 - `Markdown.strip` must keep the line count identical to the source. Findings cite
   original line numbers, so stripping changes must preserve them.
