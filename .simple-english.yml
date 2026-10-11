@@ -3,9 +3,17 @@
 # rules on purpose, and tmp/ holds generated build artifacts.
 # vendor/ holds the bundled gems under CI's bundler-cache.
 # .changes/ holds changie fragments that mirror the entries verbatim.
+# The write skill embeds the swap vocabulary and worked examples,
+# which break the rules on purpose, like docs/RULES.md.
 ignore:
   - test/corpus/**
   - docs/RULES.md
+  - integrations/shared/skills/write-simple-english/**
+  - integrations/claude-code/skills/write-simple-english/**
+  - integrations/codex/skills/write-simple-english/**
+  - integrations/cursor/skills/write-simple-english/**
+  - integrations/opencode/skills/write-simple-english/**
+  - integrations/pi/skills/write-simple-english/**
   - tmp/**
   - vendor/**
   - .changes/**

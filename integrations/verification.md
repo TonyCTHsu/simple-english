@@ -359,7 +359,7 @@ it.
 
 pi: `pi install npm:pi-simple-english` into a scratch agent dir
 installs the package. It lands with `extensions/se-lint.ts` and
-`skills/simple-english-lint/SKILL.md` beside `package.json`, the
+`skills/lint-simple-english/SKILL.md` beside `package.json`, the
 layout pi's loader reads. The npm path had no recorded run before
 this date. The e2e leg tests the local checkout by design, and the
 published tarball matches the dev directory.

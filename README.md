@@ -39,16 +39,16 @@ If your language is not on the list, [open an issue](https://github.com/TonyCTHs
 
 ## Agent integrations
 
-Plug the linter into your coding agent. It checks its own draft
-before you read the file.
+Plug the linter into your coding agent. It writes plain English on
+the first pass and checks its own draft before you read the file.
 
-| Coding agent | Integration |
-|---|---|
-| pi | [pi-simple-english](integrations/pi/README.md) |
-| Claude Code | [simple-english](integrations/claude-code/README.md) |
-| Codex | [simple-english](integrations/codex/README.md) |
-| Cursor | [simple-english](integrations/cursor/README.md) |
-| opencode | [simple-english](integrations/opencode/README.md) |
+| Coding agent | Ships as | Docs |
+|---|---|---|
+| pi | npm package `pi-simple-english` | [README](integrations/pi/README.md) |
+| Claude Code | plugin `simple-english` | [README](integrations/claude-code/README.md) |
+| Codex | plugin `simple-english` | [README](integrations/codex/README.md) |
+| Cursor | plugin folder `simple-english` | [README](integrations/cursor/README.md) |
+| opencode | plugin `simple-english` | [README](integrations/opencode/README.md) |
 
 If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 

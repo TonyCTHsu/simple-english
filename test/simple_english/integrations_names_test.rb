@@ -32,12 +32,12 @@ class IntegrationsNamesTest < Minitest::Test
     "se_lint" => [
       "integrations/pi/extensions/se-lint.ts",
       "integrations/pi/README.md",
-      "integrations/shared/skills/simple-english-lint/SKILL.md",
-      "integrations/claude-code/skills/simple-english-lint/SKILL.md",
-      "integrations/codex/skills/simple-english-lint/SKILL.md",
-      "integrations/pi/skills/simple-english-lint/SKILL.md",
-      "integrations/cursor/skills/simple-english-lint/SKILL.md",
-      "integrations/opencode/skills/simple-english-lint/SKILL.md",
+      "integrations/shared/skills/lint-simple-english/SKILL.md",
+      "integrations/claude-code/skills/lint-simple-english/SKILL.md",
+      "integrations/codex/skills/lint-simple-english/SKILL.md",
+      "integrations/pi/skills/lint-simple-english/SKILL.md",
+      "integrations/cursor/skills/lint-simple-english/SKILL.md",
+      "integrations/opencode/skills/lint-simple-english/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
     ],
     # The MCP subcommand wiring.
@@ -48,6 +48,48 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/cursor/README.md",
       "integrations/opencode/README.md",
       "integrations/verification.md"
+    ],
+    # The lint skill, named verb-first like the writing skill.
+    "lint-simple-english" => [
+      "bin/e2e-agents",
+      "docs/DEVELOPMENT.md",
+      "integrations/shared/skills/lint-simple-english/SKILL.md",
+      "integrations/shared/skills/write-simple-english/SKILL.md",
+      "integrations/claude-code/skills/lint-simple-english/SKILL.md",
+      "integrations/claude-code/skills/write-simple-english/SKILL.md",
+      "integrations/codex/skills/lint-simple-english/SKILL.md",
+      "integrations/codex/skills/write-simple-english/SKILL.md",
+      "integrations/cursor/skills/lint-simple-english/SKILL.md",
+      "integrations/cursor/skills/write-simple-english/SKILL.md",
+      "integrations/opencode/skills/lint-simple-english/SKILL.md",
+      "integrations/opencode/skills/write-simple-english/SKILL.md",
+      "integrations/pi/skills/lint-simple-english/SKILL.md",
+      "integrations/pi/skills/write-simple-english/SKILL.md",
+      "integrations/claude-code/README.md",
+      "integrations/codex/README.md",
+      "integrations/cursor/README.md",
+      "integrations/opencode/README.md",
+      "integrations/pi/README.md",
+      "integrations/verification.md",
+      "test/simple_english/integrations_claude_manifest_test.rb",
+      "test/simple_english/integrations_codex_test.rb",
+      "test/simple_english/integrations_cursor_test.rb",
+      "test/simple_english/integrations_pi_test.rb"
+    ],
+    # The writing-guidance skill shipped next to the lint skill.
+    "write-simple-english" => [
+      ".simple-english.yml",
+      "integrations/shared/skills/write-simple-english/SKILL.md",
+      "integrations/claude-code/skills/write-simple-english/SKILL.md",
+      "integrations/codex/skills/write-simple-english/SKILL.md",
+      "integrations/cursor/skills/write-simple-english/SKILL.md",
+      "integrations/opencode/skills/write-simple-english/SKILL.md",
+      "integrations/pi/skills/write-simple-english/SKILL.md",
+      "integrations/claude-code/README.md",
+      "integrations/codex/README.md",
+      "integrations/cursor/README.md",
+      "integrations/opencode/README.md",
+      "integrations/pi/README.md"
     ]
   }.freeze
 

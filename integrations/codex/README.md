@@ -4,10 +4,11 @@ A Codex plugin that lints the prose the agent writes.
 
 ## What it does
 
-The plugin ships the `simple-english-lint` skill and an MCP server.
+The plugin ships the `lint-simple-english` skill and an MCP server.
 The server runs `se mcp` from the gem. The skill tells the agent to
 call the `lint` tool on the `simple-english` server and fix every
-finding.
+finding. The `write-simple-english` skill carries the rules
+themselves, so the agent writes clean prose the first time.
 
 ## Prerequisites
 

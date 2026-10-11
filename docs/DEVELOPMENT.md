@@ -133,7 +133,7 @@ Agent Plugins: the same portable manifest, wired to each agent's
 install flow. `opencode/` has no plugin unit: the README holds config
 snippets, and the user pastes them into `opencode.json` and
 `.opencode/skills/`.
-`integrations/shared/skills/simple-english-lint/SKILL.md` holds the skill all
+`integrations/shared/skills/lint-simple-english/SKILL.md` holds the skill all
 five share, and `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo
 root lists the Claude Code plugin, and the adapters ship nothing. Try
