@@ -12,8 +12,8 @@ require_relative "test_helper"
 class IntegrationsNamesTest < Minitest::Test
   SELF = "test/simple_english/integrations_names_test.rb"
 
-  # The pi harness installs pi packages into .pi/, and those files
-  # name the audited packages by definition. Like node_modules, it is
+  # pi writes its package state into .pi/, and those files name
+  # the audited packages by definition. Like node_modules, it is
   # generated state, not source.
   EXCLUDED_DIRS = [".git", ".pi", ".superpowers", "node_modules", "tmp", ".changes", "docs/superpowers"].freeze
   # Generated history. `changie batch` folds fragment bodies (which name
