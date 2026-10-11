@@ -33,8 +33,7 @@ the agent corrects its own text.
 
 The linter covers Markdown prose plus code comments in Python, Ruby,
 JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
-YAML. Any other file type is skipped, whether passed singly or
-through a directory. Findings print as plain text, JSON, or SARIF.
+YAML. Findings print as plain text, JSON, or SARIF.
 
 If your language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
