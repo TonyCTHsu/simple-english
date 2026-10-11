@@ -28,11 +28,21 @@ module SimpleEnglish
       ".h" => "cpp"
     }.freeze
 
+    PROSE_EXTENSIONS = [".md"].freeze
+
     module_function
 
     # nil for files we do not lint.
     def language_for(path)
       EXTENSION_LANGUAGES[File.extname(path)]
+    end
+
+    # true when the path is a file this linter owns: Markdown, stdin,
+    # or a supported code language. Everything else is skipped, so a
+    # single explicit path behaves like directory expansion (cli.rb).
+    def lintable?(path)
+      path == "-" || PROSE_EXTENSIONS.include?(File.extname(path)) ||
+        !EXTENSION_LANGUAGES[File.extname(path)].nil?
     end
 
     def comment_spans(source, language)

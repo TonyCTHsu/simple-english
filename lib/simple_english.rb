@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 # Lint Markdown prose with the SimpleEnglish Plain-mode rules.
-# Pattern rules run on LanguageTool. Counting rules run here.
 # This file is the composition root. The pieces live in lib/simple_english/.
 
 require_relative "simple_english/version"
@@ -37,9 +36,11 @@ module SimpleEnglish
 
   # One entry point for files. LintPlan decides what kind of lint
   # this is. Both tiers share it, so they cannot drift. Code files
-  # lint comments through the daemon. nil means unreachable:
-  # the caller decides how fatal that is.
+  # lint comments through the daemon. File types the linter does not
+  # own are skipped up front: an unknown extension is not prose.
+  # nil means unreachable: the caller decides how fatal that is.
   def lint_file(path, text = File.read(path))
+    return [] unless Extractor.lintable?(path)
     language = Extractor.language_for(path)
     plan = LintPlan.call(text, language)
     return [] if plan.nil?
