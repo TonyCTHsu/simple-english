@@ -16,6 +16,12 @@ class LintFileUnsupportedTest < Minitest::Test
     end
   end
 
+  def test_unsupported_file_is_never_read_from_disk
+    # The gate runs before the read: this path does not exist, so a
+    # read-first order raises here.
+    assert_empty SimpleEnglish.lint_file("missing.bin")
+  end
+
   def test_markdown_and_stdin_still_lint
     with_env("SE_SERVER_URL" => "http://localhost:1") do
       _out, err = capture_io do
