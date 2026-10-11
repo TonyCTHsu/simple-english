@@ -85,11 +85,21 @@ class IntegrationsHookTest < Minitest::Test
     end
   end
 
-  def test_non_markdown_file_is_ignored
-    stub_se(1, '[{"path":"x.py","line":1,"column":1,"rule":"R","message":"m"}]') do |stub|
-      out, code = hook(payload_for(md_file("note.py")), {"SE_BIN" => stub})
+  def test_file_we_do_not_lint_is_ignored
+    stub_se(0, "") do |stub|
+      out, code = hook(payload_for(md_file("note.bin")), {"SE_BIN" => stub})
       assert_equal 0, code
       assert_equal "", out
+    end
+  end
+
+  def test_python_comment_findings_feed_back
+    stub_se(1, "code.py:1:12-26: [SE_ACTIVE_VOICE] Use the active voice.") do |stub|
+      out, code = hook(payload_for(md_file("code.py")), {"SE_BIN" => stub})
+      assert_equal 0, code
+      context = JSON.parse(out).dig("hookSpecificOutput", "additionalContext")
+      assert_includes context, "code.py:1:12-26"
+      assert_includes context, "1 lint finding"
     end
   end
 
