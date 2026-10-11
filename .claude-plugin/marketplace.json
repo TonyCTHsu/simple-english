@@ -8,7 +8,7 @@
     {
       "name": "simple-english",
       "source": "./integrations/claude-code",
-      "description": "Lint Markdown prose with the plain-English rules, with a hook that feeds findings back after every edit."
+      "description": "Lint Markdown prose and code comments with the plain-English rules, with a hook that feeds findings back after every edit."
     }
   ]
 }
