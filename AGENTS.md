@@ -1,7 +1,7 @@
 # simple_english
 
-Lint Markdown prose with the SimpleEnglish Plain-mode rules. Pattern rules run
-on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
+Lint Markdown prose and code comments with the SimpleEnglish Plain-mode rules. Pattern
+rules run on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ruby.
 
 ## Docs
 

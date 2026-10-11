@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-# Lint Markdown prose with the SimpleEnglish Plain-mode rules.
+# Lint Markdown prose and code comments with the SimpleEnglish
+# Plain-mode rules. Pattern rules run on LanguageTool. Counting rules
+# run here.
 # This file is the composition root. The pieces live in lib/simple_english/.
 
 require_relative "simple_english/version"
