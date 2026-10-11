@@ -46,7 +46,7 @@ class ServerPortGuardTest < Minitest::Test
       rescue Errno::EADDRINUSE
         next
       end
-      # The guard probes both families; a one-family bind here passes
+      # The guard probes both families. A one-family bind here passes
       # while the other family still holds the port.
       next unless SimpleEnglish::Server.port_free?(port - 1)
       fake_install do |install|
