@@ -1,20 +1,35 @@
-# simple_english for `pi`
+# simple-english for `pi`
 
 > Write for human, not for agent.
 
-A skill or a prompt teaches an agent plain-English prose. It writes
-clean prose in the first paragraph and slop again by the third.
-This package keeps pi honest: a tool reads what the agent wrote and
-names every broken rule. The skills send the findings back, and the
-agent corrects its own text.
+You can teach an agent plain-English prose with a skill or a
+prompt. It writes clean prose in the first paragraph and slop again
+by the third. This linter keeps the agent honest: it reads what the
+agent wrote and names every broken rule. Send the findings back, and
+the agent corrects its own text.
 
-Before:
+<table>
+<tr>
+<th width="50%">Before</th>
+<th width="50%">After</th>
+</tr>
+<tr>
+<td valign="top">
 
 > Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime. <!-- se: ignore -->
 
-After:
+</td>
+<td valign="top">
 
 > The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime.
+
+</td>
+</tr>
+</table>
+
+The linter covers Markdown prose plus code comments in Python, Ruby,
+JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
+YAML.
 
 ## What it checks
 
