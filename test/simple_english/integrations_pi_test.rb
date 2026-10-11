@@ -36,6 +36,11 @@ class IntegrationsPiTest < Minitest::Test
     assert_includes source, "se_lint"
   end
 
+  def test_extension_enforces_the_lint_after_edits
+    source = File.read(File.join(ROOT, "extensions", "se-lint.ts"))
+    assert_includes source, 'pi.on("tool_result"'
+  end
+
   def test_vendored_skill_names_the_pi_tool
     skill = File.read(File.join(ROOT, "skills", "lint-simple-english", "SKILL.md"))
     assert_includes skill, "se_lint"

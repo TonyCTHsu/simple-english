@@ -1,18 +1,85 @@
 /**
  * se_lint - lint Markdown prose and code comments with simple_english.
  *
- * Shells out to the `se` CLI. Assumes the gem is installed; on a
- * missing binary the tool fails with install steps.
+ * Two layers. The se_lint tool lints on demand. Enforcement runs the
+ * same lint after every edit or write and appends the findings to the
+ * tool result, so the agent sees them in the turn that made them. It
+ * never blocks the edit. The contract mirrors the claude-code hook in
+ * integrations/claude-code/hooks/lint.sh: a clean file stays silent,
+ * a failed lint says so instead of reading as clean, and a missing
+ * binary names the install step.
  */
 
 import { execFile } from "node:child_process";
 import { Type } from "typebox";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type {
+	AgentToolResult,
+	ExtensionAPI,
+	ToolResultEvent,
+	ToolResultEventResult,
+} from "@earendil-works/pi-coding-agent";
 
 const OUTPUT_LIMIT = 4000;
 // ponytail: 120s allows a cold daemon boot (LanguageTool + JVM). If that
 // ever proves slow in practice, cut to 30s and pre-warm via `se serve`.
 const TIMEOUT_MS = 120_000;
+
+interface SeResult {
+	stdout: string;
+	code: number;
+}
+
+interface SeDetails {
+	path: string;
+	exitCode: number;
+	findings: number;
+	full?: string;
+}
+
+function seLint(path: string, signal?: AbortSignal): Promise<SeResult> {
+	return new Promise((resolve, reject) => {
+		execFile(
+			"se",
+			["lint", path],
+			{ timeout: TIMEOUT_MS, maxBuffer: 1024 * 1024, signal },
+			(error, stdout) => {
+				if (error && typeof error.code !== "number") {
+					reject(error);
+					return;
+				}
+				resolve({ stdout, code: (error?.code as number | undefined) ?? 0 });
+			},
+		);
+	});
+}
+
+// The feedback appended to an edit or write result. undefined means
+// clean: nothing is appended, so a clean edit reads as a clean edit.
+async function lintFeedback(path: string): Promise<string | undefined> {
+	let result: SeResult;
+	try {
+		result = await seLint(path);
+	} catch (err) {
+		const e = err as NodeJS.ErrnoException;
+		if (e.code === "ENOENT") {
+			return "`se` is not installed, so the file was not linted. Install it first: `gem install simple_english`, then retry.";
+		}
+		return `se lint failed, so the file was not linted. Run \`se lint ${path}\` to see the error.`;
+	}
+	if (result.code >= 2) {
+		return `se exited ${result.code} and the file was not linted. Run \`se lint ${path}\` to see the error.`;
+	}
+	const full = result.stdout.trim();
+	if (result.code === 0 || !full) {
+		return undefined;
+	}
+	const findings = full.split("\n").length;
+	const text =
+		full.length > OUTPUT_LIMIT
+			? `${full.slice(0, OUTPUT_LIMIT)}\n... truncated (${full.length} chars, ${findings} findings). Full output: run \`se lint ${path}\` with bash.`
+			: full;
+	return `se found ${findings} lint finding(s) in ${path}. Fix them, then lint again:\n${text}`;
+}
 
 export default function (pi: ExtensionAPI) {
 	pi.registerTool({
@@ -28,24 +95,11 @@ export default function (pi: ExtensionAPI) {
 			path: Type.String({ description: "File or directory to lint, relative to the CWD or absolute" }),
 		}),
 
-		async execute(_toolCallId, params, signal) {
+		async execute(_toolCallId, params, signal): Promise<AgentToolResult<SeDetails>> {
 			let stdout: string;
 			let code: number;
 			try {
-				({ stdout, code } = await new Promise<{ stdout: string; code: number }>((resolve, reject) => {
-					execFile(
-						"se",
-						["lint", params.path],
-						{ timeout: TIMEOUT_MS, maxBuffer: 1024 * 1024, signal },
-						(error, out) => {
-							if (error && typeof error.code !== "number") {
-								reject(error);
-								return;
-							}
-							resolve({ stdout: out, code: (error?.code as number | undefined) ?? 0 });
-						},
-					);
-				}));
+				({ stdout, code } = await seLint(params.path, signal));
 			} catch (err) {
 				const e = err as NodeJS.ErrnoException;
 				if (e.code === "ENOENT") {
@@ -64,7 +118,7 @@ export default function (pi: ExtensionAPI) {
 			if (!full) {
 				return {
 					content: [{ type: "text" as const, text: `clean: no findings in ${params.path}` }],
-					details: { path: params.path, exitCode: code, findings: 0 },
+					details: { path: params.path, exitCode: code, findings: 0, full: undefined },
 				};
 			}
 
@@ -78,5 +132,16 @@ export default function (pi: ExtensionAPI) {
 				details: { path: params.path, exitCode: code, findings, full },
 			};
 		},
+	});
+
+	pi.on("tool_result", async (event: ToolResultEvent): Promise<ToolResultEventResult | undefined> => {
+		if (event.toolName !== "edit" && event.toolName !== "write") return;
+		// A failed edit wrote nothing: there is nothing to lint.
+		if (event.isError) return;
+		const path = event.input.path;
+		if (typeof path !== "string" || path === "") return;
+		const feedback = await lintFeedback(path);
+		if (!feedback) return;
+		return { content: [...event.content, { type: "text" as const, text: feedback }] };
 	});
 }

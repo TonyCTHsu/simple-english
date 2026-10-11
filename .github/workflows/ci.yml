@@ -84,6 +84,9 @@ jobs:
           se .
           SE_BIN=se bin/lint-fragments
 
+      - name: Smoke the pi edit-time enforcement
+        run: bin/pi-enforcement-smoke
+
       - name: Validate changie fragments
         shell: bash
         # changie next auto reads every fragment and fails on invalid YAML,
