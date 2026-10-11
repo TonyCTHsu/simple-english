@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ["3.3", "3.4", "4.0"]
-        os: [ubuntu-24.04, macos-15]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -75,6 +75,14 @@ jobs:
 
       - name: Install changie
         uses: ./.github/actions/install-changie
+
+      - name: Lint the repo's prose and the fragment bodies
+        # The released platform gem ships the lint engine, so this
+        # needs no native build. Rules drift only between releases.
+        run: |
+          gem install --no-document simple_english
+          se .
+          SE_BIN=se bin/lint-fragments
 
       - name: Validate changie fragments
         shell: bash

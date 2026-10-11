@@ -1,6 +1,6 @@
 # Agent verification facts
 
-Recorded 2026-10-02 against the live docs and one live Claude Code
+Recorded 2026-10-02 against the live docs and one live `claude-code`
 session. The fixture `test/fixtures/claude_code/post_tool_use.json` comes
 from that session, with the paths replaced by generic ones.
 
@@ -29,12 +29,12 @@ Feedback: exit 0 and print one JSON object on stdout.
 }
 ```
 
-Claude sees `additionalContext` as a system reminder on its next
-request. Exit code 2 is the blocking path. It shows stderr to Claude as
+The agent sees `additionalContext` as a system reminder on its next
+request. Exit code 2 is the blocking path. It shows stderr to the agent as
 an error. We use exit 0 plus `additionalContext`, the documented clean
 path for PostToolUse.
 
-Source: the Claude Code hooks reference at
+Source: the `claude-code` hooks reference at
 `https://docs.anthropic.com/en/docs/claude-code/hooks`, plus the
 captured session.
 
@@ -64,11 +64,11 @@ and lifecycle pages.
 
 ## codex-plugin
 
-Codex accepts the portable Agent Plugins format, the same one as
-Cursor. The root `plugin.json` carries the v1.0.0 `$schema`. The
+`codex` accepts the portable Agent Plugins format, the same one as
+`cursor`. The root `plugin.json` carries the v1.0.0 `$schema`. The
 root `mcp.json` names a stdio server, and a root `skills/`
 directory holds the skills. The manifest carries no `skills` or
-`mcpServers` pointers: Codex finds the components by convention.
+`mcpServers` pointers: `codex` finds the components by convention.
 OpenAI's plugin docs describe the format and keep
 `.codex-plugin/plugin.json` as a legacy compatibility fallback,
 which this plugin no longer uses.
@@ -143,7 +143,7 @@ default_tools_approval_mode = "approve"
 The server name is the key in the plugin's `mcp.json`. Check it with
 `codex mcp list`.
 
-Codex launches a plugin's MCP server with a filtered environment:
+`codex` launches a plugin's MCP server with a filtered environment:
 `GEM_HOME` and `GEM_PATH` do not reach the child. So a gem-installed
 `se` must live where its binstub finds it without those variables.
 Otherwise the server dies inside rubygems before it answers, and
@@ -162,14 +162,14 @@ Two more codex 0.160.0 facts, same date:
    `tools.mcp__simple-english__lint`.
 
 Source: the OpenAI plugin docs at
-`https://developers.openai.com/plugins/build/plugins` and the Codex
+`https://developers.openai.com/plugins/build/plugins` and the `codex`
 non-interactive docs.
 
 ## cursor
 
-Cursor supports two plugin formats. A Cursor Plugin puts its
+`cursor` supports two plugin formats. A `cursor` Plugin puts its
 manifest at `.cursor-plugin/plugin.json` and covers
-Cursor-specific parts: rules, agents, commands, and hooks. An Agent
+`cursor`-specific parts: rules, agents, commands, and hooks. An Agent
 Plugin follows the open Agent Plugins standard, v1.0.0, with its
 `plugin.json` manifest at the plugin root. The `skills/`
 directory and the root `mcp.json` complete the bundle, and
@@ -179,17 +179,17 @@ under `extensions`.
 
 Install happens in the Customize pane, at project or user scope.
 Local testing drops the plugin directory into
-`~/.cursor/plugins/local`, then a window reload. The Cursor
+`~/.cursor/plugins/local`, then a window reload. The `cursor`
 Marketplace distributes plugins as Git repositories, manually
-reviewed, submitted through the Cursor team. Teams and Enterprise
+reviewed, submitted through the `cursor` team. Teams and Enterprise
 plans add private team marketplaces.
 
-Cursor also accepts the unwired project files. `.cursor/mcp.json`
+`cursor` also accepts the unwired project files. `.cursor/mcp.json`
 adds an MCP server and `.cursor/skills/` adds skills, or the same
 paths under `~/.cursor/` serve every project. A plugin installs
 both at once.
 
-The Cursor CLI, `agent`, drives the same agent headless. Its
+The `cursor` CLI, `agent`, drives the same agent headless. Its
 install script is `curl https://cursor.com/install -fsS | bash`.
 A person authenticates with `agent login`. A CI run needs
 `CURSOR_API_KEY`, but the dashboard sells that key only on a paid
@@ -217,10 +217,10 @@ Source: the plugin docs at `https://cursor.com/docs/plugins`, the
 CLI docs at `https://cursor.com/docs/cli/overview`, and the
 specification at `https://agent-plugins.org/specification`.
 
-## opencode
+## `opencode`
 
-opencode has no Agent Plugins support (open feature request,
-anomalyco/opencode#40993). The integration is config wiring: an
+`opencode` has no Agent Plugins support (open feature request,
+`anomalyco/opencode#40993`). The integration is config wiring: an
 `mcp` block in the project's `opencode.json`, and the skill under
 `.opencode/skills/`. A local MCP server takes `type: "local"` and
 `command` as an array. MCP tools are permission-keyed
@@ -239,17 +239,17 @@ with ProviderAuthError naming the variable. `opencode mcp list`
 confirms a project's config, and the MCP tool reaches the model as
 `simple-english_lint`.
 
-The e2e leg passed 2026-10-10 with opencode 1.18.35 and
+The e2e leg passed 2026-10-10 with `opencode` 1.18.35 and
 `openai/gpt-6-luna`, pass on attempt 2. `google/gemini-3.1-flash-lite`
 called the lint tool but did not fix the findings, so it fails the
-gate. Weak models are the first suspect on a red opencode leg.
+gate. Weak models are the first suspect on a red `opencode` leg.
 
-Source: the opencode docs at `https://docs.opencode.ai/docs/config`,
+Source: the `opencode` docs at `https://docs.opencode.ai/docs/config`,
 the tools and MCP pages, and the runs named above.
 
 ## local-install
 
-Claude Code offers two local paths. Development loads the plugin root
+`claude-code` offers two local paths. Development loads the plugin root
 directly:
 
 ```bash
@@ -264,30 +264,30 @@ claude plugin marketplace add /path/to/marketplace-root
 claude plugin install name@marketplace
 ```
 
-The pi package loads from a local directory path listed in the `packages`
-array of the pi settings. Superpowers shows the shape: a directory with
+The `pi` package loads from a local directory path listed in the `packages`
+array of the `pi` settings. Superpowers shows the shape: a directory with
 `package.json` carrying a `pi` block.
 
-Codex installs from a local marketplace, as the codex-plugin section
+`codex` installs from a local marketplace, as the codex-plugin section
 records.
 
 ## headless
 
-Claude Code runs headless with `-p`. Use
+`claude-code` runs headless with `-p`. Use
 `--permission-mode acceptEdits` so file edits need no person:
 
 ```bash
 claude -p --permission-mode acceptEdits "the prompt"
 ```
 
-Codex runs headless with `exec`. Use `--sandbox workspace-write` when
+`codex` runs headless with `exec`. Use `--sandbox workspace-write` when
 the run edits files:
 
 ```bash
 codex exec --sandbox workspace-write "the prompt"
 ```
 
-pi runs headless with `-p`. Add `-a` to auto-approve tool calls:
+`pi` runs headless with `-p`. Add `-a` to auto-approve tool calls:
 
 ```bash
 pi -a -p "the prompt"
@@ -298,7 +298,7 @@ All three print the final answer on stdout.
 ## pi-git-install
 
 Live-tested 2026-10-02 with `pi install git:github.com/TonyCTHsu/simple-english@<branch>`
-into a scratch config dir, then read from pi's package manager source.
+into a scratch config dir, then read from `pi`'s package manager source.
 
 Pi clones the repo, then collects package resources from the clone
 root only. It reads `package.json` at the clone root. It also reads
@@ -307,14 +307,14 @@ never searches subdirectories. This repo keeps `package.json` in
 `integrations/pi/`. So a git install of this repo reports success and
 loads nothing.
 
-Two consequences, both release decisions, not bugs in pi:
+Two consequences, both release decisions, not bugs in `pi`:
 
-1. The pi package installs from a local path today
+1. The `pi` package installs from a local path today
    (`pi install ./integrations/pi`, from a full checkout) or from npm
    once published. It cannot be git-installed from this repo as laid
    out.
 2. Skills are vendored into each adapter dir since 2026-10-03. The
-   pi package names `./skills`, inside its own root, so `npm pack`
+   `pi` package names `./skills`, inside its own root, so `npm pack`
    carries it. An earlier symlink to `../shared/skills` dangled in any
    install that copied a package dir alone. A test now pins every
    vendored copy to the shared skill.
@@ -325,7 +325,7 @@ Recorded 2026-10-11 on macOS. Every integration README's install
 instructions ran as written, against the released gem 0.6.0 from
 RubyGems and the published npm package 0.6.0. Each run used an
 isolated home: scratch `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, and
-`PI_CODING_AGENT_DIR`, a redirected `HOME` for the Cursor copy, and a
+`PI_CODING_AGENT_DIR`, a redirected `HOME` for the `cursor` copy, and a
 temporary project directory for opencode. No real agent config was
 touched. The e2e workflow stays the functional gate. This walkthrough
 checks that the written instructions work.
@@ -351,15 +351,15 @@ Customize check are GUI steps, so they stay manual. The cursor CLI
 was not installed on this host, so its headless path did not run
 here either.
 
-opencode: the README's `opencode.json` block plus the skill copy into
+`opencode`: the README's `opencode.json` block plus the skill copy into
 `.opencode/skills/`. `opencode mcp list` reports simple-english
 connected. The server runs `se mcp`. The README does not mention the
 `permission` allow block that headless runs need. The e2e leg writes
 it.
 
-pi: `pi install npm:pi-simple-english` into a scratch agent dir
+`pi`: `pi install npm:pi-simple-english` into a scratch agent dir
 installs the package. It lands with `extensions/se-lint.ts` and
 `skills/lint-simple-english/SKILL.md` beside `package.json`, the
-layout pi's loader reads. The npm path had no recorded run before
+layout `pi`'s loader reads. The npm path had no recorded run before
 this date. The e2e leg tests the local checkout by design, and the
 published tarball matches the dev directory.

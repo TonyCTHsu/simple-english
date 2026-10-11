@@ -1,6 +1,6 @@
-# simple-english for Codex
+# simple-english for `codex`
 
-A Codex plugin that lints the prose the agent writes.
+A `codex` plugin that lints the prose the agent writes.
 
 ## What it does
 
@@ -27,7 +27,7 @@ codex plugin marketplace add TonyCTHsu/simple-english
 codex plugin add simple-english@simple-english
 ```
 
-Codex holds plugin enablement in global state, so there is no
+`codex` holds plugin enablement in global state, so there is no
 project-scope install. The project-level piece is the approval. MCP
 tool calls need approval by default. Put this in the project's
 `.codex/config.toml` and commit it, so every teammate starts with the

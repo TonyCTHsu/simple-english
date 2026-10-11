@@ -1,12 +1,12 @@
-# simple-english for Claude Code
+# simple-english for `claude-code`
 
-A Claude Code plugin that lints the prose Claude writes.
+A `claude-code` plugin that lints the prose the agent writes.
 
 ## What it does
 
 A PostToolUse hook runs after every file write or edit. It lints the
-edited file with `se lint` and feeds the findings back to Claude, so
-Claude fixes them in its next turn. The plugin also ships the
+edited file with `se lint` and feeds the findings back to the agent, so
+the agent fixes them in its next turn. The plugin also ships the
 `lint-simple-english` skill and a `/simple-english:lint` command. The
 `write-simple-english` skill carries the rules themselves, so Claude
 writes clean prose the first time.

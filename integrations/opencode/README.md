@@ -1,11 +1,11 @@
-# simple-english for opencode
+# simple-english for `opencode`
 
-An opencode integration that lints the prose the agent writes.
+An `opencode` integration that lints the prose the agent writes.
 
 ## What it does
 
-opencode has no Agent Plugins support, so this is not a plugin
-bundle. The integration wires the two parts opencode does support. The
+`opencode` has no Agent Plugins support, so this is not a plugin
+bundle. The integration wires the two parts `opencode` does support. The
 `simple-english` MCP server runs `se mcp` from the gem. The
 `lint-simple-english` skill tells the agent to call the `lint` tool
 and fix every finding. The `write-simple-english` skill carries the

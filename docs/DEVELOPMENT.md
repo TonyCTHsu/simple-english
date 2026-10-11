@@ -136,20 +136,20 @@ snippets, and the user pastes them into `opencode.json` and
 `integrations/shared/skills/lint-simple-english/SKILL.md` holds the skill all
 five share, and `integrations/verification.md` records the agent facts
 the adapters rely on. `.claude-plugin/marketplace.json` at the repo
-root lists the Claude Code plugin, and the adapters ship nothing. Try
+root lists the `claude-code` plugin, and the adapters ship nothing. Try
 them
 from local paths:
 
-- pi: `pi install <repo>/integrations/pi -l`
-- Claude Code: `claude --plugin-dir <repo>/integrations/claude-code`
-- Codex: `codex plugin marketplace add TonyCTHsu/simple-english`, or a
+- `pi`: `pi install <repo>/integrations/pi -l`
+- `claude-code`: `claude --plugin-dir <repo>/integrations/claude-code`
+- `codex`: `codex plugin marketplace add TonyCTHsu/simple-english`, or a
   local marketplace, per `integrations/verification.md`
-- Cursor: copy `integrations/cursor` into
+- `cursor`: copy `integrations/cursor` into
   `~/.cursor/plugins/local`
-- opencode: paste the `mcp` block from `integrations/opencode/README.md`
+- `opencode`: paste the `mcp` block from `integrations/opencode/README.md`
   into `opencode.json`, and copy its skill dir into `.opencode/skills/`
 
-`se mcp` runs the MCP server behind the Codex plugin. Any MCP client
+`se mcp` runs the MCP server behind the `codex` plugin. Any MCP client
 can use it.
 
 Testing has two layers. Layer 1 runs in the unit suite
