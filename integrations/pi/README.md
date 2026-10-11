@@ -1,11 +1,38 @@
-# simple-english for `pi`
+# simple_english for `pi`
 
-Lint the prose your pi agent writes. The package wires the
-simple_english rules into pi as one tool and two skills.
+> Write for human, not for agent.
+
+A skill or a prompt teaches an agent plain-English prose. It writes
+clean prose in the first paragraph and slop again by the third.
+This package keeps pi honest: a tool reads what the agent wrote and
+names every broken rule. The skills send the findings back, and the
+agent corrects its own text.
+
+Before:
+
+> Your API keys are rotated by the service every 90 days — you will need to update them if you get a 401; don't panic, simply re-run the setup command, which regenerates the credentials without any downtime. <!-- se: ignore -->
+
+After:
+
+> The service rotates your API keys every 90 days. If you get a 401, update them. Do not panic. Re-run the setup command. It regenerates the credentials without any downtime.
+
+## What it checks
+
+- **Voice:** say who does the action.
+- **Tense:** simple tenses only, no present perfect.
+- **Modals:** `can`, `will`, `must` only.
+- **Punctuation:** no em-dashes, no semicolons.
+- **Contractions:** write every word in full.
+- **Sentence shape:** condition before command, no `-ing` phrase after a comma.
+- **Word choice:** about 50 substitution rules, from `leverage` to `in conclusion`.
+- **Counts:** 20 words per sentence in list items, 25 in paragraphs, six sentences per paragraph at most.
+
+It lints Markdown prose plus code comments in Python, Ruby,
+JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
+YAML. The full list, with a wrong and a right example for each rule,
+is [docs/RULES.md](https://github.com/TonyCTHsu/simple-english/blob/master/docs/RULES.md).
 
 ## Install
-
-Install the adapter:
 
 ```bash
 pi install npm:pi-simple-english
