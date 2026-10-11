@@ -68,16 +68,16 @@ The full list, with a wrong and a right example for each rule [docs/RULES.md](do
 
 ## Install
 
-### Homebrew (macOS arm64)
-
-```bash
-brew install TonyCTHsu/tap/simple-english
-```
-
 ### Ruby gem (macOS arm64, Linux x86-64 and arm64)
 
 ```bash
 gem install simple_english
+```
+
+### Homebrew (macOS arm64)
+
+```bash
+brew install TonyCTHsu/tap/simple-english
 ```
 
 ### Container
@@ -190,10 +190,6 @@ In a code comment:
 ```
 
 ## FAQ
-
-### Have you thought about an agent skill?
-
-This project takes its idea from [SimpleEnglish](https://github.com/AminBlg/SimpleEnglish). If you like, use both: the skill helps the first draft, and the linter catches what the agent missed.
 
 ### Why not Vale?
 

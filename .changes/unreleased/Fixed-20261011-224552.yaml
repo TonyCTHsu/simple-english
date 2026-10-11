@@ -1,3 +1,0 @@
-kind: Fixed
-body: Skip unknown file types in single-file lint instead of linting them as prose. This matches directory mode.
-time: 2026-10-11T22:45:52.666355+02:00

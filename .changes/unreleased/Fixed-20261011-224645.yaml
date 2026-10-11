@@ -1,3 +1,0 @@
-kind: Fixed
-body: Fix code-comment linting in `claude-code` hook.
-time: 2026-10-11T22:46:45.279471+02:00

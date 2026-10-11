@@ -1,12 +1,30 @@
 # Changelog
 
+## [0.7.0] - 2026-10-11
+
+### Added
+
+- Add `cursor` plugin.
+- Add `opencode` integration.
+- Add `write-simple-english` skill to every agent integration. It carries the plain-English rules for the first pass.
+
+### Changed
+
+- Rename the lint skill to `lint-simple-english`.
+- Migrate `codex` plugin to the portable Agent Plugins format.
+
+### Fixed
+
+- Skip unknown file types in single-file lint instead of linting them as prose. This matches directory mode.
+- Fix code-comment linting in `claude-code` hook.
+
 ## [0.6.0] - 2026-10-06
 
 ### Added
 
-- Add `pi-simple-english` `pi` package.
-- Add `claude-code` plugin.
-- Add `codex` plugin.
+- Add `pi-simple-english` pi package.
+- Add Claude Code plugin.
+- Add Codex plugin.
 
 ### Changed
 

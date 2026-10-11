@@ -34,19 +34,21 @@ class ServerPortGuardTest < Minitest::Test
   end
 
   def test_serve_refuses_occupied_inner_port
-    # Find a free port whose predecessor is also free, then block the
-    # port so start() sees port + 1 occupied and raises before booting.
+    # Find a port whose predecessor is free on both loopback families,
+    # then block the port so start() sees port + 1 occupied and raises
+    # before booting.
     50.times do
       probe = TCPServer.new("localhost", 0)
       port = probe.addr[1]
       probe.close
       begin
-        outer = TCPServer.new("localhost", port - 1)
+        blocker = TCPServer.new("localhost", port)
       rescue Errno::EADDRINUSE
         next
       end
-      outer.close
-      blocker = TCPServer.new("localhost", port)
+      # The guard probes both families. A one-family bind here passes
+      # while the other family still holds the port.
+      next unless SimpleEnglish::Server.port_free?(port - 1)
       fake_install do |install|
         error = assert_raises(SimpleEnglish::Server::PortInUse) do
           SimpleEnglish::Server.start(port: port - 1, install: install)
