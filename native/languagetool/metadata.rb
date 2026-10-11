@@ -3,7 +3,6 @@
 
 require "fileutils"
 require "json"
-require "pathname"
 require "rbconfig"
 
 require_relative "build"
