@@ -4,6 +4,9 @@
 require "fileutils"
 require "json"
 require "net/http"
+# Ruby 4.0 loads pathname at boot; 3.3 does not. The guard keeps
+# the require a no-op on 4.0 while CI's 3.3 still needs it.
+require "pathname" unless defined?(Pathname) # standard:disable Lint/RedundantRequireStatement -- 4.0 flags it, 3.3 needs it
 require "socket"
 require "tempfile"
 require "uri"
