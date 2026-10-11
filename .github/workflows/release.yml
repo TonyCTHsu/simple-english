@@ -227,6 +227,49 @@ jobs:
           npm version "$VERSION" --no-git-tag-version --allow-same-version
           npm publish
 
+  # The gem job verifies the published gem from RubyGems. This leg
+  # does the same for the npm package: it installs the exact released
+  # version and runs the live pi scenario against it, so the artifact
+  # users install is the artifact that was tested.
+  npm-e2e:
+    needs: [release, gem, npm]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.3"
+
+      # The pi package is a thin adapter: its tool calls the se CLI,
+      # which ships in the released gem.
+      - name: Install the released gem
+        run: gem install --no-document simple_english
+
+      - name: Install pi
+        run: npm install -g @earendil-works/pi-coding-agent@1.0.1
+
+      - name: Wait for the npm package
+        run: |
+          for _ in $(seq 1 12); do
+            npm view "pi-simple-english@${VERSION}" version >/dev/null 2>&1 && exit 0
+            sleep 10
+          done
+          echo "pi-simple-english@${VERSION} never appeared on the registry" >&2
+          exit 1
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+
+      - name: Run the pi scenario on the published package
+        env:
+          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          SE_E2E_PI_MODEL: ${{ vars.E2E_PI_MODEL }}
+          SE_E2E_PI_SOURCE: npm:pi-simple-english@${{ needs.release.outputs.version }}
+        run: ruby bin/e2e-agents pi
+
   tap:
     needs: gem
     runs-on: ubuntu-24.04
