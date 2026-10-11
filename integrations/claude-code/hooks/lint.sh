@@ -40,8 +40,11 @@ file_path="$(printf '%s' "$payload" | ruby -rjson -e '
 
 [ -n "${file_path:-}" ] || exit 0
 
+# The extensions mirror Extractor::EXTENSION_LANGUAGES in the gem.
+# Keep the two in sync.
 case "$file_path" in
-  *.md) ;;
+  *.md|*.py|*.rb|*.js|*.mjs|*.ts|*.yaml|*.yml|*.go|*.rs|*.java|\
+  *.sh|*.kt|*.cs|*.cpp|*.cc|*.cxx|*.hpp|*.h) ;;
   *) exit 0 ;;
 esac
 
