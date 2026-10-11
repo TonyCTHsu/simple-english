@@ -40,14 +40,6 @@ file_path="$(printf '%s' "$payload" | ruby -rjson -e '
 
 [ -n "${file_path:-}" ] || exit 0
 
-# The extensions mirror Extractor::EXTENSION_LANGUAGES in the gem.
-# Keep the two in sync.
-case "$file_path" in
-  *.md|*.py|*.rb|*.js|*.mjs|*.ts|*.yaml|*.yml|*.go|*.rs|*.java|\
-  *.sh|*.kt|*.cs|*.cpp|*.cc|*.cxx|*.hpp|*.h) ;;
-  *) exit 0 ;;
-esac
-
 se_bin="${SE_BIN:-se}"
 command -v "$se_bin" >/dev/null 2>&1 || {
   emit "se is not installed, so the prose was not linted. Install it: gem install simple_english"

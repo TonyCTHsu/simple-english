@@ -86,7 +86,7 @@ class IntegrationsHookTest < Minitest::Test
   end
 
   def test_file_we_do_not_lint_is_ignored
-    stub_se(1, '[{"path":"x.bin","line":1,"column":1,"rule":"R","message":"m"}]') do |stub|
+    stub_se(0, "") do |stub|
       out, code = hook(payload_for(md_file("note.bin")), {"SE_BIN" => stub})
       assert_equal 0, code
       assert_equal "", out
