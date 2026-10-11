@@ -4,9 +4,9 @@
 
 ### Added
 
-- Add `pi-simple-english` pi package.
-- Add Claude Code plugin.
-- Add Codex plugin.
+- Add `pi-simple-english` `pi` package.
+- Add `claude-code` plugin.
+- Add `codex` plugin.
 
 ### Changed
 

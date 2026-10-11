@@ -1,6 +1,6 @@
-# simple-english for pi
+# simple-english for `pi`
 
-A pi package that lints the prose the agent writes.
+A `pi` package that lints the prose the agent writes.
 
 The package ships the `lint-simple-english` skill, the
 `write-simple-english` skill, and the `se_lint` tool. The tool lints

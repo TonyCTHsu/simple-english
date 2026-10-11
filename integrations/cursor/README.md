@@ -1,6 +1,6 @@
-# simple-english for Cursor
+# simple-english for `cursor`
 
-A Cursor plugin that lints the prose the agent writes.
+A `cursor` plugin that lints the prose the agent writes.
 
 ## What it does
 
@@ -21,7 +21,7 @@ gem install simple_english
 
 ## Install
 
-Until the plugin reaches the Cursor Marketplace, install it from a
+Until the plugin reaches the `cursor` Marketplace, install it from a
 local folder:
 
 ```bash

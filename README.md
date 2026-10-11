@@ -44,11 +44,11 @@ the first pass and checks its own draft before you read the file.
 
 | Coding agent | Ships as | Docs |
 |---|---|---|
-| pi | npm package `pi-simple-english` | [README](integrations/pi/README.md) |
-| Claude Code | plugin `simple-english` | [README](integrations/claude-code/README.md) |
-| Codex | plugin `simple-english` | [README](integrations/codex/README.md) |
-| Cursor | plugin folder `simple-english` | [README](integrations/cursor/README.md) |
-| opencode | plugin `simple-english` | [README](integrations/opencode/README.md) |
+| `pi` | npm package `pi-simple-english` | [README](integrations/pi/README.md) |
+| `claude-code` | plugin `simple-english` | [README](integrations/claude-code/README.md) |
+| `codex` | plugin `simple-english` | [README](integrations/codex/README.md) |
+| `cursor` | plugin folder `simple-english` | [README](integrations/cursor/README.md) |
+| `opencode` | plugin `simple-english` | [README](integrations/opencode/README.md) |
 
 If your agent is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 
