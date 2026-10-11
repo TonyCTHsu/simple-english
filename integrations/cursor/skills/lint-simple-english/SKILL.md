@@ -1,5 +1,5 @@
 ---
-name: simple-english-lint
+name: lint-simple-english
 description: Lint prose with simple_english after writing or editing documentation,
   READMEs, or code comments. Use when the agent writes prose, when asked to lint
   or simplify text, or when a doc change lands.

@@ -2,9 +2,11 @@
 
 A pi package that lints the prose the agent writes.
 
-The package ships the `simple-english-lint` skill and the `se_lint`
-tool. The tool lints a file or a directory. The skill tells the agent
-to lint the prose it writes and fix every finding.
+The package ships the `lint-simple-english` skill, the
+`write-simple-english` skill, and the `se_lint` tool. The tool lints
+a file or a directory. The write skill carries the rules, so the
+agent writes clean prose the first time. The lint skill tells the
+agent to lint the prose it writes and fix every finding.
 
 ## Prerequisites
 

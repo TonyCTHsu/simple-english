@@ -37,7 +37,7 @@ class IntegrationsPiTest < Minitest::Test
   end
 
   def test_vendored_skill_names_the_pi_tool
-    skill = File.read(File.join(ROOT, "skills", "simple-english-lint", "SKILL.md"))
+    skill = File.read(File.join(ROOT, "skills", "lint-simple-english", "SKILL.md"))
     assert_includes skill, "se_lint"
   end
 end

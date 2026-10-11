@@ -366,7 +366,7 @@ def run_opencode
         }
       }))
       FileUtils.mkdir_p(".opencode/skills")
-      FileUtils.cp_r(File.join(REPO, "integrations", "opencode", "skills", "simple-english-lint"),
+      FileUtils.cp_r(File.join(REPO, "integrations", "opencode", "skills", "lint-simple-english"),
         ".opencode/skills/")
       # opencode's Google provider reads GOOGLE_GENERATIVE_AI_API_KEY,
       # not the GEMINI_API_KEY the other legs use. Verified live,

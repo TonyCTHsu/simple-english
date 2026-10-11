@@ -6,8 +6,10 @@ A Cursor plugin that lints the prose the agent writes.
 
 The plugin is an Agent Plugin. It bundles two things. The root
 `mcp.json` adds the `simple-english` MCP server, which runs `se mcp`
-from the gem. The `simple-english-lint` skill tells the agent to call
-the `lint` tool and fix every finding.
+from the gem. The `lint-simple-english` skill tells the agent to call
+the `lint` tool and fix every finding. The `write-simple-english`
+skill carries the rules themselves, so the agent writes clean prose
+the first time.
 
 ## Prerequisites
 
