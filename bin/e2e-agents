@@ -269,7 +269,11 @@ def run_pi
       FileUtils.mkdir_p(home)
       env = {"PI_CODING_AGENT_DIR" => home}
       provider = ENV.fetch("SE_E2E_PI_PROVIDER", "google")
-      ok = system(env, "pi", "install", File.join(REPO, "integrations", "pi")) &&
+      # The default source is the checkout. SE_E2E_PI_SOURCE swaps in
+      # a published npm source, so the release e2e proves the shipped
+      # artifact, not the tree.
+      source = ENV.fetch("SE_E2E_PI_SOURCE") { File.join(REPO, "integrations", "pi") }
+      ok = system(env, "pi", "install", source) &&
         system(env, "pi", "-a", "-p", "--provider", provider, "--model", model_for("pi"), PROMPT) &&
         scenario_passed?(File.join(dir, "note.md"), baseline)
       diagnose(File.join(dir, "note.md"), baseline, "no pi output captured") unless ok

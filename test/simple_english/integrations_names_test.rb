@@ -12,7 +12,10 @@ require_relative "test_helper"
 class IntegrationsNamesTest < Minitest::Test
   SELF = "test/simple_english/integrations_names_test.rb"
 
-  EXCLUDED_DIRS = [".git", ".superpowers", "node_modules", "tmp", ".changes", "docs/superpowers"].freeze
+  # pi writes its package state into .pi/, and those files name
+  # the audited packages by definition. Like node_modules, it is
+  # generated state, not source.
+  EXCLUDED_DIRS = [".git", ".pi", ".superpowers", "node_modules", "tmp", ".changes", "docs/superpowers"].freeze
   # Generated history. `changie batch` folds fragment bodies (which name
   # tools) into it, and released history cannot be rewritten on a rename.
   EXCLUDED_FILES = ["CHANGELOG.md"].freeze
