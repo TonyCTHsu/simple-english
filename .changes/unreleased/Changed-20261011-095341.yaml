@@ -1,0 +1,3 @@
+kind: Changed
+body: Migrate the `codex` plugin to the portable Agent Plugins format.
+time: 2026-10-11T09:53:41.367175+02:00
