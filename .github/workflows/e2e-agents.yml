@@ -279,6 +279,21 @@ jobs:
         # package stopped at 1.19.0.
         run: npm install -g @opencode/cli@2.0.27
 
+      # Temporary bisect (PR #94): the 2.x server anchors on this
+      # checkout instead of the scenario cwd on this runner, but not
+      # on macOS. Each boot strips one env slice and prints the
+      # anchored directory. No model key: the boot line precedes the
+      # provider auth failure.
+      - name: Diagnose the server anchor
+        run: |
+          bin/debug-opencode-anchor baseline
+          bin/debug-opencode-anchor no-workspace GITHUB_WORKSPACE
+          mapfile -t vars < <(env | grep -o '^GITHUB_[A-Z_]*')
+          bin/debug-opencode-anchor no-github "${vars[@]}"
+          mapfile -t rvars < <(env | grep -o '^RUNNER_[A-Z_]*')
+          bin/debug-opencode-anchor no-ci CI "${rvars[@]}"
+          env -i PATH="$PATH" HOME="$HOME" bin/debug-opencode-anchor no-env
+
       - name: Run the scenario
         env:
           # The model var picks the provider: anthropic/name uses the
