@@ -10,7 +10,7 @@ require "yaml"
 # to VERBS, like the names audit's recorded places.
 class ChangelogFragmentsTest < Minitest::Test
   VERBS = %w[
-    Add Allow Bundle Change Deprecate Drop Fix Handle Migrate Move
+    Add Allow Bundle Change Deprecate Drop Fix Handle Lint Migrate Move
     Record Reject Remove Rename Say Skip Support Turn Warn
   ].freeze
 

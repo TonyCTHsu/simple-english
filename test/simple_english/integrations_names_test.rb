@@ -24,6 +24,7 @@ class IntegrationsNamesTest < Minitest::Test
     # The npm package name for pi.
     "pi-simple-english" => [
       "README.md",
+      "docs/DEVELOPMENT.md",
       "docs/RELEASING.md",
       "integrations/pi/package.json",
       "integrations/pi/README.md",
@@ -33,6 +34,7 @@ class IntegrationsNamesTest < Minitest::Test
     ],
     # The pi tool name.
     "se_lint" => [
+      "docs/DEVELOPMENT.md",
       "integrations/pi/extensions/se-lint.ts",
       "integrations/pi/README.md",
       "integrations/shared/skills/lint-simple-english/SKILL.md",
