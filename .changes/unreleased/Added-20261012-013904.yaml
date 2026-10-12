@@ -1,3 +1,0 @@
-kind: Added
-body: 'Lint every `edit` and `write` in `pi`: the findings land in the tool result, so the agent can fix them in the same turn.'
-time: 2026-10-12T01:39:04.925787+02:00

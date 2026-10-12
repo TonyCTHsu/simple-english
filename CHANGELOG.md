@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.0] - 2026-10-12
+
+### Added
+
+- Lint every `edit` and `write` in `pi`. The findings land in the tool result, so the agent can fix them in the same turn.
+
 ## [0.7.0] - 2026-10-11
 
 ### Added
