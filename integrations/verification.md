@@ -266,7 +266,11 @@ The spawn now carries the scenario dir as `PWD`. Verified locally
 on 2.0.27: with `PWD` set, a ruby-spawned standalone run boots on
 the scenario dir and connects `simple-english` with the
 `mcp.servers` shape. The Google variable fact above still carries
-its 1.18.35 verification.
+its 1.18.35 verification. The leg passed green with the fix, run
+38319156024, `openai/gpt-6-luna`, attempt 1. Upstream knows the
+behavior: `anomalyco/opencode#27392` reports the same
+`PWD`-over-cwd resolution and closed it not planned. Setting the
+env var is the supported way to steer a spawned run.
 
 Source: the `opencode` docs at `https://docs.opencode.ai/docs/config`,
 the tools and MCP pages, and the runs named above.
