@@ -1,3 +1,3 @@
 kind: Added
-body: 'Add edit-time lint enforcement to the pi adapter: findings land in the edit result, and the agent fixes them in the same turn.'
+body: 'Lint every `edit` and `write` in `pi`: the findings land in the tool result, so the agent can fix them in the same turn.'
 time: 2026-10-12T01:39:04.925787+02:00
