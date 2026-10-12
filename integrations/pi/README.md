@@ -65,8 +65,10 @@ gem install simple_english
 
 ## What you get
 
-The `se_lint` tool lints a file or a directory. It returns each
-finding with a line number, a rule ID, and a fix hint:
+The `se_lint` tool lints a file or a directory on demand. Every
+file edit lints too. The findings land in the edit result, so the
+agent fixes them in the same turn. Each finding carries a line
+number, a rule ID, and a fix hint:
 
 ```
 README.md:12:31-32: [SE_NO_SEMICOLON] ";" - Write two sentences, or name the relation.

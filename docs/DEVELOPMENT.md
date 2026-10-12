@@ -152,6 +152,37 @@ from local paths:
 `se mcp` runs the MCP server behind the `codex` plugin. Any MCP client
 can use it.
 
+### Dogfood the pi adapter
+
+A published `npm:pi-simple-english` and a local-path install are two
+different packages to pi: npm ones load by name, local ones by path.
+Installed together, both load and register `se_lint` twice. Remove the
+npm declaration first:
+
+```
+pi remove npm:pi-simple-english
+pi remove npm:pi-simple-english -l
+pi install <repo>/integrations/pi -l
+```
+
+A local-path install loads from the repo without copying, so each save
+of `se-lint.ts` is live in the next pi session. Restart pi after every
+change.
+
+To exercise edit-time enforcement, ask the session to write sloppy
+prose into a scratch `.md` file. The edit tool result itself must carry
+the `se found N lint finding(s)` lines, not only the on-demand
+`se_lint` tool. A clean edit stays silent.
+`bin/pi-enforcement-smoke` covers the same paths without a live model.
+
+Restore the published package when done:
+
+```
+pi remove <repo>/integrations/pi -l
+pi install npm:pi-simple-english -l
+pi install npm:pi-simple-english
+```
+
 Testing has two layers. Layer 1 runs in the unit suite
 (`mcp_*_test.rb`, `integrations_*_test.rb`): fixtures replay each
 adapter's wire input, and no tokens are spent. Layer 2 is
