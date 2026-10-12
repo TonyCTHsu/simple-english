@@ -358,16 +358,21 @@ def run_opencode
       # No plugin unit: opencode reads the project's opencode.json and
       # .opencode/skills from the working directory, and the scenario
       # dir is the project. A headless run can never answer an approval,
-      # so the config allows edits and the lint tool call.
+      # so the config allows edits, skill loads, and the lint tool call.
+      # opencode 2 nests servers under mcp.servers and replaces the
+      # permission map with a permissions rule list.
       File.write("opencode.json", JSON.pretty_generate({
         "$schema" => "https://opencode.ai/config.json",
         "mcp" => {
-          "simple-english" => {"type" => "local", "command" => ["se", "mcp"]}
+          "servers" => {
+            "simple-english" => {"type" => "local", "command" => ["se", "mcp"]}
+          }
         },
-        "permission" => {
-          "edit" => "allow",
-          "simple-english_lint" => "allow"
-        }
+        "permissions" => [
+          {"action" => "edit", "resource" => "*", "effect" => "allow"},
+          {"action" => "skill", "resource" => "*", "effect" => "allow"},
+          {"action" => "simple-english_lint", "resource" => "*", "effect" => "allow"}
+        ]
       }))
       FileUtils.mkdir_p(".opencode/skills")
       FileUtils.cp_r(File.join(REPO, "integrations", "opencode", "skills", "lint-simple-english"),
@@ -383,7 +388,10 @@ def run_opencode
       # --dir pins the project: without it, opencode run ignores the
       # cwd and picks the enclosing git repo, so the agent never sees
       # the scenario dir. Verified live, run 38094528402, opencode 1.18.35.
+      # --standalone runs with a private server, the headless mode the
+      # V2 CLI documents for automation (dev.opencode.ai/v2/docs/cli).
       out, err, status = Open3.capture3(env, "opencode", "run",
+        "--standalone",
         "--dir", dir,
         "--model", model_for("opencode"), "--format", "json", PROMPT)
       note = File.join(dir, "note.md")

@@ -28,9 +28,11 @@ Add the MCP server to `opencode.json` in the project root, or to
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "simple-english": {
-      "type": "local",
-      "command": ["se", "mcp"]
+    "servers": {
+      "simple-english": {
+        "type": "local",
+        "command": ["se", "mcp"]
+      }
     }
   }
 }

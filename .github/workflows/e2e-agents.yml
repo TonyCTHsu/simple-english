@@ -275,7 +275,9 @@ jobs:
         run: gem install --no-document ./dist/simple_english-*.gem
 
       - name: Install the agent
-        run: npm install -g opencode-ai@1.18.35
+        # opencode 2 publishes as @opencode/cli. The 1.x opencode-ai
+        # package stopped at 1.19.0.
+        run: npm install -g @opencode/cli@2.0.27
 
       - name: Run the scenario
         env:

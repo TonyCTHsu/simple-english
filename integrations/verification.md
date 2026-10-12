@@ -222,10 +222,13 @@ specification at `https://agent-plugins.org/specification`.
 `opencode` has no Agent Plugins support (open feature request,
 `anomalyco/opencode#40993`). The integration is config wiring: an
 `mcp` block in the project's `opencode.json`, and the skill under
-`.opencode/skills/`. A local MCP server takes `type: "local"` and
-`command` as an array. MCP tools are permission-keyed
-`<server>_<tool>`, and a headless run can never answer an approval,
-so the config allows `simple-english_lint` and `edit` up front.
+`.opencode/skills/`. In opencode 2, servers nest under
+`mcp.servers`. A local MCP server takes `type: "local"` and
+`command` as an array. The version 1 permission map became a
+`permissions` rule list, where the last matching rule wins and an
+unmatched action asks. A headless run can never answer an approval,
+so the config allows `simple-english_lint`, skill loads, and `edit`
+up front.
 
 `opencode run` ignores the process cwd and picks the enclosing git
 repo, so a headless run in another directory needs `--dir`.
@@ -243,6 +246,10 @@ The e2e leg passed 2026-10-10 with `opencode` 1.18.35 and
 `openai/gpt-6-luna`, pass on attempt 2. `google/gemini-3.1-flash-lite`
 called the lint tool but did not fix the findings, so it fails the
 gate. Weak models are the first suspect on a red `opencode` leg.
+The leg moved to `@opencode/cli` 2.0.27 on 2026-10-12. The facts
+above were verified against 1.18.35. The first 2.x run needs to
+re-confirm three of them: `--dir`, the Google variable, and the
+`--standalone` flag the V2 CLI documents for automation.
 
 Source: the `opencode` docs at `https://docs.opencode.ai/docs/config`,
 the tools and MCP pages, and the runs named above.
