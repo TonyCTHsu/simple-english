@@ -171,6 +171,8 @@ def diagnose(note, baseline, agent_output = nil)
   puts "  findings still in note.md after the run:"
   out.each_line { |line| puts "  #{line}" }
   return unless agent_output
+  puts "  first of the agent's output:"
+  agent_output.to_s.lines.first(10).each { |line| puts "  #{line}" }
   puts "  last of the agent's output:"
   agent_output.to_s.lines.last(12).each { |line| puts "  #{line}" }
 end
@@ -390,6 +392,9 @@ def run_opencode
       # already chdir'd into the scenario dir, so no directory flag.
       # --standalone runs with a private server, the headless mode the
       # V2 CLI documents for automation (dev.opencode.ai/v2/docs/cli).
+      # 2.x run 38315696258 anchored its file watchers on the checkout,
+      # so print the cwd the CLI gets before ruling on the cause.
+      puts "  opencode spawning in #{Dir.pwd}"
       out, err, status = Open3.capture3(env, "opencode", "run",
         "--standalone", "--print-logs",
         "--model", model_for("opencode"), "--format", "json", PROMPT)
