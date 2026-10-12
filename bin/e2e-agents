@@ -385,14 +385,13 @@ def run_opencode
         key = ENV["GEMINI_API_KEY"] || ENV["GOOGLE_API_KEY"]
         env["GOOGLE_GENERATIVE_AI_API_KEY"] = key if key
       end
-      # --dir pins the project: without it, opencode run ignores the
-      # cwd and picks the enclosing git repo, so the agent never sees
-      # the scenario dir. Verified live, run 38094528402, opencode 1.18.35.
+      # opencode 2 dropped --dir (unrecognized flag, run 38311988533).
+      # A run follows the process cwd, and the scenario helper has
+      # already chdir'd into the scenario dir, so no directory flag.
       # --standalone runs with a private server, the headless mode the
       # V2 CLI documents for automation (dev.opencode.ai/v2/docs/cli).
       out, err, status = Open3.capture3(env, "opencode", "run",
         "--standalone",
-        "--dir", dir,
         "--model", model_for("opencode"), "--format", "json", PROMPT)
       note = File.join(dir, "note.md")
       ok = status.success? && scenario_passed?(note, baseline)

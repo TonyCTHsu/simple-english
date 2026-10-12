@@ -230,11 +230,11 @@ unmatched action asks. A headless run can never answer an approval,
 so the config allows `simple-english_lint`, skill loads, and `edit`
 up front.
 
-`opencode run` ignores the process cwd and picks the enclosing git
-repo, so a headless run in another directory needs `--dir`.
-Verified live 2026-10-10, run 38094528402: without `--dir` the agent
-searched the repository, not the scenario directory, and never found
-the seeded file.
+`opencode run` in version 1 ignores the process cwd and picks the
+enclosing git repo, so a headless run in another directory needed
+`--dir`. Verified live 2026-10-10, run 38094528402: without `--dir`
+the agent searched the repository, not the scenario directory, and
+never found the seeded file.
 
 The Google provider reads `GOOGLE_GENERATIVE_AI_API_KEY`, not
 `GEMINI_API_KEY`. Verified live, run 38094380373: the model call dies
@@ -246,10 +246,16 @@ The e2e leg passed 2026-10-10 with `opencode` 1.18.35 and
 `openai/gpt-6-luna`, pass on attempt 2. `google/gemini-3.1-flash-lite`
 called the lint tool but did not fix the findings, so it fails the
 gate. Weak models are the first suspect on a red `opencode` leg.
-The leg moved to `@opencode/cli` 2.0.27 on 2026-10-12. The facts
-above were verified against 1.18.35. The first 2.x run needs to
-re-confirm three of them: `--dir`, the Google variable, and the
-`--standalone` flag the V2 CLI documents for automation.
+The leg moved to `@opencode/cli` 2.0.27 on 2026-10-12. Its first
+run (38311988533) failed both attempts on `Unrecognized flag:
+--dir`: opencode 2 dropped the flag, and a run now follows the
+process cwd. The scenario helper `chdir`s into the scenario dir, so
+the run needs no directory flag.
+
+Verified locally on 2.0.27: a standalone run anchors on the cwd,
+and `opencode mcp list` connects `simple-english` with the
+`mcp.servers` shape. The Google variable fact above still carries
+its 1.18.35 verification.
 
 Source: the `opencode` docs at `https://docs.opencode.ai/docs/config`,
 the tools and MCP pages, and the runs named above.
