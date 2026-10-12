@@ -8,6 +8,8 @@
 # daemon boot, the findings, and the exit codes stay the CLI's.
 # SE_BIN overrides the binary: CI installs the released gem and
 # points this at it, because the checkout has no built engine.
+# The "- " prefix lints the body as the list item the changelog
+# ships, whose sentence limit is tighter than a paragraph's.
 
 require "yaml"
 require "open3"
@@ -17,7 +19,7 @@ failed = false
 Dir[".changes/unreleased/*.yaml"].sort.each do |path|
   body = YAML.safe_load_file(path, permitted_classes: [Time])["body"]
   next unless body.is_a?(String) && !body.empty?
-  out, err, status = Open3.capture3(se, "-", stdin_data: body)
+  out, err, status = Open3.capture3(se, "-", stdin_data: "- #{body}\n")
   warn(err) unless err.empty?
   # 2 or higher means setup or daemon trouble. The stderr above
   # names the cause, so stop the whole run there.
