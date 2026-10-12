@@ -4,7 +4,7 @@
 
 ### Added
 
-- Lint every `edit` and `write` in `pi`: the findings land in the tool result, so the agent can fix them in the same turn.
+- Lint every `edit` and `write` in `pi`. The findings land in the tool result, so the agent can fix them in the same turn.
 
 ## [0.7.0] - 2026-10-11
 
