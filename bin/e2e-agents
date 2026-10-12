@@ -171,8 +171,6 @@ def diagnose(note, baseline, agent_output = nil)
   puts "  findings still in note.md after the run:"
   out.each_line { |line| puts "  #{line}" }
   return unless agent_output
-  puts "  first of the agent's output:"
-  agent_output.to_s.lines.first(10).each { |line| puts "  #{line}" }
   puts "  last of the agent's output:"
   agent_output.to_s.lines.last(12).each { |line| puts "  #{line}" }
 end
@@ -382,28 +380,24 @@ def run_opencode
       # opencode's Google provider reads GOOGLE_GENERATIVE_AI_API_KEY,
       # not the GEMINI_API_KEY the other legs use. Verified live,
       # e2e-agents run 38094380373, opencode 1.18.35.
-      env = {}
+      #
+      # opencode 2 resolves its server directory from the PWD env var,
+      # not the process cwd, and Ruby's Dir.chdir does not update PWD
+      # (e2e-agents run 38318780240: the leg booted on the job's startup
+      # directory while a bash cd in the same runner booted on its own).
+      # Carry the scenario dir as PWD or the server anchors on the
+      # checkout.
+      env = {"PWD" => dir}
       if model_for("opencode").start_with?("google/")
         key = ENV["GEMINI_API_KEY"] || ENV["GOOGLE_API_KEY"]
         env["GOOGLE_GENERATIVE_AI_API_KEY"] = key if key
       end
       # opencode 2 dropped --dir (unrecognized flag, run 38311988533).
-      # A run follows the process cwd, and the scenario helper has
-      # already chdir'd into the scenario dir, so no directory flag.
       # --standalone runs with a private server, the headless mode the
       # V2 CLI documents for automation (dev.opencode.ai/v2/docs/cli).
-      # 2.x run 38315696258 anchored its file watchers on the checkout,
-      # so print the cwd the CLI gets before ruling on the cause.
-      puts "  opencode spawning in #{Dir.pwd}"
       out, err, status = Open3.capture3(env, "opencode", "run",
-        "--standalone", "--print-logs",
+        "--standalone",
         "--model", model_for("opencode"), "--format", "json", PROMPT)
-      # Temporary (PR #94): the bisect boots anchor on the scenario
-      # dir with the full CI env, so the real leg's misdirection
-      # happens after boot. Print the server-log lines that name the
-      # boot directory and the first watcher set, which the diagnose
-      # head and tail both cut.
-      err.lines.grep(/booted|watcher subscribe|mcp|directory=/).first(25).each { |l| puts "  #{l}" }
       note = File.join(dir, "note.md")
       ok = status.success? && scenario_passed?(note, baseline)
       diagnose(note, baseline, out + err) unless ok

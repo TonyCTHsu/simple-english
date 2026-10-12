@@ -246,14 +246,25 @@ The e2e leg passed 2026-10-10 with `opencode` 1.18.35 and
 `openai/gpt-6-luna`, pass on attempt 2. `google/gemini-3.1-flash-lite`
 called the lint tool but did not fix the findings, so it fails the
 gate. Weak models are the first suspect on a red `opencode` leg.
+
 The leg moved to `@opencode/cli` 2.0.27 on 2026-10-12. Its first
 run (38311988533) failed both attempts on `Unrecognized flag:
---dir`: opencode 2 dropped the flag, and a run now follows the
-process cwd. The scenario helper `chdir`s into the scenario dir, so
-the run needs no directory flag.
+--dir`: opencode 2 dropped the flag. The next runs (38312996164,
+38316300787) cleared the flags but the server booted its directory
+on `/home/runner/work/simple-english/simple-english`, the checkout.
+The model searched there instead of the scenario dir.
 
-Verified locally on 2.0.27: a standalone run anchors on the cwd,
-and `opencode mcp list` connects `simple-english` with the
+Root cause: opencode 2 resolves its server directory from the
+`PWD` env var, not the process cwd. Ruby's `Dir.chdir` changes the
+cwd without updating `PWD`, so the spawn carried the job's startup
+directory. Bash `cd` updates `PWD`, which is why every shell-level
+repro anchored correctly. Run 38318780240 shows the split inside
+one runner: bash-spawned boots anchored on their scenario dirs
+while the ruby-spawned leg boot anchored on the checkout.
+
+The spawn now carries the scenario dir as `PWD`. Verified locally
+on 2.0.27: with `PWD` set, a ruby-spawned standalone run boots on
+the scenario dir and connects `simple-english` with the
 `mcp.servers` shape. The Google variable fact above still carries
 its 1.18.35 verification.
 
