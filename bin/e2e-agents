@@ -391,7 +391,7 @@ def run_opencode
       # --standalone runs with a private server, the headless mode the
       # V2 CLI documents for automation (dev.opencode.ai/v2/docs/cli).
       out, err, status = Open3.capture3(env, "opencode", "run",
-        "--standalone",
+        "--standalone", "--print-logs",
         "--model", model_for("opencode"), "--format", "json", PROMPT)
       note = File.join(dir, "note.md")
       ok = status.success? && scenario_passed?(note, baseline)
