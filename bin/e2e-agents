@@ -398,6 +398,12 @@ def run_opencode
       out, err, status = Open3.capture3(env, "opencode", "run",
         "--standalone", "--print-logs",
         "--model", model_for("opencode"), "--format", "json", PROMPT)
+      # Temporary (PR #94): the bisect boots anchor on the scenario
+      # dir with the full CI env, so the real leg's misdirection
+      # happens after boot. Print the server-log lines that name the
+      # boot directory and the first watcher set, which the diagnose
+      # head and tail both cut.
+      err.lines.grep(/booted|watcher subscribe|mcp|directory=/).first(25).each { |l| puts "  #{l}" }
       note = File.join(dir, "note.md")
       ok = status.success? && scenario_passed?(note, baseline)
       diagnose(note, baseline, out + err) unless ok
