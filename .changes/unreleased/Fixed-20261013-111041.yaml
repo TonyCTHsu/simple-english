@@ -1,0 +1,3 @@
+kind: Fixed
+body: Lint files with non-ASCII characters from clients that run without a locale. Claude Desktop now sees findings instead of an invalid response.
+time: 2026-10-13T11:10:41.474781+02:00
