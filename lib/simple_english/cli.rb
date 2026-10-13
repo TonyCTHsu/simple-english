@@ -15,6 +15,10 @@ module SimpleEnglish
     # names. Thor only falls back to the default task when the first
     # argument is an option, so route them to lint explicitly.
     def self.start(given_args = ARGV, config = {})
+      # GUI apps (Claude Desktop) and cron spawn this CLI without a
+      # locale, so Ruby reads stdin and files as US-ASCII and chokes on
+      # non-ASCII prose (issue 95). Prose is UTF-8 by spec.
+      Encoding.default_external = Encoding::UTF_8
       first = given_args.first
       if first && !all_commands.key?(first) &&
           (first == "-" || !first.start_with?("-"))
