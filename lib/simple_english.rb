@@ -43,7 +43,7 @@ module SimpleEnglish
   # nil means unreachable: the caller decides how fatal that is.
   def lint_file(path, text = nil)
     return [] unless Extractor.lintable?(path)
-    text = File.read(path) if text.nil?
+    text = File.read(path, encoding: "UTF-8") if text.nil?
     language = Extractor.language_for(path)
     plan = LintPlan.call(text, language)
     return [] if plan.nil?
