@@ -1,3 +1,0 @@
-kind: Fixed
-body: Lint non-ASCII text piped into `se lint -` instead of crashing on `invalid byte sequence`.
-time: 2026-10-13T21:39:36.69894+02:00

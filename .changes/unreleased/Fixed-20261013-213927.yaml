@@ -1,3 +1,0 @@
-kind: Fixed
-body: Handle MCP requests that name non-ASCII paths instead of killing the server. Claude Desktop showed the failure as an invalid response.
-time: 2026-10-13T21:39:27.640507+02:00
