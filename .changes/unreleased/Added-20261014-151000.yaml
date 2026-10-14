@@ -1,3 +1,0 @@
-kind: Added
-body: Lint Markdown text through the MCP `lint` tool without a file. Pass `text` instead of `path`.
-time: 2026-10-14T15:10:00.000000+02:00
