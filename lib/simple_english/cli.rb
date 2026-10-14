@@ -59,14 +59,16 @@ module SimpleEnglish
           warn "error: file not readable: #{path}"
           return 2
         end
-        # The lintable gate in lint_file reads lintable files itself. A
+        # The lintable gate in Linter reads lintable files itself. A
         # non-lintable path must not cost a full read here.
-        text = (path == "-") ? $stdin.read : nil
-        findings = SimpleEnglish.lint_file(path, text)
+        findings =
+          if path == "-"
+            SimpleEnglish::Linter.lint_text($stdin.read, config: config)
+          else
+            SimpleEnglish::Linter.lint_file(path, config: config)
+          end
         return 2 if findings.nil? # already warned why
-        SimpleEnglish::Config.filter(config, path, findings).each do |finding|
-          results << [path, finding]
-        end
+        findings.each { |finding| results << [path, finding] }
       end
       self.class.report(results, options[:format])
       results.empty? ? 0 : 1

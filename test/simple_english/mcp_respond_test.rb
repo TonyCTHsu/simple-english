@@ -9,7 +9,7 @@ module SimpleEnglish
     end
 
     def linter_returning(findings)
-      ->(_path) { findings }
+      FakeLinter.new(findings)
     end
 
     def existing_file(name)
@@ -44,8 +44,49 @@ module SimpleEnglish
       assert_equal 1, tools.length
       tool = tools.first
       assert_equal "lint", tool.fetch("name")
-      assert_equal ["path"], tool.dig("inputSchema", "required")
+      assert_nil tool.dig("inputSchema", "required")
       assert_equal "string", tool.dig("inputSchema", "properties", "path", "type")
+      assert_equal "string", tool.dig("inputSchema", "properties", "text", "type")
+    end
+
+    def test_tools_call_lints_a_path_as_a_file
+      path = existing_file("a.md")
+      linter = FakeLinter.new
+      ModelContextProtocol.respond(
+        request(15, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
+        linter: linter
+      )
+      assert_equal [[:lint_file, path]], linter.calls
+    end
+
+    def test_tools_call_lints_text_without_a_file
+      linter = FakeLinter.new
+      response = ModelContextProtocol.respond(
+        request(16, "tools/call", {"name" => "lint", "arguments" => {"text" => "Hello."}}),
+        linter: linter
+      )
+      assert_equal [[:lint_text, "Hello."]], linter.calls
+      assert_equal "clean", response.dig("result", "content").first.fetch("text")
+    end
+
+    def test_tools_call_labels_text_findings_as_dash
+      findings = [Finding.new(1, nil, nil, nil, "SE_COUNT_WORDS", "Too many words.")]
+      response = ModelContextProtocol.respond(
+        request(18, "tools/call", {"name" => "lint", "arguments" => {"text" => "Hello."}}),
+        linter: FakeLinter.new(findings)
+      )
+      assert_equal "-:1: [SE_COUNT_WORDS] Too many words.", response.dig("result", "content").first.fetch("text")
+    end
+
+    def test_tools_call_rejects_path_and_text_together
+      linter = FakeLinter.new
+      response = ModelContextProtocol.respond(
+        request(19, "tools/call", {"name" => "lint", "arguments" => {"path" => "a.md", "text" => "Hello."}}),
+        linter: linter
+      )
+      assert response.dig("result", "isError")
+      assert_includes response.dig("result", "content").first.fetch("text"), "not both"
+      assert_empty linter.calls
     end
 
     def test_tools_call_renders_one_line_per_finding
@@ -56,7 +97,7 @@ module SimpleEnglish
       path = existing_file("a.md")
       response = ModelContextProtocol.respond(
         request(3, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
-        linter: ->(_path) { findings }
+        linter: FakeLinter.new(findings)
       )
       result = response.fetch("result")
       refute result.fetch("isError")
@@ -81,7 +122,7 @@ module SimpleEnglish
       path = existing_file("a.md")
       response = ModelContextProtocol.respond(
         request(5, "tools/call", {"name" => "lint", "arguments" => {"path" => path}}),
-        linter: ->(_path) {}
+        linter: FakeLinter.new(nil)
       )
       assert_equal 5, response.fetch("id")
       assert response.dig("result", "isError")
@@ -125,6 +166,11 @@ module SimpleEnglish
       )
       assert_equal(-32602, response.dig("error", "code"))
       assert_includes response.dig("error", "message"), "nope"
+    end
+
+    def test_ping_answers_an_empty_result
+      response = ModelContextProtocol.respond(request(17, "ping"), linter: linter_returning([]))
+      assert_equal({"jsonrpc" => "2.0", "id" => 17, "result" => {}}, response)
     end
 
     def test_unknown_method_answers_method_not_found

@@ -110,3 +110,23 @@ end
 def fake_install
   yield SimpleEnglish::Install.new(executable: RbConfig.ruby)
 end
+
+class FakeLinter
+  attr_reader :calls
+
+  def initialize(findings = [], &answer)
+    @calls = []
+    @answer = answer || ->(*) { findings }
+  end
+
+  def lint_file(path) = answer(:lint_file, path)
+
+  def lint_text(text) = answer(:lint_text, text)
+
+  private
+
+  def answer(*call)
+    @calls << call
+    @answer.call(*call)
+  end
+end

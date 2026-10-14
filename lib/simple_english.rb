@@ -16,6 +16,7 @@ require_relative "simple_english/lint/extractor"
 require_relative "simple_english/lint/lint_plan"
 require_relative "simple_english/lint/annotated_text"
 require_relative "simple_english/lint/suppressions"
+require_relative "simple_english/lint/linter"
 require_relative "simple_english/setup/config"
 require_relative "simple_english/setup/fingerprint"
 require_relative "simple_english/client/language_tool"
@@ -28,37 +29,19 @@ require_relative "simple_english/daemon/server"
 module SimpleEnglish
   module_function
 
-  # Returns findings, or nil when the daemon is unreachable. The
-  # caller (bin/se) owns the exit status. Diagnostics go to
-  # stderr here.
-  def lint_text(text)
-    return nil unless Client.ensure_up(install: Install.from_env)
-    Client.lint(text)
-  end
-
-  # One entry point for files. LintPlan decides what kind of lint
-  # this is. Both tiers share it, so they cannot drift. Code files
-  # lint comments through the daemon. File types the linter does not
-  # own are skipped up front: an unknown extension is not prose.
+  # The engine: text in, findings out. LintPlan decides what kind of
+  # lint this is. Both tiers share it, so they cannot drift. A nil
+  # language means Markdown prose. Code lints its comments.
   # nil means unreachable: the caller decides how fatal that is.
-  def lint_file(path, text = nil)
-    return [] unless Extractor.lintable?(path)
-    text = File.read(path, encoding: "UTF-8") if text.nil?
-    language = Extractor.language_for(path)
+  def lint(text, language: nil)
     plan = LintPlan.call(text, language)
     return [] if plan.nil?
-    findings =
-      if plan == :prose
-        lint_text(text)
-      else
-        return nil unless Client.ensure_up(install: Install.from_env)
-        result = Client.lint(text, language: language)
-        if result.nil?
-          warn "error: se daemon did not answer. Run `#{Client.runner} serve` and read its output."
-        end
-        result
-      end
-    return nil unless findings
+    return nil unless Client.ensure_up(install: Install.from_env)
+    findings = Client.lint(text, language: language)
+    if findings.nil?
+      warn "error: se daemon did not answer. Run `#{Client.runner} serve` and read its output."
+      return nil
+    end
     Suppressions.filter(text, findings)
   end
 end

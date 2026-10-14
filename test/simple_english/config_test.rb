@@ -25,22 +25,26 @@ class ConfigTest < Minitest::Test
     end
   end
 
-  def test_filter_ignores_paths_and_drops_disabled_rules
-    config = {ignore: ["vendor/**"], disabled_rules: ["SE_NO_EMDASH"]}
+  def test_ignore_matches_globs
+    config = {ignore: ["vendor/**"], disabled_rules: []}
+    assert SimpleEnglish::Config.ignore?(config, "vendor/lib/a.py")
+    refute SimpleEnglish::Config.ignore?(config, "lib/a.py")
+  end
+
+  def test_filter_drops_disabled_rules
+    config = {ignore: [], disabled_rules: ["SE_NO_EMDASH"]}
     dropped = SimpleEnglish::Finding.new(line: 1, column: 3, rule: "SE_NO_EMDASH", message: "x")
     kept = SimpleEnglish::Finding.new(line: 1, column: 3, rule: "SE_NO_CONTRACTIONS", message: "x")
-    assert_empty SimpleEnglish::Config.filter(config, "vendor/lib/a.py", [dropped, kept])
-    assert_equal [kept], SimpleEnglish::Config.filter(config, "lib/a.py", [dropped, kept])
+    assert_equal [kept], SimpleEnglish::Config.filter(config, [dropped, kept])
   end
 
   def test_absolute_path_under_cwd_matches_relative_glob
     config = {ignore: ["docs/**"], disabled_rules: []}
-    finding = SimpleEnglish::Finding.new(line: 1, column: nil, rule: "R", message: "x")
     in_tmpdir(chdir: true) do |dir|
       absolute = File.join(dir, "docs", "a.md")
       FileUtils.mkdir_p(File.dirname(absolute))
       FileUtils.touch(absolute)
-      assert_empty SimpleEnglish::Config.filter(config, absolute, [finding])
+      assert SimpleEnglish::Config.ignore?(config, absolute)
     end
   end
 
@@ -54,8 +58,7 @@ class ConfigTest < Minitest::Test
 
   def test_single_star_does_not_cross_directories
     config = {ignore: ["*.md"], disabled_rules: []}
-    finding = SimpleEnglish::Finding.new(line: 1, column: nil, rule: "R", message: "x")
-    assert_empty SimpleEnglish::Config.filter(config, "doc.md", [finding])
-    assert_equal [finding], SimpleEnglish::Config.filter(config, "sub/dir/doc.md", [finding])
+    assert SimpleEnglish::Config.ignore?(config, "doc.md")
+    refute SimpleEnglish::Config.ignore?(config, "sub/dir/doc.md")
   end
 end

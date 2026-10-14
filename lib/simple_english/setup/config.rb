@@ -54,8 +54,7 @@ module SimpleEnglish
       end.join("/") + "\\z")
     end
 
-    def filter(config, path, findings)
-      return [] if ignore?(config, path)
+    def filter(config, findings)
       disabled = config[:disabled_rules]
       findings.reject { |finding| disabled.include?(finding.rule) }
     end

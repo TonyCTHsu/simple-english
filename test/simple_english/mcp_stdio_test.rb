@@ -34,7 +34,7 @@ module SimpleEnglish
       out_r, out_w = IO.pipe
       out_w.sync = false # the real $stdout is buffered when piped
       thread = Thread.new do
-        ModelContextProtocol.run(io: in_r, out: out_w, linter: ->(_p) { [] })
+        ModelContextProtocol.run(io: in_r, out: out_w, linter: FakeLinter.new)
       end
       request = {"jsonrpc" => "2.0", "id" => 1, "method" => "initialize",
                  "params" => {"protocolVersion" => "2025-06-18"}}
@@ -55,7 +55,7 @@ module SimpleEnglish
       dir = Dir.mktmpdir("mcp_stdio")
       path = File.join(dir, "a.md")
       FileUtils.touch(path)
-      out = run_script(script_lines(path), linter: ->(_p) { [] })
+      out = run_script(script_lines(path), linter: FakeLinter.new)
       responses = out.split("\n").map { |line| JSON.parse(line) }
       assert_equal [1, 2, 3], responses.map { |r| r.fetch("id") }
       assert_equal "simple-english", responses[0].dig("result", "serverInfo", "name")
@@ -72,7 +72,7 @@ module SimpleEnglish
 
     def test_run_survives_a_raising_tool_call
       calls = 0
-      linter = lambda do |_path|
+      linter = FakeLinter.new do
         calls += 1
         raise Errno::EACCES, "denied" if calls == 1
         []
@@ -91,7 +91,7 @@ module SimpleEnglish
       assert_equal "clean", responses[1].dig("result", "content").first.fetch("text")
     end
 
-    def test_default_linter_honors_disabled_rules
+    def test_linter_honors_disabled_rules
       Dir.mktmpdir("mcp_config") do |dir|
         path = File.join(dir, "doc.md")
         FileUtils.touch(path)
@@ -99,7 +99,7 @@ module SimpleEnglish
         findings = [Finding.new(1, nil, nil, nil, "SE_X", "gone"),
           Finding.new(2, nil, nil, nil, "SE_KEEP", "kept")]
         Dir.chdir(dir) do
-          SimpleEnglish.stub(:lint_file, findings) do
+          SimpleEnglish.stub(:lint, findings) do
             out = run_script(script_lines(path))
             text = JSON.parse(out.split("\n").last).dig("result", "content").first.fetch("text")
             assert_includes text, "SE_KEEP"
@@ -109,13 +109,13 @@ module SimpleEnglish
       end
     end
 
-    def test_default_linter_skips_ignored_paths
+    def test_linter_skips_ignored_paths
       Dir.mktmpdir("mcp_config") do |dir|
         path = File.join(dir, "doc.md")
         FileUtils.touch(path)
         File.write(File.join(dir, ".simple-english.yml"), "ignore:\n  - doc.md\n")
         Dir.chdir(dir) do
-          SimpleEnglish.stub(:lint_file, ->(_p) { raise "must not lint an ignored path" }) do
+          SimpleEnglish.stub(:lint, ->(*) { raise "must not lint an ignored path" }) do
             out = run_script(script_lines("doc.md"))
             assert_equal "clean", JSON.parse(out.split("\n").last).dig("result", "content").first.fetch("text")
           end
@@ -140,26 +140,35 @@ module SimpleEnglish
     def test_run_stays_silent_for_notifications
       input = StringIO.new(JSON.generate({"jsonrpc" => "2.0", "method" => "notifications/initialized"}) + "\n")
       output = StringIO.new(+"")
-      ModelContextProtocol.run(io: input, out: output, linter: ->(_p) { [] })
+      ModelContextProtocol.run(io: input, out: output, linter: FakeLinter.new)
       assert_equal "", output.string
     end
 
-    def test_run_skips_blank_and_malformed_lines
-      input = StringIO.new("\nnot json\n")
+    def test_run_skips_blank_lines
+      input = StringIO.new("\n  \n")
       output = StringIO.new("")
-      ModelContextProtocol.run(io: input, out: output, linter: ->(_p) { [] })
+      ModelContextProtocol.run(io: input, out: output, linter: FakeLinter.new)
       assert_equal "", output.string
+    end
+
+    def test_run_answers_malformed_lines_with_a_parse_error
+      input = StringIO.new("not json\n")
+      output = StringIO.new(+"")
+      ModelContextProtocol.run(io: input, out: output, linter: FakeLinter.new)
+      response = JSON.parse(output.string)
+      assert_nil response.fetch("id")
+      assert_equal(-32700, response.dig("error", "code"))
     end
 
     def test_run_skips_json_that_is_not_an_object
       input = StringIO.new("\"just a string\"\n")
       output = StringIO.new("")
-      ModelContextProtocol.run(io: input, out: output, linter: ->(_p) { [] })
+      ModelContextProtocol.run(io: input, out: output, linter: FakeLinter.new)
       assert_equal "", output.string
     end
 
     def test_run_ends_cleanly_at_eof
-      out = run_script([], linter: ->(_p) { [] })
+      out = run_script([], linter: FakeLinter.new)
       assert_equal "", out
     end
 
@@ -167,7 +176,7 @@ module SimpleEnglish
       dir = Dir.mktmpdir("mcp_stdio")
       path = File.join(dir, "a.md")
       FileUtils.touch(path)
-      out = run_script([script_lines(path).first], linter: ->(_p) { [] })
+      out = run_script([script_lines(path).first], linter: FakeLinter.new)
       assert_equal 1, out.lines.length
       refute_includes out, "\n\n"
     end
