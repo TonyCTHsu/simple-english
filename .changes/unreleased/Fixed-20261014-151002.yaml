@@ -1,0 +1,3 @@
+kind: Fixed
+body: Fix MCP requests with bad JSON that got no answer and left the client waiting. The server now answers with a parse error.
+time: 2026-10-14T15:10:02.000000+02:00
