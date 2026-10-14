@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.0] - 2026-10-14
+
+### Added
+
+- Lint Markdown text through the MCP `lint` tool without a file. Pass `text` instead of `path`.
+- Support MCP `ping` requests, so clients can check that the server is alive.
+
+### Fixed
+
+- Fix MCP requests with bad JSON that got no answer and left the client waiting. The server now answers with a parse error.
+
 ## [0.8.1] - 2026-10-13
 
 ### Fixed
