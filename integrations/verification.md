@@ -38,6 +38,33 @@ Source: the `claude-code` hooks reference at
 `https://docs.anthropic.com/en/docs/claude-code/hooks`, plus the
 captured session.
 
+## claude-code-mcp
+
+Live-tested 2026-10-14 against the 0.9.0 source tree. The plugin
+root ships `.mcp.json`, so `claude --plugin-dir` starts the server
+with no other setup. A headless run needs the tool on the allow
+list, because `acceptEdits` grants only file edits:
+
+```bash
+claude --plugin-dir integrations/claude-code \
+  -p --permission-mode acceptEdits \
+  --allowedTools mcp__plugin_simple-english_simple-english__lint
+```
+
+The tool name carries the plugin namespace twice:
+`mcp__plugin_simple-english_simple-english__lint`. A `tools/call`
+with `text` and no `path` answers with findings labeled `-`, the
+same label `se lint -` prints for stdin:
+
+```
+-:1:18-29: [SE_SLOP_IN_ORDER_TO] "in order to" - Write "to".
+-:1:9-17: [SE_SLOP_LEVERAGE] "utilized" - Write "use".
+```
+
+A missing `se` binary leaves the server unable to start, and
+`claude-code` reports a failed connection. The hook degrades with a
+message instead, as the section above records.
+
 ## mcp-stdio
 
 The stdio transport is JSON-RPC over stdin and stdout. One message per
