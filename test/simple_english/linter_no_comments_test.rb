@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 
-class LintFileNoCommentsTest < Minitest::Test
+class LinterNoCommentsTest < Minitest::Test
   def gem_available?
     require "tree_sitter_language_pack"
     true
@@ -18,12 +18,12 @@ class LintFileNoCommentsTest < Minitest::Test
       [200, "[]"]
     end)
     with_env("SE_SERVER_URL" => server.url) do
-      assert_empty SimpleEnglish.lint_file("a.py", "x = 1\n")
+      assert_empty SimpleEnglish::Linter.lint_text("x = 1\n", language: "python", config: SimpleEnglish::Config::DEFAULT)
       refute called, "a comment-free file must not reach the daemon"
       # A dead custom URL: reaching [] without SystemExit proves that no
       # daemon code ran.
       with_env("SE_SERVER_URL" => "http://localhost:1") do
-        assert_empty SimpleEnglish.lint_file("b.py", "y = 2\n")
+        assert_empty SimpleEnglish::Linter.lint_text("y = 2\n", language: "python", config: SimpleEnglish::Config::DEFAULT)
       end
     end
   ensure

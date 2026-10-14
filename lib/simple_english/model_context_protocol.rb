@@ -15,7 +15,7 @@ module SimpleEnglish
 
     module_function
 
-    def run(io: $stdin, out: $stdout, linter: method(:default_linter))
+    def run(io: $stdin, out: $stdout, linter: Linter)
       # A piped stdout buffers until 4 KB or EOF. An MCP client keeps
       # stdin open while it waits for the answer, so an unflushed
       # response never arrives and the client drops the server.
@@ -26,6 +26,7 @@ module SimpleEnglish
         begin
           request = JSON.parse(line)
         rescue JSON::ParserError
+          out.puts JSON.generate(error(nil, -32700, "Parse error"))
           next
         end
         next unless request.is_a?(Hash)
@@ -41,15 +42,6 @@ module SimpleEnglish
       end
     end
 
-    # The CLI's lint pipeline as a callable: .simple-english.yml decides
-    # which paths and rules count, then the daemon lints the file.
-    def default_linter(path)
-      config = SimpleEnglish::Config.load
-      return [] if SimpleEnglish::Config.ignore?(config, path)
-      findings = SimpleEnglish.lint_file(path)
-      findings.nil? ? nil : SimpleEnglish::Config.filter(config, path, findings)
-    end
-
     def respond(request, linter:)
       return nil unless request.key?("id")
       id = request.fetch("id")
@@ -59,6 +51,7 @@ module SimpleEnglish
       params = {} unless params.is_a?(Hash)
       case method
       when "initialize" then ok(id, initialize_result(params["protocolVersion"]))
+      when "ping" then ok(id, {})
       when "tools/list" then ok(id, {"tools" => [lint_tool]})
       when "tools/call" then tools_call(id, params, linter)
       else error(id, -32601, "Method not found: #{method}")
@@ -80,12 +73,14 @@ module SimpleEnglish
         "description" =>
           "Lint Markdown prose and code comments against plain-English rules " \
           "(short sentences, active voice, no jargon, no filler). " \
-          "Input: a file path. Returns one line per finding, or 'clean' when " \
+          "Input: a file path, or Markdown text. Returns one line per finding, or 'clean' when " \
           "nothing is flagged. Fix the findings, then call again until clean.",
         "inputSchema" => {
           "type" => "object",
-          "properties" => {"path" => {"type" => "string", "description" => "File to lint"}},
-          "required" => ["path"]
+          "properties" => {
+            "path" => {"type" => "string", "description" => "File to lint"},
+            "text" => {"type" => "string", "description" => "Markdown text to lint instead of a file"}
+          }
         }
       }
     end
@@ -96,12 +91,16 @@ module SimpleEnglish
       arguments = params["arguments"]
       arguments = {} unless arguments.is_a?(Hash)
       path = arguments["path"]
-      return ok(id, tool_error("the path argument is required.")) if path.nil? || path.to_s.empty?
-      return ok(id, tool_error("#{path} is a directory. Give one file.")) if File.directory?(path)
-      return ok(id, tool_error("file not found: #{path}")) unless File.exist?(path)
+      text = arguments["text"]
+      return ok(id, tool_error("give the path or the text, not both.")) if path && text
+      unless text
+        return ok(id, tool_error("the path or text argument is required.")) if path.nil? || path.to_s.empty?
+        return ok(id, tool_error("#{path} is a directory. Give one file.")) if File.directory?(path)
+        return ok(id, tool_error("file not found: #{path}")) unless File.exist?(path)
+      end
       findings =
         begin
-          linter.call(path)
+          text ? linter.lint_text(text) : linter.lint_file(path)
         rescue SimpleEnglish::Config::ConfigError => e
           return ok(id, tool_error("invalid .simple-english.yml: #{e.message}"))
         end
@@ -110,7 +109,7 @@ module SimpleEnglish
         # model, and this message is the one that tells it how to recover.
         ok(id, tool_error("the se daemon did not answer. Run `se serve --detached` and retry."))
       else
-        ok(id, {"content" => [{"type" => "text", "text" => render(path, findings)}], "isError" => false})
+        ok(id, {"content" => [{"type" => "text", "text" => render(text ? "-" : path, findings)}], "isError" => false})
       end
     end
 

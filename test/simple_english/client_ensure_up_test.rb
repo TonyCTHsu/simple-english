@@ -15,10 +15,10 @@ class ClientRunnerTest < Minitest::Test
 end
 
 class ClientEnsureUpTest < Minitest::Test
-  def test_lint_text_returns_nil_when_custom_url_is_dead
+  def test_lint_returns_nil_when_custom_url_is_dead
     with_env("SE_SERVER_URL" => "http://localhost:1") do
       _out, err = capture_io do
-        assert_nil SimpleEnglish.lint_text("Fine text.\n")
+        assert_nil SimpleEnglish.lint("Fine text.\n")
       end
       assert_match(/SE_SERVER_URL is set but/, err)
     end

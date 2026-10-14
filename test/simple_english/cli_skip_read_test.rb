@@ -4,7 +4,7 @@ require_relative "test_helper"
 
 class CLISkipReadTest < Minitest::Test
   # The readable check above is a stat. The read belongs behind the
-  # lintable gate in lint_file, so a non-lintable file costs no read.
+  # lintable gate in Linter, so a non-lintable file costs no read.
   def test_cli_does_not_read_non_lintable_files
     in_tmpdir(chdir: true) do |_dir|
       File.write("blob.bin", "x")

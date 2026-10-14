@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 
-class LintFileReadEncodingTest < Minitest::Test
+class LinterReadEncodingTest < Minitest::Test
   FINDINGS = [
     {"line" => 1, "column" => 46, "end_line" => 1, "end_column" => 47,
      "rule" => "SE_NO_EMDASH",
@@ -20,7 +20,7 @@ class LintFileReadEncodingTest < Minitest::Test
       original = Encoding.default_external
       Encoding.default_external = Encoding::US_ASCII
       with_env("SE_SERVER_URL" => server.url) do
-        findings = SimpleEnglish.lint_file(path)
+        findings = SimpleEnglish::Linter.lint_file(path, config: SimpleEnglish::Config::DEFAULT)
         assert_equal 1, findings.size
       end
     ensure

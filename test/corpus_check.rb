@@ -13,8 +13,8 @@ require_relative "../lib/simple_english"
 pairs = Dir.glob(File.expand_path("corpus/*-before.md", __dir__)).sort
 failed = pairs.flat_map do |before|
   after = before.sub(/-before\.md\z/, "-after.md")
-  before_findings = SimpleEnglish.lint_text(File.read(before))
-  after_findings = SimpleEnglish.lint_text(File.read(after))
+  before_findings = SimpleEnglish.lint(File.read(before))
+  after_findings = SimpleEnglish.lint(File.read(after))
   messages = []
   if before_findings.nil? || after_findings.nil?
     messages << "#{before}: daemon unreachable"

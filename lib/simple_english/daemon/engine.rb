@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# The complete lint engine, daemon-side. Never call SimpleEnglish.lint_text
+# The complete lint engine, daemon-side. Never call SimpleEnglish.lint
 # here: that call probes the daemon and recurses into the server.
 # The engine reads nothing from disk: the caller captures the enabled
 # rule IDs once at daemon boot (Server.start) and passes them in.

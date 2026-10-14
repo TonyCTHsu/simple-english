@@ -5,7 +5,8 @@ here. If you only want to lint prose, read the [README](../README.md).
 
 ## Layout
 
-- `lib/simple_english.rb` is the composition root: `lint_text` and `lint_file`
+- `lib/simple_english.rb` is the composition root: `lint`
+- `lint/linter.rb` is the path pipeline the CLI and MCP share
 - `lint/` holds text analysis, suppression handling, and value objects
 - `setup/languagetool.rb` holds pinned engine facts and the rules path
 - `setup/install.rb` resolves the native executable once at the process edge.

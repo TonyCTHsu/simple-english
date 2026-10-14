@@ -43,8 +43,9 @@ rules run on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ru
 
 ## Layout
 
-- `lib/simple_english.rb` is the composition root: `lint_text`,
-  `lint_file`. `test/corpus_check.rb` runs the corpus pairs
+- `lib/simple_english.rb` is the composition root: `lint`.
+  `lint/linter.rb` is the path pipeline the CLI and MCP share.
+  `test/corpus_check.rb` runs the corpus pairs
 - `lib/simple_english/version.rb` holds the gem version, and a version bump
   is the only change that belongs in it. `cli.rb` is the Thor CLI
 - `lib/simple_english/model_context_protocol.rb` is the MCP stdio front

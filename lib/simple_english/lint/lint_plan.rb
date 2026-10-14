@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# One decision, two callers: the CLI (SimpleEnglish.lint_file) and
+# One decision, two callers: the CLI (SimpleEnglish.lint) and
 # the daemon (Engine.lint) must agree on what kind of lint an input
 # is. The CLI decides to skip comment-free files without a boot.
 # The daemon decides again on its side of the wire. Both call this
