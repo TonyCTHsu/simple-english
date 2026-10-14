@@ -11,6 +11,18 @@ the agent fixes them in its next turn. The plugin also ships the
 `write-simple-english` skill carries the rules themselves, so Claude
 writes clean prose the first time.
 
+## MCP server
+
+The plugin root ships `.mcp.json`. It starts an MCP server that runs
+`se mcp`, so Claude gets a `lint` tool to call on demand. The tool
+takes a file `path`, or Markdown `text` that no file holds yet. Claude
+can lint prose before it writes the prose to disk. The hook still
+covers every write and edit after the fact.
+
+The server needs the `se` binary on `PATH`. If the gem is missing,
+the server fails to start, and Claude reports a failed connection.
+Install the gem as described in Prerequisites.
+
 ## Prerequisites
 
 The linter is a Ruby gem. Install it once, before the adapter:

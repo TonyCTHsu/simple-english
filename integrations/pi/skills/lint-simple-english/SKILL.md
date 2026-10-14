@@ -7,7 +7,8 @@ description: Lint prose with simple_english after writing or editing documentati
 
 Lint prose the linter can see. Call the lint tool after writing or
 editing any documentation file or prose-heavy text. Read the findings.
-Fix every finding. Re-run until the result is clean.
+Fix every finding, also in prose you did not write. Re-run
+until the result is clean.
 
 The tool names differ by agent:
 

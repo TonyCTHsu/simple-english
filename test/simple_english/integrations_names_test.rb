@@ -49,6 +49,7 @@ class IntegrationsNamesTest < Minitest::Test
     "se mcp" => [
       "README.md",
       "docs/DEVELOPMENT.md",
+      "integrations/claude-code/README.md",
       "integrations/codex/README.md",
       "integrations/cursor/README.md",
       "integrations/opencode/README.md",
