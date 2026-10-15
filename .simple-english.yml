@@ -14,10 +14,11 @@ ignore:
   - integrations/cursor/skills/write-simple-english/**
   - integrations/opencode/skills/write-simple-english/**
   - integrations/pi/skills/write-simple-english/**
+  - integrations/vscode-copilot/skills/write-simple-english/**
   - tmp/**
   - vendor/**
   - .changes/**
-  # Verbatim upstream license texts and notices; they cannot be
+  # Verbatim upstream license texts and notices. They cannot be
   # reworded, so self-lint skips them.
   - licenses/**
   - THIRD_PARTY_NOTICES.md

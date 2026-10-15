@@ -5,11 +5,11 @@ require_relative "test_helper"
 # Every skill is vendored into every adapter dir so an install that
 # copies a plugin alone still carries it (a symlink dangles in that
 # case). This test keeps the copies from drifting apart: edit the
-# shared one, then copy it into the five adapters. A new skill under
+# shared one, then copy it into the six adapters. A new skill under
 # integrations/shared/skills/ joins this test automatically.
 class IntegrationsSkillTest < Minitest::Test
   SHARED_SKILLS = File.expand_path("../../integrations/shared/skills", __dir__)
-  ADAPTERS = %w[claude-code codex cursor opencode pi].freeze
+  ADAPTERS = %w[claude-code codex cursor opencode pi vscode-copilot].freeze
 
   def shared_skill_paths
     Dir.glob("*/SKILL.md", base: SHARED_SKILLS).sort.map { |rel| File.join(SHARED_SKILLS, rel) }
