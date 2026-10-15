@@ -26,16 +26,16 @@ GEM
     regexp_parser (2.13.1)
     rexml (3.4.4)
     simpleidn (0.3.0)
-    sorbet-runtime (0.6.13508)
+    sorbet-runtime (0.6.13558)
     thor (1.5.0)
-    tree_sitter_language_pack (1.20.0-aarch64-linux)
-      sorbet-runtime (~> 0.5)
-    tree_sitter_language_pack (1.20.0-arm64-darwin)
-      sorbet-runtime (~> 0.5)
-    tree_sitter_language_pack (1.20.0-x86_64-darwin)
-      sorbet-runtime (~> 0.5)
-    tree_sitter_language_pack (1.20.0-x86_64-linux)
-      sorbet-runtime (~> 0.5)
+    tree_sitter_language_pack (1.22.1-aarch64-linux)
+      sorbet-runtime (~> 0.6)
+    tree_sitter_language_pack (1.22.1-arm64-darwin)
+      sorbet-runtime (~> 0.6)
+    tree_sitter_language_pack (1.22.1-x86_64-darwin)
+      sorbet-runtime (~> 0.6)
+    tree_sitter_language_pack (1.22.1-x86_64-linux)
+      sorbet-runtime (~> 0.6)
 
 PLATFORMS
   aarch64-linux
@@ -67,12 +67,12 @@ CHECKSUMS
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   simple_english (0.10.0)
   simpleidn (0.3.0) sha256=12ca730bed2f3db04d11e9bfd1bca3e11fb37f55b21eb2e9793fb5814bf54d03
-  sorbet-runtime (0.6.13508) sha256=011ee266adead459077ebc0058d36aeb75d6c90968db8524916050ce3c62e526
+  sorbet-runtime (0.6.13558) sha256=c11bcc160a56a422ff65325f2b1ea898d0f1697914edaa1459b0fc771e839386
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
-  tree_sitter_language_pack (1.20.0-aarch64-linux) sha256=8b43f4c3d18705d4211a5dc0d9281f5e68616c8dd6b323df411b9ee026894f6f
-  tree_sitter_language_pack (1.20.0-arm64-darwin) sha256=b5e6899bedaa750f030a12bfd5db96fe9ed6a0617eee37119c0ffafd49d5baae
-  tree_sitter_language_pack (1.20.0-x86_64-darwin) sha256=8c33f147b46b768a8c333fe8ee3924279feed0c39819232cd92a73f8d34826d6
-  tree_sitter_language_pack (1.20.0-x86_64-linux) sha256=ce5e910a1443afbc770eb6cd18d33b08327fed1ef721f6c9a15e0dfccf7327a4
+  tree_sitter_language_pack (1.22.1-aarch64-linux) sha256=2c90390c0ec671984b04b852eddec8bc0ff2000656204841169da44ab600d4b4
+  tree_sitter_language_pack (1.22.1-arm64-darwin) sha256=a375edb921dfd0c686d2052b40fe22e6159ec9e7b2e92ca8c35d84602771c63a
+  tree_sitter_language_pack (1.22.1-x86_64-darwin) sha256=104105b1087c708526eeb5805ad24ce7026c5d231365bbe455e70d315db7c0ec
+  tree_sitter_language_pack (1.22.1-x86_64-linux) sha256=bef548daeb5e1c4857f554339bd0723ef1230fea3345b0c6d592c11336c91f06
 
 BUNDLED WITH
   4.0.19
