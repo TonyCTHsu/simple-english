@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0] - 2026-10-15
+
+### Added
+
+- Add VS Code Copilot integration: `.mcp.json` server wiring plus both skills under `.github/skills`.
+- Add a `/se` session toggle to the `pi` package: turn lint enforcement and the `se_lint` tool on or off.
+
+### Fixed
+
+- Fix `opencode` integration version 2. It dropped the version 1 config shape, so the MCP server never connected.
+
 ## [0.9.0] - 2026-10-14
 
 ### Added
