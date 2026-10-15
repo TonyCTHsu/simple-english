@@ -43,6 +43,7 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/pi/skills/lint-simple-english/SKILL.md",
       "integrations/cursor/skills/lint-simple-english/SKILL.md",
       "integrations/opencode/skills/lint-simple-english/SKILL.md",
+      "integrations/vscode-copilot/skills/lint-simple-english/SKILL.md",
       "test/simple_english/integrations_pi_test.rb"
     ],
     # The MCP subcommand wiring.
@@ -53,6 +54,7 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/codex/README.md",
       "integrations/cursor/README.md",
       "integrations/opencode/README.md",
+      "integrations/vscode-copilot/README.md",
       "integrations/verification.md"
     ],
     # The lint skill, named verb-first like the writing skill.
@@ -69,12 +71,16 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/cursor/skills/write-simple-english/SKILL.md",
       "integrations/opencode/skills/lint-simple-english/SKILL.md",
       "integrations/opencode/skills/write-simple-english/SKILL.md",
+      "integrations/vscode-copilot/skills/lint-simple-english/SKILL.md",
+      "integrations/vscode-copilot/skills/write-simple-english/SKILL.md",
       "integrations/pi/skills/lint-simple-english/SKILL.md",
       "integrations/pi/skills/write-simple-english/SKILL.md",
       "integrations/claude-code/README.md",
       "integrations/codex/README.md",
       "integrations/cursor/README.md",
       "integrations/opencode/README.md",
+      "integrations/vscode-copilot/README.md",
+      "bin/vscode-copilot-check",
       "integrations/pi/README.md",
       "integrations/verification.md",
       "test/simple_english/integrations_claude_manifest_test.rb",
@@ -91,10 +97,13 @@ class IntegrationsNamesTest < Minitest::Test
       "integrations/cursor/skills/write-simple-english/SKILL.md",
       "integrations/opencode/skills/write-simple-english/SKILL.md",
       "integrations/pi/skills/write-simple-english/SKILL.md",
+      "integrations/vscode-copilot/skills/write-simple-english/SKILL.md",
+      "bin/vscode-copilot-check",
       "integrations/claude-code/README.md",
       "integrations/codex/README.md",
       "integrations/cursor/README.md",
       "integrations/opencode/README.md",
+      "integrations/vscode-copilot/README.md",
       "integrations/pi/README.md"
     ]
   }.freeze
