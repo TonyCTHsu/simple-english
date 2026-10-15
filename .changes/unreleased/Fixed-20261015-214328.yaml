@@ -1,3 +1,0 @@
-kind: Fixed
-body: Fix `opencode` integration version 2. It dropped the version 1 config shape, so the MCP server never connected.
-time: 2026-10-15T21:43:28.48056+02:00
