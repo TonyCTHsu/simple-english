@@ -113,7 +113,7 @@ export default function (pi: ExtensionAPI) {
 			return;
 		}
 		const dot = ctx.ui.theme.fg("success", "●");
-		ctx.ui.setStatus(STATUS_KEY, `${dot} ${ctx.ui.theme.fg("accent", "SE")}`);
+		ctx.ui.setStatus(STATUS_KEY, `${dot} ${ctx.ui.theme.fg("accent", "simple-english")}`);
 	};
 
 	const registerLintTool = (exposure: "direct" | "hidden"): void => {

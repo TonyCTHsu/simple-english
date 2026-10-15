@@ -83,7 +83,7 @@ tells the agent to lint the prose it writes and fix every finding.
 Turn the linter off for the session with `/se off`. That hides the
 `se_lint` tool and stops the edit enforcement. Turn it back on with
 `/se on`, or run `/se` to flip the current state. The status line
-shows `● SE` while it is on.
+shows `● simple-english` while it is on.
 
 The toggle lasts for the session. To stop the linter for every
 session, uninstall the package: `pi uninstall npm:pi-simple-english`.
