@@ -327,6 +327,9 @@ flow, the skills pickup, or that a missing `se` binary surfaces the
 same way as in `claude-code`. Record a live run here before the
 integration claims parity with the other adapters.
 
+`bin/vscode-copilot-check` seeds the scratch project for the manual
+run, and prints the VS Code steps and the lint check.
+
 Source: the agent skills guide at
 `https://code.visualstudio.com/docs/agent-customization/agent-skills`
 and the MCP configuration reference at

@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Seed a scratch project for the manual vscode-copilot verification
+# run. The VS Code steps stay manual: no CLI drives agent mode.
+# Record the outcome in integrations/verification.md.
+#
+# Usage: bin/vscode-copilot-check [target-dir]
+# The default target is tmp/vscode-scratch inside this checkout. The
+# script writes only inside the target. The lint check runs from
+# inside the target: this repository's lint config ignores tmp/**.
+
+set -euo pipefail
+
+repo=$(cd "$(dirname "$0")/.." && pwd)
+target=${1:-$repo/tmp/vscode-scratch}
+
+# The paragraph matches the QUESTION constant in bin/e2e-agents, so
+# the scenario stays the one the e2e legs run.
+question="This note was written by the documentation team in order to explain the release process, which is being followed by every engineer, making the pipeline slower than it needs to be, and any engineer who joins the team must read the whole guide before pushing a single change to the shared repository. What is the difference between a compiler and an interpreter?"
+
+rm -rf "$target"
+mkdir -p "$target/.github/skills"
+cd "$target"
+git init -q
+
+printf '%s\n' "$question" > note.md
+
+cat > .mcp.json <<'EOF'
+{
+  "mcpServers": {
+    "simple-english": {
+      "type": "stdio",
+      "command": "se",
+      "args": ["mcp"]
+    }
+  }
+}
+EOF
+
+cp -R "$repo/integrations/vscode-copilot/skills/lint-simple-english" .github/skills/
+cp -R "$repo/integrations/vscode-copilot/skills/write-simple-english" .github/skills/
+
+cat <<EOF
+
+Scratch project ready: $target
+
+Manual steps in VS Code:
+
+1. Open the folder in VS Code, then reload the window.
+2. Command Palette: MCP: List Servers. Confirm simple-english starts.
+3. Agent mode, prompt: The last paragraph of note.md asks a question. Answer it in the same file, as a new paragraph after the question.
+
+Then check the result:
+
+  cd $target && se lint note.md
+
+Clean output means the run passed. The lint must run from the
+scratch dir: the repository's own lint config ignores tmp/**.
+EOF
