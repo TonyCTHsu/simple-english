@@ -327,6 +327,19 @@ flow, the skills pickup, or that a missing `se` binary surfaces the
 same way as in `claude-code`. Record a live run here before the
 integration claims parity with the other adapters.
 
+Live run 2026-10-15, against the released gem 0.8.0. A GUI launch
+needs the absolute binstub in `mcpServers`: `se` sits behind an
+rbenv shim, and VS Code does not inherit the shell `PATH`. With the
+absolute path, the server starts and answers. The skills under
+`.github/skills/` load: the agent called the `lint` tool without
+being pointed at it.
+
+The run did not pass the scenario. The agent fixed the violations
+in the paragraph it wrote and reported the findings in the seeded
+paragraph, but left them in place. The scenario standard is the fix,
+not the report. If a retry repeats the miss, a `copilot-instructions.md`
+nudge is the candidate fix.
+
 `bin/vscode-copilot-check` seeds the scratch project for the manual
 run, and prints the VS Code steps and the lint check.
 

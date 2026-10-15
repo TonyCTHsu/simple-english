@@ -41,6 +41,12 @@ A project that already has a `.mcp.json` merges the
 `.vscode/mcp.json` variant also works: its top-level key is
 `servers`, not `mcpServers`.
 
+VS Code launched from the Dock does not inherit the shell `PATH`,
+so `"command": "se"` can fail there: the server stops on startup.
+Name the absolute binstub instead. With rbenv, `rbenv which se`
+prints it, for example
+`/Users/you/.rbenv/versions/4.0.5/bin/se`.
+
 Copy both skills to `.github/skills/` in the project:
 
 ```bash

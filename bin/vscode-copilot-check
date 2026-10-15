@@ -7,6 +7,10 @@
 # The default target is tmp/vscode-scratch inside this checkout. The
 # script writes only inside the target. The lint check runs from
 # inside the target: this repository's lint config ignores tmp/**.
+#
+# VS Code launched from the Dock does not inherit the shell PATH, so
+# the config names the absolute binstub. rbenv holds the real one
+# behind the shim.
 
 set -euo pipefail
 
@@ -22,14 +26,16 @@ mkdir -p "$target/.github/skills"
 cd "$target"
 git init -q
 
+se_bin=$(rbenv which se 2>/dev/null || command -v se)
+
 printf '%s\n' "$question" > note.md
 
-cat > .mcp.json <<'EOF'
+cat > .mcp.json <<EOF
 {
   "mcpServers": {
     "simple-english": {
       "type": "stdio",
-      "command": "se",
+      "command": "$se_bin",
       "args": ["mcp"]
     }
   }
