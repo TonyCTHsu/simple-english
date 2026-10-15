@@ -39,6 +39,19 @@ class IntegrationsPiTest < Minitest::Test
   def test_extension_enforces_the_lint_after_edits
     source = File.read(File.join(ROOT, "extensions", "se-lint.ts"))
     assert_includes source, 'pi.on("tool_result"'
+    assert_includes source, "if (!enabled) return"
+  end
+
+  def test_extension_registers_the_se_toggle_command
+    source = File.read(File.join(ROOT, "extensions", "se-lint.ts"))
+    assert_includes source, 'pi.registerCommand("se"'
+  end
+
+  def test_toggle_state_persists_in_the_session
+    source = File.read(File.join(ROOT, "extensions", "se-lint.ts"))
+    assert_includes source, 'STATE_ENTRY_TYPE = "se-lint-state"'
+    assert_includes source, "pi.appendEntry(STATE_ENTRY_TYPE"
+    assert_includes source, 'pi.on("session_start"'
   end
 
   def test_vendored_skill_names_the_pi_tool

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Smoke-checks the pi adapter's edit-time enforcement without a live
-# model: typechecks the extension against the pinned pi package, then
-# exercises the tool_result handler with a stubbed pi and a live se.
-# Needs node 24 or newer and se on PATH.
+# Smoke-checks the pi adapter without a live model: typechecks the
+# extension against the pinned pi package, then exercises the
+# tool_result handler and the /se toggle with a stubbed pi and a live
+# se. Needs node 24 or newer and se on PATH.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -25,30 +25,94 @@ import { writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 const mod = await import(pathToFileURL("se-lint.ts").href);
-let handler;
-mod.default({
-	registerTool: () => {},
-	on: (event, h) => { if (event === "tool_result") handler = h; },
-});
-assert.equal(typeof handler, "function", "no tool_result handler registered");
 
-const run = (over) => handler({
+// A pi stub that records every registration so the tests can see what
+// the extension did, plus the session state the toggle persists to.
+const registrations = [];
+const entries = [];
+const commands = new Map();
+const handlers = new Map();
+let status;
+const notices = [];
+
+const pi = {
+	registerTool: (definition) => registrations.push(definition),
+	registerCommand: (name, options) => commands.set(name, options),
+	on: (event, handler) => handlers.set(event, handler),
+	appendEntry: (customType, data) => entries.push({ type: "custom", customType, data }),
+};
+
+const ctx = () => ({
+	ui: {
+		setStatus: (key, value) => { if (key === "se") status = value; },
+		notify: (message, level) => notices.push({ message, level }),
+		theme: { fg: (_color, text) => text },
+	},
+	sessionManager: { getBranch: () => entries },
+});
+
+mod.default(pi);
+const command = commands.get("se");
+const seEntry = (enabled) => ({ type: "custom", customType: "se-lint-state", data: { enabled } });
+assert.ok(command, "the /se command is registered");
+const toolResult = handlers.get("tool_result");
+assert.equal(typeof toolResult, "function", "no tool_result handler registered");
+assert.equal(registrations.at(-1).exposure, "direct", "the tool starts callable");
+
+const run = (over) => toolResult({
 	type: "tool_result", toolCallId: "t1", toolName: "edit",
 	input: { path: "note.md" },
 	content: [{ type: "text", text: "the edit applied" }],
 	isError: false, ...over,
 });
 
-writeFileSync("note.md", "This note was written by the team; it is being reviewed by everyone — and it will be updated.\n");
+const dirtyText = () =>
+	writeFileSync("note.md", "This note was written by the team; it is being reviewed by everyone — and it will be updated.\n");
+
+// Enforcement, toggle on.
+dirtyText();
 const findings = await run({});
 assert.equal(findings.content[0].text, "the edit applied", "the edit result must survive");
 assert.match(findings.content[1].text, /^se found \d+ lint finding/, "findings must reach the agent");
 
 writeFileSync("note.md", "The service rotates the keys.\n");
 assert.equal(await run({}), undefined, "a clean edit stays silent");
-
 assert.equal(await run({ toolName: "read" }), undefined, "other tools are ignored");
 assert.equal(await run({ isError: true }), undefined, "a failed edit is not linted");
+
+// /se off hides the tool, skips enforcement, and records the state.
+await command.handler("off", ctx());
+assert.deepEqual(entries.at(-1), seEntry(false));
+assert.equal(registrations.at(-1).exposure, "hidden", "off must hide the tool");
+assert.equal(status, undefined, "off must clear the status line");
+dirtyText();
+assert.equal(await run({}), undefined, "off must skip enforcement on a dirty edit");
+
+// /se on restores everything.
+await command.handler("on", ctx());
+assert.deepEqual(entries.at(-1), seEntry(true));
+assert.equal(registrations.at(-1).exposure, "direct", "on must expose the tool again");
+assert.equal(status, "● simple-english", "on must set the status line");
+const again = await run({});
+assert.match(again.content[1].text, /^se found \d+ lint finding/, "on must lint the dirty edit");
+
+// A session restart replays the last state entry.
+entries.length = 0;
+entries.push(seEntry(false));
+await handlers.get("session_start")(undefined, ctx());
+assert.equal(registrations.at(-1).exposure, "hidden", "a saved off state must survive a restart");
+assert.equal(status, undefined, "a saved off state must not show the status line");
+
+entries.push(seEntry(true));
+await handlers.get("session_start")(undefined, ctx());
+assert.equal(registrations.at(-1).exposure, "direct", "the last entry wins on restart");
+
+// Garbage gets the usage message, and nothing changes.
+const before = registrations.length;
+notices.length = 0;
+await command.handler("maybe", ctx());
+assert.ok(notices.some((n) => n.message.includes("Usage") && n.level === "warning"), "garbage args get the usage notice");
+assert.equal(registrations.length, before, "garbage args must not touch the tool");
 
 console.log("pi enforcement smoke: ok");
 EOF
