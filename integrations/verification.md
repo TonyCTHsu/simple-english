@@ -249,16 +249,19 @@ specification at `https://agent-plugins.org/specification`.
 `opencode` has no Agent Plugins support (open feature request,
 `anomalyco/opencode#40993`). The integration is config wiring: an
 `mcp` block in the project's `opencode.json`, and the skill under
-`.opencode/skills/`. A local MCP server takes `type: "local"` and
-`command` as an array. MCP tools are permission-keyed
-`<server>_<tool>`, and a headless run can never answer an approval,
-so the config allows `simple-english_lint` and `edit` up front.
+`.opencode/skills/`. In opencode 2, servers nest under
+`mcp.servers`. A local MCP server takes `type: "local"` and
+`command` as an array. The version 1 permission map became a
+`permissions` rule list, where the last matching rule wins and an
+unmatched action asks. A headless run can never answer an approval,
+so the config allows `simple-english_lint`, skill loads, and `edit`
+up front.
 
-`opencode run` ignores the process cwd and picks the enclosing git
-repo, so a headless run in another directory needs `--dir`.
-Verified live 2026-10-10, run 38094528402: without `--dir` the agent
-searched the repository, not the scenario directory, and never found
-the seeded file.
+`opencode run` in version 1 ignores the process cwd and picks the
+enclosing git repo, so a headless run in another directory needed
+`--dir`. Verified live 2026-10-10, run 38094528402: without `--dir`
+the agent searched the repository, not the scenario directory, and
+never found the seeded file.
 
 The Google provider reads `GOOGLE_GENERATIVE_AI_API_KEY`, not
 `GEMINI_API_KEY`. Verified live, run 38094380373: the model call dies
@@ -270,6 +273,31 @@ The e2e leg passed 2026-10-10 with `opencode` 1.18.35 and
 `openai/gpt-6-luna`, pass on attempt 2. `google/gemini-3.1-flash-lite`
 called the lint tool but did not fix the findings, so it fails the
 gate. Weak models are the first suspect on a red `opencode` leg.
+
+The leg moved to `@opencode/cli` 2.0.27 on 2026-10-12. Its first
+run (38311988533) failed both attempts on `Unrecognized flag:
+--dir`: opencode 2 dropped the flag. The next runs (38312996164,
+38316300787) cleared the flags but the server booted its directory
+on `/home/runner/work/simple-english/simple-english`, the checkout.
+The model searched there instead of the scenario dir.
+
+Root cause: opencode 2 resolves its server directory from the
+`PWD` env var, not the process cwd. Ruby's `Dir.chdir` changes the
+cwd without updating `PWD`, so the spawn carried the job's startup
+directory. Bash `cd` updates `PWD`, which is why every shell-level
+repro anchored correctly. Run 38318780240 shows the split inside
+one runner: bash-spawned boots anchored on their scenario dirs
+while the ruby-spawned leg boot anchored on the checkout.
+
+The spawn now carries the scenario dir as `PWD`. Verified locally
+on 2.0.27: with `PWD` set, a ruby-spawned standalone run boots on
+the scenario dir and connects `simple-english` with the
+`mcp.servers` shape. The Google variable fact above still carries
+its 1.18.35 verification. The leg passed green with the fix, run
+38319156024, `openai/gpt-6-luna`, attempt 1. Upstream knows the
+behavior: `anomalyco/opencode#27392` reports the same
+`PWD`-over-cwd resolution and closed it not planned. Setting the
+env var is the supported way to steer a spawned run.
 
 Source: the `opencode` docs at `https://docs.opencode.ai/docs/config`,
 the tools and MCP pages, and the runs named above.
