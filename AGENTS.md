@@ -37,7 +37,7 @@ rules run on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ru
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
   a major bump in `changie next auto`. Breaking means the change breaks
   the CLI, the config, or an output format.
-  Write the body as one line, per the rules in `.changes/AGENTS.md`.
+  Write the body as one sentence, per the rules in `.changes/AGENTS.md`.
   Preview the entry with `--dry-run` on the same `changie new` command
   before the pull request. `rake lint` lints the fragment bodies.
 
