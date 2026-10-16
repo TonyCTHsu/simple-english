@@ -14,6 +14,7 @@ require "net/http"
 require "uri"
 
 require_relative "../lint/plain_text"
+require_relative "../lint/utf16"
 
 module SimpleEnglish
   module LanguageTool
@@ -71,25 +72,16 @@ module SimpleEnglish
       end
 
       def utf16_slice(text, offset, length)
-        first = utf16_index(text, offset)
-        last = utf16_index(text, offset + length)
+        first = UTF16.index(text, offset)
+        last = UTF16.index(text, offset + length)
         text[first...last]
-      end
-
-      def utf16_index(text, offset)
-        units = 0
-        text.each_char.with_index do |char, index|
-          return index if units >= offset
-          units += (char.ord > 0xFFFF) ? 2 : 1
-        end
-        text.length
       end
 
       def to_payload(payload)
         payload.is_a?(String) ? PlainText.new(payload) : payload
       end
 
-      private_class_method :to_payload, :with_context, :utf16_slice, :utf16_index
+      private_class_method :to_payload, :with_context, :utf16_slice
     end
   end
 end

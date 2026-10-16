@@ -9,6 +9,7 @@
 require_relative "extractor"
 require_relative "segment"
 require_relative "result"
+require_relative "utf16"
 
 module SimpleEnglish
   module AnnotatedText
@@ -21,10 +22,12 @@ module SimpleEnglish
     def build(source, spans)
       segments = []
       cursor = 0 # byte offset into source
+      stream_start = 0 # character offset into the annotation stream
       emit = lambda do |text:, content:, file_char:, interpret_as: nil|
         next if content.empty?
         segments << Segment.new(text: text, content: content, file_char: file_char,
-          stream_start: segments.sum { |s| s.content.length }, interpret_as: interpret_as)
+          stream_start: stream_start, interpret_as: interpret_as)
+        stream_start += content.length
       end
       spans = spans.sort_by(&:start_byte)
       spans.each do |span|
@@ -66,14 +69,14 @@ module SimpleEnglish
 
     # -> [line, column], both 1-based. Column in UTF-16 code units.
     def locate(result, utf16_offset)
-      char = utf16_to_char(result.stream, utf16_offset)
+      char = UTF16.index(result.stream, utf16_offset)
       segment = result.segments.find do |s|
         char >= s.stream_start && char < s.stream_start + s.content.length
       end || result.segments.last
       file_char = segment.file_char + (char - segment.stream_start)
       starts = line_starts(result.source)
       line = starts.rindex { |start| start <= file_char } + 1
-      [line, utf16_column(result.source, starts[line - 1], file_char)]
+      [line, UTF16.column(result.source, starts[line - 1], file_char)]
     end
 
     def split(comment)
@@ -96,22 +99,6 @@ module SimpleEnglish
       starts
     end
 
-    def utf16_to_char(stream, offset)
-      units = 0
-      stream.each_char.with_index do |char, index|
-        return index if units >= offset
-        units += (char.ord > 0xFFFF) ? 2 : 1
-      end
-      stream.length
-    end
-
-    def utf16_column(source, from, to)
-      units = 1
-      source[from...to].each_char { |c| units += (c.ord > 0xFFFF) ? 2 : 1 }
-      units
-    end
-
-    private_class_method :split, :char_index, :line_starts,
-      :utf16_to_char, :utf16_column
+    private_class_method :split, :char_index, :line_starts
   end
 end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "paragraph"
+require_relative "utf16"
 
 # Markdown stripping and paragraph splitting. Block structure comes
 # from the tree-sitter Markdown grammar shipped with the pack the
@@ -42,16 +43,12 @@ module SimpleEnglish
       # Width-preserving replacements keep LanguageTool positions aligned
       # with the source.
       line
-        .gsub(/`[^`]*`/) { |code| "X" * utf16_length(code) }
+        .gsub(/`[^`]*`/) { |code| "X" * UTF16.length(code) }
         .sub(/\A\#{1,6} /) { |marker| " " * marker.length }
     end
 
     def spaces_for(text)
-      " " * utf16_length(text)
-    end
-
-    def utf16_length(text)
-      text.each_char.sum { |char| (char.ord > 0xFFFF) ? 2 : 1 }
+      " " * UTF16.length(text)
     end
 
     # A vertical list is not one paragraph: each list item is its own.
@@ -115,7 +112,7 @@ module SimpleEnglish
       TreeSitterLanguagePack.get_parser("markdown").parse(text).root_node
     end
 
-    private_class_method :strip_line, :spaces_for, :utf16_length, :node_rows,
+    private_class_method :strip_line, :spaces_for, :node_rows,
       :blank_rows, :each_node, :inside_list_item?, :parse
   end
 end
