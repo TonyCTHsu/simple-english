@@ -22,10 +22,12 @@ module SimpleEnglish
     def build(source, spans)
       segments = []
       cursor = 0 # byte offset into source
+      stream_start = 0 # character offset into the annotation stream
       emit = lambda do |text:, content:, file_char:, interpret_as: nil|
         next if content.empty?
         segments << Segment.new(text: text, content: content, file_char: file_char,
-          stream_start: segments.sum { |s| s.content.length }, interpret_as: interpret_as)
+          stream_start: stream_start, interpret_as: interpret_as)
+        stream_start += content.length
       end
       spans = spans.sort_by(&:start_byte)
       spans.each do |span|
