@@ -118,8 +118,12 @@ Prefer a clearer name or a test over a comment.
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and correct
    examples
 2. Counting rule: `lib/simple_english/lint/counts.rb`
-3. Add a corpus pair `test/corpus/NN-before.md` / `NN-after.md`. The before file
+3. Add a corpus pair `test/corpus/NN-before.md` / `NN-after.md` (a `.rb`
+   pair for the comment pipeline). The before file
    must trigger the rule. The after file must stay clean.
+4. Close a reported false positive or false negative with a corpus pair, in the
+   same change. The report found a shape the rule author did not imagine, and
+   the pair keeps it covered for good.
 
 ## Suppressions
 
