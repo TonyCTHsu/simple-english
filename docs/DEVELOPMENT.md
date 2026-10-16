@@ -105,9 +105,12 @@ Only boundary tests exercise the real executable.
    A `sleep` script stands in for the
    inner-death path. A dying script stands in for fast-fail. Real
    `TCPServer`s test the port guards.
-3. **Corpus pairs** (`test/corpus/NN-before.md` / `NN-after.md`): each
+3. **Corpus pairs** (`test/corpus/NN-before.md` / `NN-after.md`, and
+   `.rb` pairs for the comment pipeline): each
    rule triggers on its before file. It stays silent on its after file.
-   The after file is the document-level false-positive guard.
+   The after file is the document-level false-positive guard. The clean
+   net (`test/corpus/clean/`) holds real public-domain third-party prose
+   and asserts it stays silent.
 4. **LanguageTool boundary**: with a built native executable,
    `examples_check.rb` proves each XML rule fires on its incorrect
    example. It proves the rule stays silent on its correct example.
