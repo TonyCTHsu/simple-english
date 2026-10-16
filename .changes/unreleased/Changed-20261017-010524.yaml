@@ -1,0 +1,3 @@
+kind: Changed
+body: Change the `write-simple-english` trigger so it fires before the first prose output of a session. The trigger now names the concrete artifacts, so routine tasks match it.
+time: 2026-10-17T01:05:24.149901+02:00
