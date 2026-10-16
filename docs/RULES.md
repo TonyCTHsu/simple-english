@@ -50,7 +50,7 @@ Use the simple past. Say when it happened.
 
 ### SE_ING_AFTER_COMMA: No -ing after a comma
 
-Start a new sentence instead of the -ing phrase.
+Write a new sentence, or put the condition first. A trailing -ing phrase hides who does what and when.
 
 - Wrong: The tool runs, making it easy.
 - Right: The tool runs. It is easy.
