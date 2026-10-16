@@ -29,6 +29,19 @@ failed = pairs.flat_map do |before|
   end
   messages
 end
+# Clean net: real third-party prose in test/corpus/clean, written for
+# readers and not for these rules. Every file must stay silent. Each
+# file name names its public-domain source.
+clean = Dir.glob(File.expand_path("corpus/clean/*.md", __dir__)).sort
+clean_failures = clean.flat_map do |path|
+  findings = SimpleEnglish.lint(File.read(path))
+  if findings.nil?
+    ["#{path}: daemon unreachable"]
+  else
+    findings.map { |f| "#{path}: clean prose flagged #{f.rule}" }
+  end
+end
+failed = (failed + clean_failures).uniq
 failed.each { |failure| puts "FAIL #{failure}" }
-puts "corpus: #{pairs.size} pairs, #{failed.size} failures"
+puts "corpus: #{pairs.size} pairs, #{clean.size} clean files, #{failed.size} failures"
 exit(failed.empty? ? 0 : 1)

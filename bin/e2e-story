@@ -11,6 +11,11 @@ rm -rf "$story"
 mkdir "$story"
 cp "$repo"/test/corpus/*-before.md "$repo"/test/corpus/*-before.rb "$story/"
 cp "$repo"/test/corpus/*-after.md "$repo"/test/corpus/*-after.rb "$story/"
+# The clean net: real third-party prose must stay silent, through the
+# installed gem like everything else.
+for f in "$repo"/test/corpus/clean/*.md; do
+  cp "$f" "$story/clean-$(basename "$f")"
+done
 # The comment story is also the non-ASCII story: a GUI app or cron spawns
 # se with no locale, so the em-dash and the kanji must survive the read.
 printf '# Read the log — then act. The 準備 step runs first.\n' > "$story/broken.rb"
@@ -29,6 +34,10 @@ for file in *-after.*; do
 done
 rc=0; se lint broken.rb || rc=$?
 [ "$rc" -eq 1 ] || { echo "broken.rb: expected exit 1, got $rc"; exit 1; }
+for file in clean-*; do
+  rc=0; se lint "$file" || rc=$?
+  [ "$rc" -eq 0 ] || { echo "$file: clean net flagged it, got $rc"; exit 1; }
+done
 
 pairs=$(ls *-before.* | wc -l | tr -d ' ')
-echo "user story: $pairs corpus pairs plus one comment file, all as expected"
+echo "user story: $pairs corpus pairs, one comment file, and the clean net, all as expected"
