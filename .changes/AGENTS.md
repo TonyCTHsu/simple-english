@@ -1,7 +1,7 @@
 # Changelog fragment bodies
 
-A fragment body is one line. `changeFormat` prefixes `- ` once, so a
-multi-line body falls out of the list.
+A fragment body is one sentence on one line. `changeFormat` prefixes
+`- ` once, so a multi-line body falls out of the list.
 
 The body writes for a user scanning the changelog for whether the
 upgrade affects them.
