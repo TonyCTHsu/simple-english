@@ -68,11 +68,22 @@
       <example type="correct">The job completed.</example>
     </rule>
 
+    <!-- Spirit: a participle clause after a comma leaves the subject
+         and the time relation implicit, so the reader must guess. Two
+         escapes exist: write a new sentence, or, when the phrase
+         states a condition, put the condition first
+         (SE_CONDITION_FIRST). No word-list carve-outs: this tool ships
+         no approved dictionary, so every comma-plus-ing participle
+         fires, including the preposition-like ones. -->
     <rule id="SE_ING_AFTER_COMMA" name="No -ing after a comma">
       <pattern><token>,</token><token postag="VBG"><exception scope="next" regexp="yes">[,)]|and|or</exception></token></pattern>
-      <message>Start a new sentence instead of the -ing phrase.</message>
+      <message>Write a new sentence, or put the condition first. A trailing -ing phrase hides who does what and when.</message>
       <example type="incorrect">The tool runs<marker>, making</marker> it easy.</example>
+      <example type="incorrect">Open the valve<marker>, depending</marker> on the pressure.</example>
+      <example type="incorrect">Remove the cover<marker>, making</marker> sure not to damage the seal.</example>
       <example type="correct">The tool runs. It is easy.</example>
+      <example type="correct">If the pressure is more than 300 kPa, open the valve.</example>
+      <example type="correct">Remove the cover. Make sure that you do not damage the seal.</example>
       <example type="correct">The walkthrough (accounts, VPC, secrets, troubleshooting) is in the guide.</example>
       <example type="correct">The guide covers billing, troubleshooting, and support for each environment.</example>
       <example type="correct">The guide covers billing, troubleshooting and support for each environment.</example>
