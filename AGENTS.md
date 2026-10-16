@@ -37,7 +37,7 @@ rules run on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ru
   The kinds are Breaking, Added, Changed, and Fixed. Only Breaking maps to
   a major bump in `changie next auto`. Breaking means the change breaks
   the CLI, the config, or an output format.
-  Write the body as one line, per the rules in `.changes/AGENTS.md`.
+  Write the body as one sentence, per the rules in `.changes/AGENTS.md`.
   Preview the entry with `--dry-run` on the same `changie new` command
   before the pull request. `rake lint` lints the fragment bodies.
 
@@ -118,8 +118,12 @@ Prefer a clearer name or a test over a comment.
 1. Pattern rule: add to `rules/simple-english.xml` with incorrect and correct
    examples
 2. Counting rule: `lib/simple_english/lint/counts.rb`
-3. Add a corpus pair `test/corpus/NN-before.md` / `NN-after.md`. The before file
+3. Add a corpus pair `test/corpus/NN-before.md` / `NN-after.md` (a `.rb`
+   pair for the comment pipeline). The before file
    must trigger the rule. The after file must stay clean.
+4. Close a reported false positive or false negative with a corpus pair, in the
+   same change. The report found a shape the rule author did not imagine, and
+   the pair keeps it covered for good.
 
 ## Suppressions
 

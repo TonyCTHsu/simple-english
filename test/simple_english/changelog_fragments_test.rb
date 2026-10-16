@@ -28,4 +28,14 @@ class ChangelogFragmentsTest < Minitest::Test
         "(#{VERBS.join(", ")}); reword the body or extend VERBS."
     end
   end
+
+  def test_each_fragment_body_is_one_sentence
+    unreleased.each do |path|
+      body = YAML.safe_load_file(path, permitted_classes: [Time])["body"]
+      next unless body.is_a?(String)
+      sentences = SimpleEnglish::Markdown.sentences_of(body)
+      assert_equal 1, sentences.size,
+        "#{path} carries #{sentences.size} sentences. The body is one sentence."
+    end
+  end
 end
