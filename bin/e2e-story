@@ -9,24 +9,26 @@ repo="$(cd "$(dirname "$0")/.." && pwd)"
 
 rm -rf "$story"
 mkdir "$story"
-cp "$repo"/test/corpus/*-before.md "$story/"
-cp "$repo"/test/corpus/*-after.md "$story/"
-printf '# Read the log; then act.\n' > "$story/broken.rb"
+cp "$repo"/test/corpus/*-before.md "$repo"/test/corpus/*-before.rb "$story/"
+cp "$repo"/test/corpus/*-after.md "$repo"/test/corpus/*-after.rb "$story/"
+# The comment story is also the non-ASCII story: a GUI app or cron spawns
+# se with no locale, so the em-dash and the kanji must survive the read.
+printf '# Read the log — then act. The 準備 step runs first.\n' > "$story/broken.rb"
 cd "$story"
 
 # A repo checkout carries .simple-english.yml. Lint runs outside it,
 # so no config applies. The corpus has one CI home: here, through
 # the installed gem. The first lint boots the daemon.
-for file in *-before.md; do
+for file in *-before.*; do
   rc=0; se lint "$file" || rc=$?
   [ "$rc" -eq 1 ] || { echo "$file: expected exit 1, got $rc"; exit 1; }
 done
-for file in *-after.md; do
+for file in *-after.*; do
   rc=0; se lint "$file" || rc=$?
   [ "$rc" -eq 0 ] || { echo "$file: expected exit 0, got $rc"; exit 1; }
 done
 rc=0; se lint broken.rb || rc=$?
 [ "$rc" -eq 1 ] || { echo "broken.rb: expected exit 1, got $rc"; exit 1; }
 
-pairs=$(ls *-before.md | wc -l | tr -d ' ')
+pairs=$(ls *-before.* | wc -l | tr -d ' ')
 echo "user story: $pairs corpus pairs plus one comment file, all as expected"

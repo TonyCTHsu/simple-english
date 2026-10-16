@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-# Run the corpus pairs in test/corpus through the daemon.
+# Run the corpus pairs in test/corpus through the daemon. Pairs are
+# NN-before.md / NN-after.md for Markdown, NN-before.rb / NN-after.rb
+# for the comment pipeline.
 #
 # Usage: run `se serve` (or let the first lint start it), then
 #   ruby test/corpus_check.rb
@@ -10,11 +12,12 @@
 
 require_relative "../lib/simple_english"
 
-pairs = Dir.glob(File.expand_path("corpus/*-before.md", __dir__)).sort
+pairs = Dir.glob(File.expand_path("corpus/*-before.*", __dir__)).sort
 failed = pairs.flat_map do |before|
-  after = before.sub(/-before\.md\z/, "-after.md")
-  before_findings = SimpleEnglish.lint(File.read(before))
-  after_findings = SimpleEnglish.lint(File.read(after))
+  after = before.sub(/-before\.(\w+)\z/, "-after.\\1")
+  language = SimpleEnglish::Extractor.language_for(before)
+  before_findings = SimpleEnglish.lint(File.read(before), language: language)
+  after_findings = SimpleEnglish.lint(File.read(after), language: language)
   messages = []
   if before_findings.nil? || after_findings.nil?
     messages << "#{before}: daemon unreachable"
