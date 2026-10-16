@@ -1,9 +1,10 @@
 ---
 name: write-simple-english
-description: Write plain English on the first pass. Use whenever the
-  output is prose, such as READMEs, docs, comments, replies, or any
-  other text a reader must understand. Use when asked for simple
-  English or no jargon.
+description: Read this before the first prose output of a session. Write
+  or edit plain English on the first pass for any text a reader must
+  understand: READMEs, docs, code comments, changelog entries, commit
+  messages, PR and issue bodies, and chat replies. Use when asked for
+  simple English, plain English, or no jargon.
 metadata:
   inspired-by: ASD-STE100 Simplified Technical English
 ---
