@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'SE_NO_CONTRACTIONS now catches the apostrophe-initial forms you''re, we''ve, she''ll, he''d, and I''m. LanguageTool splits them off the word, and the old regex missed the leftover token. The apostrophe-s form stays out: it is both "it is" and the possessive, and the tagger does not tell them apart reliably.'
+time: 2026-10-01T13:14:41.842559+02:00
