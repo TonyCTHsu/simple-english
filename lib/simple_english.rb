@@ -8,6 +8,7 @@
 require_relative "simple_english/version"
 require_relative "simple_english/lint/finding"
 require_relative "simple_english/lint/paragraph"
+require_relative "simple_english/lint/utf16"
 require_relative "simple_english/lint/markdown"
 require_relative "simple_english/lint/counts"
 require_relative "simple_english/setup/languagetool"
