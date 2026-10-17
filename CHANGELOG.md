@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.1] - 2026-10-17
+
+### Fixed
+
+- Fix `write-simple-english` skill, which never loaded because its description held invalid YAML.
+
 ## [0.11.0] - 2026-10-17
 
 ### Added
