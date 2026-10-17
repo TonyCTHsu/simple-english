@@ -14,10 +14,30 @@
 require "yaml"
 require "open3"
 
+# .changes/AGENTS.md rules a script can decide without judgment.
+# The rest stay style calls for review. The article rule catches
+# "the `x`" and "an `x`" because the span already marks a specific
+# noun.
+AGENT_NAME = /\b(?:claude-code|codex|cursor|opencode|vscode-copilot)\b/
+ARTICLE_BEFORE_SPAN = /\b(?:a|an|the) `/
+
+def mechanical_offenses(body)
+  return ["body is missing or empty"] unless body.is_a?(String) && !body.empty?
+  offenses = []
+  offenses << "body spans more than one line" if body.include?("\n")
+  offenses << "body does not end with a period" unless body.end_with?(".")
+  body.scan(ARTICLE_BEFORE_SPAN).each { |m| offenses << "article before a code span: #{m}" }
+  body.gsub(/`[^`]*`/, "").scan(AGENT_NAME).each { |m| offenses << "agent name outside a code span: #{m}" }
+  offenses
+end
+
 se = ENV["SE_BIN"] || File.expand_path("se", __dir__)
 failed = false
 Dir[".changes/unreleased/*.yaml"].sort.each do |path|
   body = YAML.safe_load_file(path, permitted_classes: [Time])["body"]
+  offenses = mechanical_offenses(body)
+  offenses.each { |offense| puts("#{path}: #{offense}") }
+  failed ||= !offenses.empty?
   next unless body.is_a?(String) && !body.empty?
   out, err, status = Open3.capture3(se, "-", stdin_data: "- #{body}\n")
   warn(err) unless err.empty?
