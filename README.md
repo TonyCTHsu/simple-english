@@ -194,12 +194,7 @@ repos:
       - id: se-lint
 ```
 
-The hook runs `se lint` on every staged text file. Run
-`pre-commit autoupdate` to move the pin to the newest release.
-
-#### Other runners
-
-Husky with lint-staged:
+#### Husky and lint-staged
 
 ```json
 {
@@ -209,7 +204,7 @@ Husky with lint-staged:
 }
 ```
 
-Lefthook:
+#### Lefthook
 
 ```yaml
 # lefthook.yml
@@ -218,8 +213,6 @@ pre-commit:
     simple-english:
       run: se lint {staged_files}
 ```
-
-These runners call `se lint` on the staged files directly.
 
 ## Config and suppressions
 
