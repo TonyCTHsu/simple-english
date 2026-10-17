@@ -2,7 +2,7 @@ name: simple-english
 description: Lint Markdown prose and code comments with simple_english
 inputs:
   files:
-    description: Files or directories to lint
+    description: Space-separated files or directories to lint
     required: false
     default: .
   version:
@@ -24,4 +24,6 @@ runs:
         gem install simple_english --no-document --version "$VERSION"
     - name: Lint
       shell: bash
-      run: se lint "${{ inputs.files }}"
+      env:
+        FILES: ${{ inputs.files }}
+      run: se lint $FILES
