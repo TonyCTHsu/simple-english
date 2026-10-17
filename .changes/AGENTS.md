@@ -23,3 +23,7 @@ upgrade affects them.
 - An Add names the capability and its access point.
 - A Change names the new behavior and its escape hatch.
 - Ground every claim in the diff and its tests.
+
+`bin/lint-fragments` enforces the single-line body, the final
+period, the article rule, and the spanned agent names. The rest are
+review calls.

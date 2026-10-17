@@ -2,7 +2,7 @@
 name: write-simple-english
 description: Read this before the first prose output of a session. Write
   or edit plain English on the first pass for any text a reader must
-  understand: READMEs, docs, code comments, changelog entries, commit
+  understand, such as READMEs, docs, code comments, changelog entries, commit
   messages, PR and issue bodies, and chat replies. Use when asked for
   simple English, plain English, or no jargon.
 metadata:
