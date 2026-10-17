@@ -13,7 +13,8 @@ class ReadmeActionExamplesTest < Minitest::Test
   PIN = %r{TonyCTHsu/simple-english@v(\d+\.\d+\.\d+)}
 
   def test_pins_agree
-    pins = README.scan(PIN).map(&:first).uniq
+    pins = (README.scan(PIN).map(&:first) +
+      README.scan(/^\s*rev: v(\d+\.\d+\.\d+)$/).flatten).uniq
     assert_equal 1, pins.size,
       "README must pin the action at exactly one version, found #{pins.inspect}"
   end

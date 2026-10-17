@@ -106,11 +106,13 @@ namespace :release do
       File.write(manifest, rewritten)
     end
 
-    # The README's GitHub Actions examples pin the action by tag.
+    # The README's GitHub Actions examples pin the action by tag,
+    # and the pre-commit snippet pins it by rev. Both move with the
+    # version.
     readme = File.read("README.md")
-    rewritten = readme.gsub(/TonyCTHsu\/simple-english@v\d+\.\d+\.\d+/) do
-      "TonyCTHsu/simple-english@v#{version}"
-    end
+    rewritten = readme
+      .gsub(/TonyCTHsu\/simple-english@v\d+\.\d+\.\d+/) { "TonyCTHsu/simple-english@v#{version}" }
+      .gsub(/^(\s*)rev: v\d+\.\d+\.\d+$/) { "#{$1}rev: v#{version}" }
     abort "error: README declares no action pin" if rewritten == readme
     File.write("README.md", rewritten)
 
