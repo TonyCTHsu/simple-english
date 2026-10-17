@@ -200,8 +200,12 @@ jobs:
         env:
           VERSION: ${{ needs.release.outputs.version }}
 
+  # The package's tool calls the `se` CLI, which ships as the
+  # platform gems on RubyGems. Publish the package only after every
+  # platform gem did, or a fresh install finds no gem for its
+  # platform.
   npm:
-    needs: release
+    needs: [release, gem]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
