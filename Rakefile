@@ -108,12 +108,15 @@ namespace :release do
 
     # The README's GitHub Actions examples pin the action by tag,
     # and the pre-commit snippet pins it by rev. Both move with the
-    # version.
+    # version. The pins can already sit at the release version when
+    # the examples ship with the release that introduces them.
     readme = File.read("README.md")
+    pinned = readme.match?(/TonyCTHsu\/simple-english@v\d+\.\d+\.\d+/) ||
+      readme.match?(/^\s*rev: v\d+\.\d+\.\d+$/)
+    abort "error: README declares no action pin" unless pinned
     rewritten = readme
       .gsub(/TonyCTHsu\/simple-english@v\d+\.\d+\.\d+/) { "TonyCTHsu/simple-english@v#{version}" }
       .gsub(/^(\s*)rev: v\d+\.\d+\.\d+$/) { "#{$1}rev: v#{version}" }
-    abort "error: README declares no action pin" if rewritten == readme
     File.write("README.md", rewritten)
 
     sh "bundle lock"
