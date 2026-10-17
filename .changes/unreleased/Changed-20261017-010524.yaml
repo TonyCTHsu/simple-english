@@ -1,3 +1,0 @@
-kind: Changed
-body: Change `write-simple-english` skill so it loads before the first prose output of a session.
-time: 2026-10-17T01:05:24.149901+02:00

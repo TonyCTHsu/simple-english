@@ -1,3 +1,0 @@
-kind: Fixed
-body: Fix `SE_NO_CONTRACTIONS` to catch the apostrophe-initial forms `you're`, `we've`, `she'll`, `he'd`, and `I'm`.
-time: 2026-10-01T13:14:41.842559+02:00
