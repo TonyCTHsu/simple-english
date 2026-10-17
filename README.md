@@ -133,9 +133,7 @@ se mcp
 
 ### CI
 
-Gate the pull request's prose in GitHub Actions. Use the
-`TonyCTHsu/simple-english` action at a release tag, which also sets
-the gem version. The lint fails the build on findings:
+Gate the pull request's prose in GitHub Actions. The lint fails the build on findings:
 
 ```yaml
 name: lint-docs
