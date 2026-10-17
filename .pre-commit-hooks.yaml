@@ -1,5 +1,5 @@
 - id: se-lint
-  name: simple_english
+  name: simple-english
   description: Lint Markdown prose and code comments for plain English
   entry: se lint
   language: system

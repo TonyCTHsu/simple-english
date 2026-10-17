@@ -195,7 +195,6 @@ repos:
 Install the gem once. The hook calls `se lint` on every staged text
 file. Any hook runner that executes a command, such as Lefthook or
 husky, runs `se lint` the same way.
->>>>>>> ed17652 (Add a se-lint hook for the pre-commit framework)
 
 ## Config and suppressions
 
