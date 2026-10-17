@@ -149,6 +149,28 @@ jobs:
       - uses: TonyCTHsu/simple-english@v0.11.0
 ```
 
+Put the findings inline in the pull request with `format: sarif`
+and an upload:
+
+```yaml
+name: lint-docs
+on: [pull_request]
+permissions:
+  security-events: write
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: TonyCTHsu/simple-english@v0.11.0
+        with:
+          format: sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: simple-english.sarif
+        if: always()
+```
+
 Or run the gem directly. The plain run
 fails the build on findings, and the SARIF report puts them inline:
 
