@@ -179,6 +179,41 @@ gem install simple_english
 se lint .
 ```
 
+### Git hooks
+
+Install the gem once, then wire your hook runner.
+
+#### Pre-commit framework
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/TonyCTHsu/simple-english
+    rev: v0.11.0
+    hooks:
+      - id: se-lint
+```
+
+#### Husky and lint-staged
+
+```json
+{
+  "lint-staged": {
+    "*": "se lint"
+  }
+}
+```
+
+#### Lefthook
+
+```yaml
+# lefthook.yml
+pre-commit:
+  commands:
+    simple-english:
+      run: se lint {staged_files}
+```
+
 ## Config and suppressions
 
 ### Config file
