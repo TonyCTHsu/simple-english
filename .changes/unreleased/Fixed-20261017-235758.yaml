@@ -1,0 +1,3 @@
+kind: Fixed
+body: Fix the `write-simple-english` skill so its description parses as YAML and the skill loads again.
+time: 2026-10-17T23:57:58.268003+02:00

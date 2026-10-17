@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "yaml"
+
 require_relative "test_helper"
 
 # Every skill is vendored into every adapter dir so an install that
@@ -38,6 +40,19 @@ class IntegrationsSkillTest < Minitest::Test
       ADAPTERS.each do |adapter|
         refute File.symlink?(File.dirname(vendored_path(adapter, shared)))
       end
+    end
+  end
+
+  # YAML rejects a plain scalar that contains a colon and a space, so
+  # prose in a description can break the front matter in ways the
+  # byte-identical check above cannot see. Parse it here, at the one
+  # gate every skill file already passes through.
+  def test_shared_skill_front_matter_parses
+    shared_skill_paths.each do |shared|
+      front_matter = File.read(shared)[/\A---\n(.*?)\n---/m, 1]
+      refute_nil front_matter, "#{shared} has no front matter."
+      parsed = YAML.safe_load(front_matter)
+      assert_instance_of String, parsed.fetch("description"), shared
     end
   end
 end
