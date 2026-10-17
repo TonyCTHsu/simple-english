@@ -94,7 +94,9 @@ rules run on LanguageTool (`rules/simple-english.xml`). Counting rules run in Ru
   a gem) batches change fragments into `CHANGELOG.md` at release
   time (2026-09-29). `json_schemer` validates the Cursor plugin
   against the vendored Agent Plugins schema, in the contract tests
-  (2026-10-08). Pull requests add fragments, not changelog
+  (2026-10-08). `psych` (the default `yaml` gem) parses `action.yml`
+  and the README's workflow examples in the action-examples test
+  (2026-10-17). Pull requests add fragments, not changelog
   lines, so they never conflict.
 - `Markdown.strip` must keep the line count identical to the source. Findings cite
   original line numbers, so stripping changes must preserve them.
