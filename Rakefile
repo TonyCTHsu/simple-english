@@ -106,6 +106,14 @@ namespace :release do
       File.write(manifest, rewritten)
     end
 
+    # The README's GitHub Actions examples pin the action by tag.
+    readme = File.read("README.md")
+    rewritten = readme.gsub(/TonyCTHsu\/simple-english@v\d+\.\d+\.\d+/) do
+      "TonyCTHsu/simple-english@v#{version}"
+    end
+    abort "error: README declares no action pin" if rewritten == readme
+    File.write("README.md", rewritten)
+
     sh "bundle lock"
     puts "Release #{version} prepared. Review, then commit."
   end
