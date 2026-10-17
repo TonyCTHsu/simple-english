@@ -5,17 +5,23 @@ inputs:
     description: Files or directories to lint
     required: false
     default: .
-outputs:
-  sarif:
-    description: Path to the SARIF report, written whether or not findings failed the lint
-    value: simple-english.sarif
+  version:
+    description: Gem version to install. Defaults to this action's ref (v1.2.3 -> 1.2.3), latest when SHA-pinned.
+    required: false
 runs:
   using: composite
   steps:
     - name: Install the gem
       shell: bash
-      run: gem install simple_english --no-document
+      run: |
+        VERSION="${{ inputs.version }}"
+        if [ -z "$VERSION" ]; then
+          REF="${{ github.action_ref }}"
+          VERSION="${REF#v}"
+          # A SHA pin names no gem version.
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || VERSION=latest
+        fi
+        gem install simple_english --no-document --version "$VERSION"
     - name: Lint
-      id: lint
       shell: bash
-      run: se lint --format sarif "${{ inputs.files }}" > simple-english.sarif
+      run: se lint "${{ inputs.files }}"
