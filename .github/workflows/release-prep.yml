@@ -55,7 +55,11 @@ jobs:
           title: Release v${{ steps.version.outputs.version }}
           labels: release
           commit-message: Release v${{ steps.version.outputs.version }}
+          # Every file release:prepare writes. It rewrites the README
+          # action pins with the version, so README.md belongs here: left
+          # out, the release branch ships stale pins and its CI fails.
           add-paths: |
+            README.md
             .changes
             CHANGELOG.md
             Gemfile.lock
