@@ -151,18 +151,10 @@ jobs:
 ```
 
 To see the findings inline in the pull request, lint with
-`format: sarif` and upload the report:
+`format: sarif` and upload the report. Add
+`permissions: {security-events: write}` to the workflow:
 
 ```yaml
-name: lint-docs
-on: [pull_request]
-permissions:
-  security-events: write
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
       - uses: TonyCTHsu/simple-english@v0.11.0
         with:
           format: sarif
@@ -172,16 +164,10 @@ jobs:
         if: always()
 ```
 
-Outside GitHub Actions, install the gem and run the lint yourself:
-
-```console
-gem install simple_english
-se lint .
-```
-
 ### Git hooks
 
-Install the gem once, then wire your hook runner.
+Install the gem once, then wire your hook runner. The command to run
+is `se lint`.
 
 #### Pre-commit framework
 
@@ -194,25 +180,8 @@ repos:
       - id: se-lint
 ```
 
-#### Husky and lint-staged
-
-```json
-{
-  "lint-staged": {
-    "*": "se lint"
-  }
-}
-```
-
-#### Lefthook
-
-```yaml
-# lefthook.yml
-pre-commit:
-  commands:
-    simple-english:
-      run: se lint {staged_files}
-```
+For Husky with lint-staged, map every staged file to `se lint`. For
+Lefthook, run `se lint {staged_files}` in a `pre-commit` command.
 
 ## Config and suppressions
 
