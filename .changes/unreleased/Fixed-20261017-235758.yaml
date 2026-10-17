@@ -1,3 +1,3 @@
 kind: Fixed
-body: Fix `write-simple-english` skill. Its description held invalid YAML, so it never loaded.
+body: Fix `write-simple-english` skill, which never loaded because its description held invalid YAML.
 time: 2026-10-17T23:57:58.268003+02:00
