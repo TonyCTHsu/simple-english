@@ -164,6 +164,9 @@ To see the findings inline in the pull request, lint with
         if: always()
 ```
 
+Any CI can run the lint. Install the gem, run `se lint .`, and fail the
+build on exit code 1.
+
 ### Git hooks
 
 Install the gem once, then wire your hook runner. The command to run
