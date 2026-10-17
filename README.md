@@ -181,7 +181,9 @@ se lint .
 
 ### Git hooks
 
-Run `se lint` on the staged files through the pre-commit framework:
+Install the gem once, then wire your hook runner.
+
+#### Pre-commit framework
 
 ```yaml
 # .pre-commit-config.yaml
@@ -192,9 +194,32 @@ repos:
       - id: se-lint
 ```
 
-Install the gem once. The hook calls `se lint` on every staged text
-file. Any hook runner that executes a command, such as Lefthook or
-husky, runs `se lint` the same way.
+The hook runs `se lint` on every staged text file. Run
+`pre-commit autoupdate` to move the pin to the newest release.
+
+#### Other runners
+
+Husky with lint-staged:
+
+```json
+{
+  "lint-staged": {
+    "*": "se lint"
+  }
+}
+```
+
+Lefthook:
+
+```yaml
+# lefthook.yml
+pre-commit:
+  commands:
+    simple-english:
+      run: se lint {staged_files}
+```
+
+These runners call `se lint` on the staged files directly.
 
 ## Config and suppressions
 
