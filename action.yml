@@ -2,7 +2,7 @@ name: simple-english
 description: Lint Markdown prose and code comments with simple_english
 inputs:
   files:
-    description: Space-separated files or directories to lint
+    description: Newline-separated files or directories to lint
     required: false
     default: .
   version:

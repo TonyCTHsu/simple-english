@@ -135,8 +135,8 @@ se mcp
 
 Gate the prose in the pull request that changes it. Use the action
 from this repo, pinned to the newest release tag. The pin also picks
-the gem version. The action lints `.` (pass paths through the
-`files` input) and fails the build on findings:
+the gem version. The action lints `.` (pass newline-separated paths
+through the `files` input) and fails the build on findings:
 
 ```yaml
 name: lint-docs
