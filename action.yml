@@ -1,0 +1,21 @@
+name: simple-english
+description: Lint Markdown prose and code comments with simple_english
+inputs:
+  files:
+    description: Files or directories to lint
+    required: false
+    default: .
+outputs:
+  sarif:
+    description: Path to the SARIF report, written whether or not findings failed the lint
+    value: simple-english.sarif
+runs:
+  using: composite
+  steps:
+    - name: Install the gem
+      shell: bash
+      run: gem install simple_english --no-document
+    - name: Lint
+      id: lint
+      shell: bash
+      run: se lint --format sarif "${{ inputs.files }}" > simple-english.sarif

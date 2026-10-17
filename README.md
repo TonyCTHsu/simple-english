@@ -133,7 +133,29 @@ se mcp
 
 ### CI
 
-Gate the prose in the pull request that changes it. The plain run
+Gate the prose in the pull request that changes it. Use the action
+from this repo. It installs the gem, lints `.` (pass paths through
+the `files` input), fails the build on findings, and writes a SARIF
+report to `simple-english.sarif`:
+
+```yaml
+name: lint-docs
+on: [pull_request]
+permissions:
+  security-events: write
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: TonyCTHsu/simple-english@v0.10.0
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: simple-english.sarif
+        if: always()
+```
+
+Or run the gem directly. The plain run
 fails the build on findings, and the SARIF report puts them inline:
 
 ```yaml
