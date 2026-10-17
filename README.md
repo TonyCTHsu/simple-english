@@ -133,8 +133,25 @@ se mcp
 
 ### CI
 
-Gate the prose in the pull request that changes it. The plain run
-fails the build on findings, and the SARIF report puts them inline:
+Gate the pull request's prose in GitHub Actions. The lint fails the build on findings:
+
+```yaml
+name: lint-docs
+on: [pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: TonyCTHsu/simple-english@v0.11.0
+        with:
+          files: |
+            docs/
+            README.md
+```
+
+To see the findings inline in the pull request, lint with
+`format: sarif` and upload the report:
 
 ```yaml
 name: lint-docs
@@ -146,14 +163,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ruby/setup-ruby@v1
-      - run: gem install simple_english
-      - run: se --format sarif . > lint.sarif
-      - run: se .
+      - uses: TonyCTHsu/simple-english@v0.11.0
+        with:
+          format: sarif
       - uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: lint.sarif
+          sarif_file: simple-english.sarif
         if: always()
+```
+
+Outside GitHub Actions, install the gem and run the lint yourself:
+
+```console
+gem install simple_english
+se lint .
 ```
 
 ## Config and suppressions

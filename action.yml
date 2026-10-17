@@ -1,0 +1,43 @@
+name: simple-english
+description: Lint Markdown prose and code comments with simple_english
+inputs:
+  files:
+    description: Newline-separated files or directories to lint
+    required: false
+    default: .
+  format:
+    description: Finding output format, text, json, or sarif
+    required: false
+    default: text
+  version:
+    description: Gem version to install. Defaults to this action's ref (v1.2.3 -> 1.2.3), latest when SHA-pinned.
+    required: false
+outputs:
+  sarif:
+    description: Path to the SARIF report, written when format is sarif
+    value: simple-english.sarif
+runs:
+  using: composite
+  steps:
+    - name: Install the gem
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        if [ -z "$VERSION" ]; then
+          REF="${{ github.action_ref }}"
+          VERSION="${REF#v}"
+          # A SHA pin names no gem version.
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || VERSION=latest
+        fi
+        gem install simple_english --no-document --version "$VERSION"
+    - name: Lint
+      id: lint
+      shell: bash
+      env:
+        FILES: ${{ inputs.files }}
+        FORMAT: ${{ inputs.format }}
+      run: |
+        if [ "$FORMAT" = sarif ]; then
+          exec 1>simple-english.sarif
+        fi
+        se lint --format "$FORMAT" $FILES
