@@ -147,6 +147,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: TonyCTHsu/simple-english@v0.11.0
+        with:
+          files: |
+            docs/
+            README.md
 ```
 
 To see the findings inline in the pull request, lint with
