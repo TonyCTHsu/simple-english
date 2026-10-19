@@ -556,6 +556,13 @@ Write the numeral, such as 24.
 - Wrong: The job runs for twenty-four hours.
 - Right: The job runs for 24 hours.
 
+#### standalone teens and tens
+
+Write the numeral, such as 12.
+
+- Wrong: The retry waits fifteen seconds.
+- Right: The retry waits 15 seconds.
+
 ## Counting rules
 
 These rules run in Ruby on Markdown text. Code comments do not use

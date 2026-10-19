@@ -758,6 +758,14 @@
         <example type="incorrect">The job runs for <marker>twenty-four</marker> hours.</example>
         <example type="correct">The job runs for 24 hours.</example>
       </rule>
+      <rule name="standalone teens and tens">
+        <pattern>
+          <token regexp="yes">ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety</token>
+        </pattern>
+        <message>Write the numeral, such as 12.</message>
+        <example type="incorrect">The retry waits <marker>fifteen</marker> seconds.</example>
+        <example type="correct">The retry waits 15 seconds.</example>
+      </rule>
     </rulegroup>
 
   </category>
