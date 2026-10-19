@@ -32,8 +32,11 @@ the agent corrects its own text.
 </table>
 
 The linter covers Markdown prose plus code comments in Python, Ruby,
-JavaScript, TypeScript, Go, Rust, Java, C#, C++, Kotlin, bash, and
-YAML. Findings print as plain text, JSON, or SARIF.
+JavaScript, TypeScript, Go, Rust, Java, C, C++, and C#. It also
+reads Objective-C, Kotlin, Swift, Scala, Dart, PHP, Perl, Elixir,
+Lua, R, Haskell, Zig, SQL, and bash. It reads comments in config
+formats and markup as well: YAML, TOML, INI, Makefile, Dockerfile,
+HTML, XML, and SVG. Findings print as plain text, JSON, or SARIF.
 
 If your language is not on the list, [open an issue](https://github.com/TonyCTHsu/simple-english/issues).
 

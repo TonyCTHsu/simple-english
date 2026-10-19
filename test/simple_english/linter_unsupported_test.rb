@@ -9,8 +9,8 @@ class LinterUnsupportedTest < Minitest::Test
     with_env("SE_SERVER_URL" => "http://localhost:1") do
       _out, err = capture_io do
         assert_empty SimpleEnglish::Linter.lint_file("notes.txt", config: SimpleEnglish::Config::DEFAULT)
-        assert_empty SimpleEnglish::Linter.lint_file("script.pl", config: SimpleEnglish::Config::DEFAULT)
         assert_empty SimpleEnglish::Linter.lint_file("data.json", config: SimpleEnglish::Config::DEFAULT)
+        assert_empty SimpleEnglish::Linter.lint_file("image.png", config: SimpleEnglish::Config::DEFAULT)
       end
       assert_equal "", err
     end
