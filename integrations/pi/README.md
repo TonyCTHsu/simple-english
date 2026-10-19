@@ -32,7 +32,7 @@ JavaScript, TypeScript, Go, Rust, Java, C, C++, and C#. It also
 reads Objective-C, Kotlin, Swift, Scala, Dart, PHP, Perl, Elixir,
 Lua, R, Haskell, Zig, SQL, and bash. It reads comments in config
 formats and markup as well: YAML, TOML, INI, Makefile, Dockerfile,
-HTML, XML, and SVG.
+HTML, and XML.
 
 ## What it checks
 

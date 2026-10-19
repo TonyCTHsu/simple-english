@@ -46,8 +46,7 @@ module SimpleEnglish
       ".mk" => "makefile",
       ".html" => "html",
       ".htm" => "html",
-      ".xml" => "xml",
-      ".svg" => "xml"
+      ".xml" => "xml"
     }.freeze
 
     # Dockerfile and Makefile carry no extension, and the variants

@@ -145,7 +145,7 @@ class ExtractorTest < Minitest::Test
     assert_equal "html", SimpleEnglish::Extractor.language_for("web/index.html")
     assert_equal "html", SimpleEnglish::Extractor.language_for("web/index.htm")
     assert_equal "xml", SimpleEnglish::Extractor.language_for("web/index.xml")
-    assert_equal "xml", SimpleEnglish::Extractor.language_for("img/icon.svg")
+    assert_nil SimpleEnglish::Extractor.language_for("img/icon.svg")
   end
 
   def test_language_for_extensionless_names
