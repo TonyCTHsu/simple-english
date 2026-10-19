@@ -5,9 +5,12 @@
 # .changes/ holds changie fragments that mirror the entries verbatim.
 # The write skill embeds the swap vocabulary and worked examples,
 # which break the rules on purpose, like docs/RULES.md.
+# rules/simple-english.xml quotes rule-breaking tokens in its
+# comments, like the corpus before files.
 ignore:
   - test/corpus/**
   - docs/RULES.md
+  - rules/simple-english.xml
   - integrations/shared/skills/write-simple-english/**
   - integrations/claude-code/skills/write-simple-english/**
   - integrations/codex/skills/write-simple-english/**

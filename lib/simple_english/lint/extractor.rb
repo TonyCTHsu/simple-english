@@ -25,7 +25,37 @@ module SimpleEnglish
       ".cc" => "cpp",
       ".cxx" => "cpp",
       ".hpp" => "cpp",
-      ".h" => "cpp"
+      ".h" => "cpp",
+      ".c" => "c",
+      ".m" => "objc",
+      ".php" => "php",
+      ".swift" => "swift",
+      ".scala" => "scala",
+      ".ex" => "elixir",
+      ".exs" => "elixir",
+      ".lua" => "lua",
+      ".dart" => "dart",
+      ".pl" => "perl",
+      ".pm" => "perl",
+      ".r" => "r",
+      ".sql" => "sql",
+      ".hs" => "haskell",
+      ".zig" => "zig",
+      ".toml" => "toml",
+      ".ini" => "ini",
+      ".mk" => "makefile",
+      ".html" => "html",
+      ".htm" => "html",
+      ".xml" => "xml"
+    }.freeze
+
+    # Dockerfile and Makefile carry no extension, and the variants
+    # keep the language: Dockerfile.dev, Makefile.dev.
+    NAME_LANGUAGES = {
+      "Dockerfile" => "dockerfile",
+      "Makefile" => "makefile",
+      "makefile" => "makefile",
+      "GNUmakefile" => "makefile"
     }.freeze
 
     PROSE_EXTENSIONS = [".md"].freeze
@@ -34,6 +64,10 @@ module SimpleEnglish
 
     # nil for files we do not lint.
     def language_for(path)
+      name = File.basename(path)
+      return NAME_LANGUAGES[name] if NAME_LANGUAGES[name]
+      return "dockerfile" if name.start_with?("Dockerfile.")
+      return "makefile" if name.start_with?("Makefile.")
       EXTENSION_LANGUAGES[File.extname(path)]
     end
 
@@ -42,7 +76,7 @@ module SimpleEnglish
     # single explicit path behaves like directory expansion (cli.rb).
     def lintable?(path)
       path == "-" || PROSE_EXTENSIONS.include?(File.extname(path)) ||
-        !EXTENSION_LANGUAGES[File.extname(path)].nil?
+        !language_for(path).nil?
     end
 
     def comment_spans(source, language)
@@ -61,8 +95,11 @@ module SimpleEnglish
       spans.sort_by!(&:start_byte)
     end
 
+    # The xml grammar names the node "Comment", so the kind check
+    # reads case-insensitive.
     def comment?(node)
-      node.kind.end_with?("comment") && !node.kind.start_with?("non")
+      kind = node.kind.downcase
+      kind.end_with?("comment") && !kind.start_with?("non")
     end
 
     private_class_method :comment?

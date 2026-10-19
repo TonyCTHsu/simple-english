@@ -74,7 +74,7 @@
          states a condition, put the condition first
          (SE_CONDITION_FIRST). No word-list carve-outs: this tool ships
          no approved dictionary, so every comma-plus-ing participle
-         fires, including the preposition-like ones. -->
+         fires, even the preposition-like ones. -->
     <rule id="SE_ING_AFTER_COMMA" name="No -ing after a comma">
       <pattern><token>,</token><token postag="VBG"><exception scope="next" regexp="yes">[,)]|and|or</exception></token></pattern>
       <message>Write a new sentence, or put the condition first. A trailing -ing phrase hides who does what and when.</message>
