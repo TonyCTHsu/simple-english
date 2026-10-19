@@ -1,0 +1,3 @@
+kind: Added
+body: 'Add `SE_NUMBER_WORDS`: compound tens such as `twenty-four` now flag and suggest `numerals`.'
+time: 2026-10-19T20:15:13.822514+02:00

@@ -735,5 +735,38 @@
       <example type="correct">The tool can read the log.</example>
     </rule>
 
+    <!-- Compound number words carry no defense in any source this
+         ruleset follows: plainlanguage.gov, GOV.UK, Microsoft, and
+         Chicago all write the numeral in technical prose. The
+         sub-rules cover the two spellings: LanguageTool keeps
+         "twenty-four" as one token. -->
+    <rulegroup id="SE_NUMBER_WORDS" name="numerals, not compound number words">
+      <rule name="spelled with a space">
+        <pattern>
+          <token regexp="yes">twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety</token>
+          <token regexp="yes">one|two|three|four|five|six|seven|eight|nine</token>
+        </pattern>
+        <message>Write the numeral, such as 24.</message>
+        <example type="incorrect">The log keeps <marker>twenty four</marker> hours.</example>
+        <example type="correct">The log keeps 24 hours.</example>
+      </rule>
+      <rule name="spelled with a hyphen">
+        <pattern>
+          <token regexp="yes">(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[-–‑](one|two|three|four|five|six|seven|eight|nine)</token>
+        </pattern>
+        <message>Write the numeral, such as 24.</message>
+        <example type="incorrect">The job runs for <marker>twenty-four</marker> hours.</example>
+        <example type="correct">The job runs for 24 hours.</example>
+      </rule>
+      <rule name="standalone teens and tens">
+        <pattern>
+          <token regexp="yes">ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety</token>
+        </pattern>
+        <message>Write the numeral, such as 12.</message>
+        <example type="incorrect">The retry waits <marker>fifteen</marker> seconds.</example>
+        <example type="correct">The retry waits 15 seconds.</example>
+      </rule>
+    </rulegroup>
+
   </category>
 </rules>

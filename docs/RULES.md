@@ -540,6 +540,29 @@ Write can.
 - Wrong: The tool is able to read the log.
 - Right: The tool can read the log.
 
+### SE_NUMBER_WORDS: numerals, not compound number words
+
+#### spelled with a space
+
+Write the numeral, such as 24.
+
+- Wrong: The log keeps twenty four hours.
+- Right: The log keeps 24 hours.
+
+#### spelled with a hyphen
+
+Write the numeral, such as 24.
+
+- Wrong: The job runs for twenty-four hours.
+- Right: The job runs for 24 hours.
+
+#### standalone teens and tens
+
+Write the numeral, such as 12.
+
+- Wrong: The retry waits fifteen seconds.
+- Right: The retry waits 15 seconds.
+
 ## Counting rules
 
 These rules run in Ruby on Markdown text. Code comments do not use
