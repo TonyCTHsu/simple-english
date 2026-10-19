@@ -641,6 +641,54 @@
       <example type="correct">Read the log.</example>
     </rule>
 
+    <!-- Swap words from the GOV.UK "A to Z" style guide, used under the
+         Open Government Licence v3.0: guidance.publishing.service.gov.uk -->
+    <rule id="SE_SLOP_EMPOWER" name="allow, not empower">
+      <pattern>
+        <token inflected="yes">empower</token>
+      </pattern>
+      <message>Write <suggestion>allow</suggestion>.</message>
+      <example type="incorrect">The setting <marker>empowers</marker> the user to edit files.</example>
+      <example type="correct">The setting allows the user to edit files.</example>
+    </rule>
+
+    <rule id="SE_SLOP_COLLABORATE" name="work with, not collaborate or liaise">
+      <pattern>
+        <token regexp="yes" inflected="yes">collaborate|liaise</token>
+      </pattern>
+      <message>Write <suggestion>work with</suggestion>.</message>
+      <example type="incorrect">The team <marker>collaborates</marker> with the owners.</example>
+      <example type="correct">The team works with the owners.</example>
+    </rule>
+
+    <rule id="SE_SLOP_INITIATE" name="start, not initiate">
+      <pattern>
+        <token inflected="yes">initiate</token>
+      </pattern>
+      <message>Write <suggestion>start</suggestion>.</message>
+      <example type="incorrect"><marker>Initiate</marker> the build.</example>
+      <example type="correct">Start the build.</example>
+    </rule>
+
+    <rule id="SE_SLOP_GOING_FORWARD" name="from now on, not going forward">
+      <pattern>
+        <token regexp="yes">going|moving</token>
+        <token>forward</token>
+      </pattern>
+      <message>Write <suggestion>from now on</suggestion>.</message>
+      <example type="incorrect"><marker>Going forward</marker>, read the log.</example>
+      <example type="correct">From now on, read the log.</example>
+    </rule>
+
+    <rule id="SE_SLOP_TACKLE" name="solve, not tackle">
+      <pattern>
+        <token inflected="yes">tackle</token>
+      </pattern>
+      <message>Write <suggestion>solve</suggestion> or <suggestion>deal with</suggestion>.</message>
+      <example type="incorrect">The team <marker>tackled</marker> the problem.</example>
+      <example type="correct">The team solved the problem.</example>
+    </rule>
+
     <!-- Hidden verbs from the plain-language guidance at
          plainlanguage.gov: the noun names the action, the verb
          makes the sentence shorter and names who acts. -->
