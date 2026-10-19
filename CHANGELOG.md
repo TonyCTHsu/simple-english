@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.12.0] - 2026-10-19
+
+### Added
+
+- Add `SE_SLOP_EMPOWER`: `empower` now flags and suggests `allow`.
+- Add `SE_SLOP_COLLABORATE`: `collaborate` and `liaise` now flag and suggest `work with`.
+- Add `SE_SLOP_INITIATE`: `initiate` now flags and suggests `start`.
+- Add `SE_SLOP_GOING_FORWARD`: `going forward` now flags and suggests `from now on`.
+- Add `SE_SLOP_TACKLE`: `tackle` now flags and suggests `solve` or `deal with`.
+- Add `SE_HIDDEN_VERB_DECISION`: `make a decision` now flags and suggests `decide`.
+- Add `SE_HIDDEN_VERB_ASSISTANCE`: `provide assistance` now flags and suggests `help`.
+- Add `SE_HIDDEN_VERB_CONSIDERATION`: `take into consideration` now flags and suggests `consider`.
+- Add `SE_HIDDEN_VERB_ABLE`: `is able to` now flags and suggests `can`.
+- Add `SE_NUMBER_WORDS`: compound tens such as `twenty-four` now flag and suggest `numerals`.
+- Add a sub-rule to `SE_NUMBER_WORDS`: standalone teens and tens such as `twelve` now flag and suggest `numerals`.
+- Lint code comments in 19 more languages and formats such as PHP, Swift, Dockerfile, and TOML.
+
+### Fixed
+
+- Fix missing findings in `/* */` block comments, so rule-breaking prose inside them now gets flagged.
+
 ## [0.11.1] - 2026-10-17
 
 ### Fixed
