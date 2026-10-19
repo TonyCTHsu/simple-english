@@ -641,5 +641,51 @@
       <example type="correct">Read the log.</example>
     </rule>
 
+    <!-- Hidden verbs from the plain-language guidance at
+         plainlanguage.gov: the noun names the action, the verb
+         makes the sentence shorter and names who acts. -->
+    <rule id="SE_HIDDEN_VERB_DECISION" name="decide, not make a decision">
+      <pattern>
+        <token inflected="yes">make</token>
+        <token min="0" max="1" regexp="yes">a|an</token>
+        <token regexp="yes">decisions?</token>
+      </pattern>
+      <message>Write <suggestion>decide</suggestion>.</message>
+      <example type="incorrect"><marker>Make a decision</marker> before the release.</example>
+      <example type="correct">Decide before the release.</example>
+    </rule>
+
+    <rule id="SE_HIDDEN_VERB_ASSISTANCE" name="help, not provide assistance">
+      <pattern>
+        <token inflected="yes">provide</token>
+        <token>assistance</token>
+      </pattern>
+      <message>Write <suggestion>help</suggestion>.</message>
+      <example type="incorrect">The tool <marker>provides assistance</marker> to new users.</example>
+      <example type="correct">The tool helps new users.</example>
+    </rule>
+
+    <rule id="SE_HIDDEN_VERB_CONSIDERATION" name="consider, not take into consideration">
+      <pattern>
+        <token inflected="yes" skip="3">take</token>
+        <token>into</token>
+        <token>consideration</token>
+      </pattern>
+      <message>Write <suggestion>consider</suggestion>.</message>
+      <example type="incorrect"><marker>Take the failure into consideration</marker> before you restart.</example>
+      <example type="correct">Consider the failure before you restart.</example>
+    </rule>
+
+    <rule id="SE_HIDDEN_VERB_ABLE" name="can, not is able to">
+      <pattern>
+        <token regexp="yes">am|is|are|be|being</token>
+        <token>able</token>
+        <token>to</token>
+      </pattern>
+      <message>Write <suggestion>can</suggestion>.</message>
+      <example type="incorrect">The tool <marker>is able to</marker> read the log.</example>
+      <example type="correct">The tool can read the log.</example>
+    </rule>
+
   </category>
 </rules>

@@ -1,0 +1,3 @@
+kind: Added
+body: 'Flag hidden verbs in `se lint` output and write the plain verb: decide, help, consider, and can.'
+time: 2026-10-19T19:28:28.155795+02:00

@@ -477,6 +477,34 @@ Delete it.
 - Wrong: let's dive in. Read the log.
 - Right: Read the log.
 
+### SE_HIDDEN_VERB_DECISION: decide, not make a decision
+
+Write decide.
+
+- Wrong: Make a decision before the release.
+- Right: Decide before the release.
+
+### SE_HIDDEN_VERB_ASSISTANCE: help, not provide assistance
+
+Write help.
+
+- Wrong: The tool provides assistance to new users.
+- Right: The tool helps new users.
+
+### SE_HIDDEN_VERB_CONSIDERATION: consider, not take into consideration
+
+Write consider.
+
+- Wrong: Take the failure into consideration before you restart.
+- Right: Consider the failure before you restart.
+
+### SE_HIDDEN_VERB_ABLE: can, not is able to
+
+Write can.
+
+- Wrong: The tool is able to read the log.
+- Right: The tool can read the log.
+
 ## Counting rules
 
 These rules run in Ruby on Markdown text. Code comments do not use
