@@ -82,7 +82,7 @@ module SimpleEnglish
     def split(comment)
       marker = comment[MARKER] || ""
       body = comment[marker.length..] || comment
-      closer = body[CLOSER] || ""
+      closer = body[CLOSER, 1] || ""
       body = body[0, body.length - closer.length] unless closer.empty?
       [marker, body, closer]
     end
