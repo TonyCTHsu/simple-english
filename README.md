@@ -4,7 +4,7 @@
 
 # simple_english
 
-> Write for human, not for agent.
+> Write plain English for humans. Keep the agent honest.
 
 You can teach an agent plain-English prose with a skill or a
 prompt. It writes clean prose in the first paragraph and slop again
