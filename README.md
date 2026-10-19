@@ -4,7 +4,7 @@
 
 # simple_english
 
-> Write for human, not for agent.
+> Write plain English for humans. Keep the agent honest.
 
 You can teach an agent plain-English prose with a skill or a
 prompt. It writes clean prose in the first paragraph and slop again
@@ -232,9 +232,21 @@ silent. Closing the Vale gaps needs scripts or an external
 tagger, and that erases Vale's main advantage: one binary with no
 service behind it.
 
-## Scope
+## Compliance
 
-This tool does not check ASD-STE100 compliance. This repo holds no ASD-STE100 text. If you need full compliance, read the free standard at <https://www.asd-ste100.org/>.
+This tool does not check ASD-STE100 compliance. This repo holds no
+ASD-STE100 text. For full compliance, read the free standard at
+<https://www.asd-ste100.org/>.
+
+The tool checks no external style standard. The rules are this repo's
+own, but they draw on the [GOV.UK A to Z style
+guide](https://guidance.publishing.service.gov.uk/writing-to-gov-uk-standards/style-guides/a-to-z-style-guide/)
+and the [US plain language
+guide](https://digital.gov/guides/plain-language/).
+
+The rule sources are `rules/simple-english.xml` for pattern rules and
+`lib/simple_english/lint/counts.rb` for counting rules. The full list
+sits in [docs/RULES.md](docs/RULES.md).
 
 ## Develop
 
