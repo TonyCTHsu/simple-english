@@ -47,13 +47,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        id: setup-ruby
         with:
           ruby-version: "3.3"
 
+      # Key the cache on the installed ruby: gem binstubs name that
+      # ruby in their shebang, and a setup-ruby patch bump leaves a
+      # stale shebang pointing at a missing ruby.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.standard-gems
-          key: standardrb-1.56.0
+          key: standardrb-1.56.0-${{ steps.setup-ruby.outputs.ruby-prefix }}
 
       - name: StandardRB
         run: |
