@@ -157,8 +157,19 @@ jobs:
       - name: Publish the platform gem
         if: steps.published.outputs.published == 'no'
         run: |
+          # The signer shells out to `gem exec sigstore-cli`, which resolves
+          # the highest installed json. json 3 breaks that stack: protobug
+          # 0.1.0 passes options to JSON.parse that json 3 removed, and the
+          # patch then falls back to an unsigned push. Keep the signer on
+          # the default json 2.x until the stack ships the fix
+          # (segiddins/protobug#334).
+          gem uninstall -a -x json -v ">= 3" --force
           gem push "dist/simple_english-${VERSION}-${PLATFORM}.gem"
           gem exec rubygems-await "dist/simple_english-${VERSION}-${PLATFORM}.gem"
+          # The patch rescues a signing failure and retries the push unsigned,
+          # with only a warning. The sigstore bundle lands next to the gem
+          # only when signing succeeded, so a missing file fails the build.
+          test -s "dist/simple_english-${VERSION}-${PLATFORM}.gem.sigstore.json"
         env:
           RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
           VERSION: ${{ needs.release.outputs.version }}
