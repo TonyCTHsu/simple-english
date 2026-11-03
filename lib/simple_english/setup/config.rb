@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 # .simple-english.yml: ignore (path globs, matched against the paths
-# given on the command line) and disabled-rules (rule IDs dropped
-# from every file). Loaded from the CWD.
+# given on the command line), disabled-rules (rule IDs dropped
+# from every file), and rule-ignores (a rule dropped only on the
+# listed path globs, fired everywhere else). Loaded from the CWD.
 
 module SimpleEnglish
   module Config
     ConfigError = Class.new(StandardError)
-    DEFAULT = {ignore: [], disabled_rules: []}.freeze
+    DEFAULT = {ignore: [], disabled_rules: [], rule_ignores: {}}.freeze
 
     module_function
 
@@ -17,9 +18,18 @@ module SimpleEnglish
       require "yaml"
       data = YAML.safe_load_file(file) || {}
       {ignore: Array(data["ignore"]),
-       disabled_rules: Array(data["disabled-rules"])}
+       disabled_rules: Array(data["disabled-rules"]),
+       rule_ignores: load_rule_ignores(data["rule-ignores"])}
     rescue Psych::SyntaxError => e
       raise ConfigError, ".simple-english.yml: #{e.message}"
+    end
+
+    # Loose like the other keys: a rule ID with no entry means the
+    # rule fires everywhere, so a wrong ID surfaces its findings
+    # instead of hiding them.
+    def load_rule_ignores(data)
+      return {} unless data.is_a?(Hash)
+      data.to_h { |rule, globs| [rule, Array(globs)] }
     end
 
     # Hooks pass absolute paths while ignore globs are written
@@ -27,8 +37,14 @@ module SimpleEnglish
     # realpath because CWD may be a symlink-resolved path while the
     # caller's string still carries the symlink (TMPDIR on macOS).
     def ignore?(config, path)
+      path_matches?(config[:ignore], path)
+    end
+
+    def path_matches?(globs, path)
       candidates = [path, relative_candidate(path)].compact
-      candidates.any? { |candidate| config[:ignore].any? { |pattern| matches?(pattern, candidate) } }
+      globs.any? do |pattern|
+        candidates.any? { |candidate| matches?(pattern, candidate) }
+      end
     end
 
     def relative_candidate(path)
@@ -54,9 +70,16 @@ module SimpleEnglish
       end.join("/") + "\\z")
     end
 
-    def filter(config, findings)
+    # rule-ignores needs the finding's file, which findings do not
+    # carry, so the caller passes path in. A nil path (stdin, MCP
+    # text) has no path to match, so every rule fires.
+    def filter(config, findings, path: nil)
       disabled = config[:disabled_rules]
-      findings.reject { |finding| disabled.include?(finding.rule) }
+      rule_ignores = config[:rule_ignores] || {}
+      findings.reject do |finding|
+        disabled.include?(finding.rule) ||
+          (path && path_matches?(rule_ignores[finding.rule] || [], path))
+      end
     end
   end
 end

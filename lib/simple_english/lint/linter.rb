@@ -6,12 +6,12 @@ module SimpleEnglish
 
     def lint_file(path, config: Config.load)
       return [] if Config.ignore?(config, path) || !Extractor.lintable?(path)
-      lint_text(File.read(path, encoding: "UTF-8"), language: Extractor.language_for(path), config: config)
+      lint_text(File.read(path, encoding: "UTF-8"), language: Extractor.language_for(path), config: config, path: path)
     end
 
-    def lint_text(text, language: nil, config: Config.load)
+    def lint_text(text, language: nil, config: Config.load, path: nil)
       findings = SimpleEnglish.lint(text, language: language)
-      findings && Config.filter(config, findings)
+      findings && Config.filter(config, findings, path: path)
     end
   end
 end

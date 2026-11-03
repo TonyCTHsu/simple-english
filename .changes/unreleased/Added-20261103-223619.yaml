@@ -1,0 +1,3 @@
+kind: Added
+body: Ignore a rule on chosen paths with `rule-ignores` key in `.simple-english.yml`.
+time: 2026-11-03T22:36:19.872714+01:00

@@ -200,9 +200,26 @@ ignore:
   - vendor/**
 disabled-rules:
   - SE_NO_EMDASH
+rule-ignores:
+  SE_MODAL_RESTRICTED:
+    - .agents/skills/**
 ```
 
 `ignore` globs: `**` crosses directories, `*` stays in one segment.
+
+`disabled-rules` drops a rule from every file. `rule-ignores` drops
+a rule only on the listed paths. The rule still fires everywhere
+else. It covers prose that plays by different rules, like spec
+text that quotes a standard's "SHOULD": <!-- se: ignore=SE_MODAL_RESTRICTED -->
+
+```yaml
+rule-ignores:
+  SE_MODAL_RESTRICTED:
+    - .agents/skills/**
+```
+
+With that config, `SE_MODAL_RESTRICTED` fires in `docs/` and the
+README, and stays quiet under `.agents/skills/`.
 
 ### Inline suppressions
 

@@ -11,7 +11,7 @@ require "yaml"
 class ChangelogFragmentsTest < Minitest::Test
   VERBS = %w[
     Add Allow Bundle Change Deprecate Drop Fix Handle Lint Migrate Move
-    Record Reject Remove Rename Say Skip Support Turn Warn
+    Record Reject Remove Rename Say Skip Support Turn Warn Ignore
   ].freeze
 
   def unreleased
