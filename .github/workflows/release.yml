@@ -175,6 +175,110 @@ jobs:
           VERSION: ${{ needs.release.outputs.version }}
           PLATFORM: ${{ matrix.platform }}
 
+  # The plain gem is the RubyGems storefront: the site lists the
+  # plain build's version, and platforms with no binary build can
+  # still install the code and bring their own engine.
+  plain:
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      # Same re-push rule as the platform legs: a re-run of a
+      # published gem builds nothing.
+      - name: Check whether the plain gem is published
+        id: published
+        run: |
+          if curl -fsIL "https://rubygems.org/gems/simple_english-${VERSION}.gem" >/dev/null 2>&1; then
+            echo "plain gem already published, skipping the build, the upload, and the push"
+            echo "published=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=no" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.published.outputs.published == 'no'
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        if: steps.published.outputs.published == 'no'
+        with:
+          ruby-version: "3.3"
+
+      - name: Build the plain gem
+        if: steps.published.outputs.published == 'no'
+        run: |
+          mkdir -p dist
+          gem build simple_english.gemspec --output "dist/simple_english-${VERSION}.gem"
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+
+      # The platform legs exercise the same Ruby code end to end
+      # against a real engine. This leg proves the one behavior
+      # unique to the plain gem: it refuses to lint, with the
+      # engine-less message.
+      - name: Verify the plain gem
+        if: steps.published.outputs.published == 'no'
+        run: |
+          gem install --no-document "dist/simple_english-${VERSION}.gem"
+          test "$(se version)" = "${VERSION}"
+          if se lint README.md >/tmp/plain-lint.out 2>&1; then
+            echo "se lint succeeded without an engine" >&2
+            exit 1
+          fi
+          grep -q "lint engine" /tmp/plain-lint.out
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+
+      # A copy of the published gem, as a convenience download. RubyGems
+      # stays the canonical source. The upload runs before the push, so a
+      # published gem always has its copy here.
+      - name: Upload the gem to the release
+        if: steps.published.outputs.published == 'no'
+        run: gh release upload "v${VERSION}" "dist/simple_english-${VERSION}.gem" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release.outputs.version }}
+
+      # The Sigstore certificate names the job that signs, so the gem must
+      # be signed in the same job that built it. This is that job.
+      - name: Check out the RubyGems attestation patch
+        if: steps.published.outputs.published == 'no'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: rubygems/release-gem
+          ref: v1.4.1
+          path: .tmp/release-gem
+          persist-credentials: false
+
+      - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+        if: steps.published.outputs.published == 'no'
+
+      - name: Publish the plain gem
+        if: steps.published.outputs.published == 'no'
+        run: |
+          # The signer shells out to `gem exec sigstore-cli`, which resolves
+          # the highest installed json. json 3 breaks that stack: protobug
+          # 0.1.0 passes options to JSON.parse that json 3 removed, and the
+          # patch then falls back to an unsigned push. Keep the signer on
+          # the default json 2.x until the stack ships the fix
+          # (segiddins/protobug#334).
+          gem uninstall -a -x json -v ">= 3" --force
+          gem push "dist/simple_english-${VERSION}.gem"
+          gem exec rubygems-await "dist/simple_english-${VERSION}.gem"
+          # The patch rescues a signing failure and retries the push unsigned,
+          # with only a warning. The sigstore bundle lands next to the gem
+          # only when signing succeeded, so a missing file fails the build.
+          test -s "dist/simple_english-${VERSION}.gem.sigstore.json"
+        env:
+          RUBYOPT: "-r${{ github.workspace }}/.tmp/release-gem/rubygems-attestation-patch.rb"
+          VERSION: ${{ needs.release.outputs.version }}
+
   image:
     needs: [release, gem]
     runs-on: ubuntu-24.04

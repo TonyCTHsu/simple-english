@@ -1,0 +1,3 @@
+kind: Added
+body: Add a plain gem without a lint engine, for platforms that have no binary build.
+time: 2026-11-05T19:12:19.47434+01:00

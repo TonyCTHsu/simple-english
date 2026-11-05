@@ -35,6 +35,12 @@ and verifies native servers on Ubuntu 22.04 x86-64, Ubuntu 22.04
 arm64, and macOS arm64. It builds,
 installs, and exercises each platform gem before publication.
 
+The release also publishes a plain gem with no engine. The plain build
+keeps the RubyGems page on the current version, and platforms without
+a binary build still install the code. Its job verifies that `se`
+refuses to lint without an engine, with a message naming the
+`SE_LANGUAGETOOL_EXECUTABLE` escape hatch.
+
 Each gem carries the native server and its SBOM, and the release holds
 a copy of each published gem. RubyGems holds a signed Sigstore
 attestation for every published gem.
