@@ -33,8 +33,18 @@ module SimpleEnglish
     end
 
     def setup_error
-      "lint engine not found or not executable at #{executable}. " \
-        "Install a supported platform build of this gem."
+      if executable != LanguageTool::BUNDLED_EXECUTABLE
+        "#{LanguageTool::EXECUTABLE_ENV} points at a missing or " \
+          "non-executable file: #{executable}"
+      elsif File.directory?(File.dirname(executable))
+        "the lint engine is missing or not executable at " \
+          "#{executable}; reinstall the gem"
+      else
+        "this copy ships no lint engine: a source checkout and the " \
+          "plain gem both do. Install a platform build of the gem, or " \
+          "point #{LanguageTool::EXECUTABLE_ENV} at a languagetool-server " \
+          "binary."
+      end
     end
   end
 end

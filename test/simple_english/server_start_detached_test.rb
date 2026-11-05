@@ -71,7 +71,7 @@ class ServerStartDetachedTest < Minitest::Test
       error = assert_raises(SimpleEnglish::Install::SetupError) do
         SimpleEnglish::Server.start_detached(port: 28291, install: install)
       end
-      assert_match(/supported platform build/, error.message)
+      assert_match(/non-executable file/, error.message)
     end
   end
 

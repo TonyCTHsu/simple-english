@@ -31,7 +31,7 @@ class ClientEnsureUpTest < Minitest::Test
         _out, err = capture_io do
           refute SimpleEnglish::Client.ensure_up(install: install)
         end
-        assert_match(/lint engine not found/, err)
+        assert_match(/non-executable file/, err)
       end
     end
   end
