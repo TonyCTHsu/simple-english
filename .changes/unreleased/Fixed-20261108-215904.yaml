@@ -1,0 +1,3 @@
+kind: Fixed
+body: 'Install the gem from the action ref again: read it through env, and omit --version instead of passing latest.'
+time: 2026-11-08T21:59:04.551561+01:00
