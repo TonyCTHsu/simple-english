@@ -1,3 +1,0 @@
-kind: Fixed
-body: Fix the setup message to name the actual failure, not a generic reinstall hint.
-time: 2026-11-05T19:12:27.532236+01:00
