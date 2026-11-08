@@ -167,7 +167,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: TonyCTHsu/simple-english@v0.13.0
+      - uses: TonyCTHsu/simple-english@v0.13.1
         with:
           files: |
             docs/
@@ -179,7 +179,7 @@ To see the findings inline in the pull request, lint with
 `permissions: {security-events: write}` to the workflow:
 
 ```yaml
-      - uses: TonyCTHsu/simple-english@v0.13.0
+      - uses: TonyCTHsu/simple-english@v0.13.1
         with:
           format: sarif
       - uses: github/codeql-action/upload-sarif@v3
@@ -202,7 +202,7 @@ is `se lint`.
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/TonyCTHsu/simple-english
-    rev: v0.13.0
+    rev: v0.13.1
     hooks:
       - id: se-lint
 ```
