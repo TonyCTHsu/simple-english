@@ -81,8 +81,17 @@ old. Install one, for example with Homebrew:
 brew install ruby
 ```
 
-Follow the `PATH` caveats Homebrew prints. A version manager such as
-`mise` or `rbenv` works too.
+Homebrew's Ruby is not on the `PATH` by default, and neither are gem
+binaries. Put both in your shell profile:
+
+```bash
+echo 'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"' >> ~/.zshrc
+echo 'export GEM_HOME="$HOME/.gem"' >> ~/.zshrc
+echo 'export PATH="$GEM_HOME/bin:$PATH"' >> ~/.zshrc
+```
+
+Then open a new terminal. A version manager such as `mise` or `rbenv`
+works too.
 
 ### Ruby gem (macOS arm64, Linux x86-64 and arm64)
 
