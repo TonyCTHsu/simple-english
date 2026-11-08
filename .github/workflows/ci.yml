@@ -143,6 +143,20 @@ jobs:
             echo "native=false" >> "$GITHUB_OUTPUT"
           fi
 
+  dogfood:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The action's install step has no unit-testable seam: it only
+      # exists on a real runner. Run the repo's own action at HEAD, with
+      # no version input, so a local ref installs the latest released
+      # gem and the lint step exercises the PATH wiring end to end.
+      - uses: ./
+        with:
+          files: README.md
+
   rules:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
