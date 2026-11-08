@@ -78,6 +78,11 @@ The full list, with a wrong and a right example for each rule [docs/RULES.md](do
 gem install simple_english
 ```
 
+The gem needs Ruby 3.3 or newer. Do not use the macOS system Ruby: it
+is 2.6, too old, and rejects gem installs with a permission error.
+Install a current Ruby with Homebrew or a version manager. On a Mac
+without a Ruby setup, prefer the Homebrew install below.
+
 ### Homebrew (macOS arm64)
 
 ```bash
@@ -166,11 +171,6 @@ To see the findings inline in the pull request, lint with
           sarif_file: simple-english.sarif
         if: always()
 ```
-
-The action uses the runner's `ruby` and `gem`, and needs Ruby 3.3 or
-newer. The `ubuntu-latest` image ships one. On a self-hosted runner,
-install a current Ruby first: the macOS system Ruby is 2.6 and too
-old.
 
 Any CI can run the lint. Install the gem, run `se lint .`, and fail the
 build on exit code 1.
