@@ -23,6 +23,10 @@ runs:
       shell: bash
       env:
         ACTION_REF: ${{ github.action_ref }}
+        # GitHub-hosted runners make the system gem dir unwritable, so gem
+        # falls back to a user dir the runner never puts on PATH. Pin a home
+        # we control and put its bin on PATH for the Lint step below.
+        GEM_HOME: ${{ runner.temp }}/gems
       run: |
         VERSION="${{ inputs.version }}"
         if [ -z "$VERSION" ]; then
@@ -35,6 +39,7 @@ runs:
         else
           gem install simple_english --no-document
         fi
+        echo "$GEM_HOME/bin" >> "$GITHUB_PATH"
     - name: Lint
       id: lint
       shell: bash
