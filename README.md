@@ -80,8 +80,8 @@ gem install simple_english
 
 The gem needs Ruby 3.3 or newer. Do not use the macOS system Ruby: it
 is 2.6, too old, and rejects gem installs with a permission error.
-Install a current Ruby with Homebrew or a version manager. On a Mac
-without a Ruby setup, prefer the Homebrew install below.
+Install Ruby with `brew install ruby`, put the directories `brew info
+ruby` lists on your `PATH`, then `gem install simple_english`.
 
 ### Homebrew (macOS arm64)
 
