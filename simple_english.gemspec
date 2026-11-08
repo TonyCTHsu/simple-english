@@ -18,6 +18,16 @@ Gem::Specification.new do |spec|
     ["MIT"]
   end
   spec.platform = ENV.fetch("SIMPLE_ENGLISH_GEM_PLATFORM", Gem::Platform::RUBY)
+  # The plain build has no engine, so the installer learns at gem
+  # install time rather than at the first failed lint.
+  spec.post_install_message = if ENV.key?("SIMPLE_ENGLISH_GEM_PLATFORM")
+    nil
+  else
+    "This plain gem carries no lint engine: your platform has no " \
+      "binary build. Set SE_LANGUAGETOOL_EXECUTABLE to a " \
+      "languagetool-server binary you built, or install on a " \
+      "supported platform (x86_64 or aarch64 Linux, arm64 macOS)."
+  end
   spec.metadata = {
     "homepage_uri" => spec.homepage,
     "source_code_uri" => spec.homepage,

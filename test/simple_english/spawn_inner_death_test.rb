@@ -36,6 +36,6 @@ class SpawnInnerDeathTest < Minitest::Test
       SimpleEnglish::Server.spawn_inner(install: install, port: 0,
         log_path: "/dev/null")
     end
-    assert_includes error.message, "supported platform build"
+    assert_includes error.message, SimpleEnglish::LanguageTool::EXECUTABLE_ENV
   end
 end
