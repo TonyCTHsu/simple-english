@@ -167,6 +167,11 @@ To see the findings inline in the pull request, lint with
         if: always()
 ```
 
+The action uses the runner's `ruby` and `gem`, and needs Ruby 3.3 or
+newer. The `ubuntu-latest` image ships one. On a self-hosted runner,
+install a current Ruby first: the macOS system Ruby is 2.6 and too
+old.
+
 Any CI can run the lint. Install the gem, run `se lint .`, and fail the
 build on exit code 1.
 
