@@ -72,16 +72,23 @@ The full list, with a wrong and a right example for each rule [docs/RULES.md](do
 
 ## Install
 
+### Prerequisites
+
+The gem needs Ruby 3.3 or newer. On a Mac, the system Ruby (2.6) is too
+old. Install one, for example with Homebrew:
+
+```bash
+brew install ruby
+```
+
+Follow the `PATH` caveats Homebrew prints. A version manager such as
+`mise` or `rbenv` works too.
+
 ### Ruby gem (macOS arm64, Linux x86-64 and arm64)
 
 ```bash
 gem install simple_english
 ```
-
-The gem needs Ruby 3.3 or newer. Do not use the macOS system Ruby: it
-is 2.6, too old, and rejects gem installs with a permission error.
-Install Ruby with `brew install ruby`, put the directories `brew info
-ruby` lists on your `PATH`, then `gem install simple_english`.
 
 ### Homebrew (macOS arm64)
 
