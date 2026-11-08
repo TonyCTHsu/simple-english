@@ -42,7 +42,7 @@ runs:
         echo "$GEM_HOME/bin" >> "$GITHUB_PATH"
         # The se bin stub resolves the gem through GEM_HOME, so the home
         # must reach the Lint step, not just the bin dir.
-        echo "$GEM_HOME" >> "$GITHUB_ENV"
+        echo "GEM_HOME=$GEM_HOME" >> "$GITHUB_ENV"
     - name: Lint
       id: lint
       shell: bash
