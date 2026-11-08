@@ -1,3 +1,3 @@
 kind: Fixed
-body: 'Install the gem from the action ref again: read it through env, and omit --version instead of passing latest.'
+body: Fix `gem install` failing with `BadRequirementError` when the GitHub Action runs at a ref with no `version` input. A tag ref now installs its own version and a SHA pin the newest release.
 time: 2026-11-08T21:59:04.551561+01:00
