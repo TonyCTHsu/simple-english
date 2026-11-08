@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1] - 2026-11-08
+
+### Fixed
+
+- Fix `gem install` failing with `BadRequirementError` at action refs with no `version` input.
+- Fix `se: command not found` failing the action's lint step on GitHub-hosted runners.
+
 ## [0.13.0] - 2026-11-03
 
 ### Added
