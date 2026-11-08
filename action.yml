@@ -21,15 +21,20 @@ runs:
   steps:
     - name: Install the gem
       shell: bash
+      env:
+        ACTION_REF: ${{ github.action_ref }}
       run: |
         VERSION="${{ inputs.version }}"
         if [ -z "$VERSION" ]; then
-          REF="${{ github.action_ref }}"
-          VERSION="${REF#v}"
+          VERSION="${ACTION_REF#v}"
           # A SHA pin names no gem version.
-          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || VERSION=latest
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || VERSION=""
         fi
-        gem install simple_english --no-document --version "$VERSION"
+        if [ -n "$VERSION" ]; then
+          gem install simple_english --no-document --version "$VERSION"
+        else
+          gem install simple_english --no-document
+        fi
     - name: Lint
       id: lint
       shell: bash
