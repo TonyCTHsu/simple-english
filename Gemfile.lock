@@ -26,15 +26,15 @@ GEM
     regexp_parser (2.13.1)
     rexml (3.4.4)
     simpleidn (0.3.0)
-    sorbet-runtime (0.6.13573)
+    sorbet-runtime (0.6.13646)
     thor (1.5.0)
-    tree_sitter_language_pack (1.22.1-aarch64-linux)
+    tree_sitter_language_pack (1.24.0-aarch64-linux)
       sorbet-runtime (~> 0.6)
-    tree_sitter_language_pack (1.22.1-arm64-darwin)
+    tree_sitter_language_pack (1.24.0-arm64-darwin)
       sorbet-runtime (~> 0.6)
-    tree_sitter_language_pack (1.22.1-x86_64-darwin)
+    tree_sitter_language_pack (1.24.0-x86_64-darwin)
       sorbet-runtime (~> 0.6)
-    tree_sitter_language_pack (1.22.1-x86_64-linux)
+    tree_sitter_language_pack (1.24.0-x86_64-linux)
       sorbet-runtime (~> 0.6)
 
 PLATFORMS
@@ -67,12 +67,12 @@ CHECKSUMS
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   simple_english (0.13.1)
   simpleidn (0.3.0) sha256=12ca730bed2f3db04d11e9bfd1bca3e11fb37f55b21eb2e9793fb5814bf54d03
-  sorbet-runtime (0.6.13573) sha256=7a96a9699c4aa6987e915ff7ca166ae79056efc3714ef4f3719d672fb3222afb
+  sorbet-runtime (0.6.13646) sha256=e184701e60ec8463c0ef35eab6af6cd057dcb69d8cf7a3f12fed76bbc0b93ef4
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
-  tree_sitter_language_pack (1.22.1-aarch64-linux) sha256=2c90390c0ec671984b04b852eddec8bc0ff2000656204841169da44ab600d4b4
-  tree_sitter_language_pack (1.22.1-arm64-darwin) sha256=a375edb921dfd0c686d2052b40fe22e6159ec9e7b2e92ca8c35d84602771c63a
-  tree_sitter_language_pack (1.22.1-x86_64-darwin) sha256=104105b1087c708526eeb5805ad24ce7026c5d231365bbe455e70d315db7c0ec
-  tree_sitter_language_pack (1.22.1-x86_64-linux) sha256=bef548daeb5e1c4857f554339bd0723ef1230fea3345b0c6d592c11336c91f06
+  tree_sitter_language_pack (1.24.0-aarch64-linux) sha256=ad4e247687eb8cb11ecc5ea0ff18be3beee1b5049d050a70d9f7aa9a02a73a0c
+  tree_sitter_language_pack (1.24.0-arm64-darwin) sha256=4c4887fce8e8cf2ce1d0a571615c638056da2a58d0c16bfc49aaef70b31c6e93
+  tree_sitter_language_pack (1.24.0-x86_64-darwin) sha256=213fecb2eb61c2c534757266241656fd0d97180314175368f862c5be70331d85
+  tree_sitter_language_pack (1.24.0-x86_64-linux) sha256=d4e7ec525c53c58a03f177f463d14ff57e4eb9ba0e5f0c7f45372f9cbfa36b0e
 
 BUNDLED WITH
   4.0.19
