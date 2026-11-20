@@ -1,8 +1,9 @@
 ---
 name: lint-simple-english
-description: Lint prose with simple_english after writing or editing documentation,
-  READMEs, or code comments. Use when the agent writes prose, when asked to lint
-  or simplify text, or when a doc change lands.
+description: >-
+  Lint prose with simple_english after writing or editing documentation,
+  READMEs, or code comments. Use when the user asks to lint or simplify text,
+  or when a doc change lands. Do not use it to check chat replies.
 ---
 
 Lint prose the linter can see. Call the lint tool after writing or
